@@ -31,7 +31,7 @@ const app = express();
 
 // Sigurnosni headeri
 app.use(helmet({
-  contentSecurityPolicy: false // dopusti Vue CDN i Google Fonts
+  contentSecurityPolicy: false // dopusti Google Fonts i inline styles
 }));
 
 // CORS — u produkciji ograniči na svoj domain
@@ -45,8 +45,8 @@ app.use(cors(corsOptions));
 
 app.use(express.json({ limit: '1mb' }));
 
-// Serve frontend static files
-app.use(express.static(path.join(__dirname, '..', 'frontend')));
+// Serve frontend static files (Vite build output)
+app.use(express.static(path.join(__dirname, '..', 'frontend', 'dist')));
 
 // ═══════════════════════════════════════════════════════════
 // API rute s rate limitingom
@@ -61,7 +61,7 @@ app.use('/api/progress', progressRoutes);
 // SPA fallback — SAMO za ne-API rute
 // ═══════════════════════════════════════════════════════════
 app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
 });
 
 // ═══════════════════════════════════════════════════════════

@@ -7,7 +7,11 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "seed": "node seeds/seed.js",
-    "seed:2": "node seeds/seed-2-razred.js"
+    "seed:2": "node seeds/seed-r2.js",
+    "seed:3": "node seeds/seed-r3.js",
+    "seed:4": "node seeds/seed-r4.js",
+    "seed:all": "node seeds/seed.js && node seeds/seed-r2.js && node seeds/seed-r3.js && node seeds/seed-r4.js",
+    "fix:emoji": "node seeds/fix-emoji-inputs.js"
   },
   "keywords": [],
   "author": "",

@@ -4,7 +4,7 @@ const { body, query, validationResult } = require('express-validator');
 const { getDb } = require('../db/mongo');
 const { auth, optionalAuth } = require('../middleware/auth');
 const { aiLimiter } = require('../middleware/rateLimiter');
-const { generateQuestions } = require('../services/deepai');
+const { getQuizQuestions, getFreshCount } = require('../services/questionGenerator');
 
 const router = express.Router();
 
@@ -238,6 +238,7 @@ router.post('/generate-all',
 // ═══════════════════════════════════════════════════════════
 // GET /api/quiz/:topicId?count=7
 // ═══════════════════════════════════════════════════════════
+// Generira pitanja on-the-fly, sprema u bazu, filtrira viđena
 router.get('/:topicId',
   optionalAuth,
   [
@@ -264,11 +265,32 @@ router.get('/:topicId',
       }
 
       const subject = await db.collection('subjects').findOne({ _id: topic.subject_id });
+      const userId = req.user ? req.user._id : null;
 
-      const questions = await db.collection('questions').aggregate([
-        { $match: { topic_id: topicId, isActive: true } },
-        { $sample: { size: count } }
-      ]).toArray();
+      // Dohvati pitanja kroz generator servis
+      const questions = await getQuizQuestions({
+        topic,
+        subjectId: topic.subject_id,
+        grade: topic.grade || 1,
+        userId,
+        count
+      });
+
+      // Sva pitanja su viđena u zadnjih 10 kvizova
+      if (questions.length === 0) {
+        return res.json({
+          topic: {
+            _id: topic._id,
+            name: topic.name,
+            icon: topic.icon,
+            subject: subject || null
+          },
+          questions: [],
+          totalAvailable: 0,
+          exhausted: true,
+          message: 'Sva pitanja za ovu temu su odigrana u zadnjih 10 kvizova. Odigraj druge teme pa se vrati!'
+        });
+      }
 
       // Ne šalji točne odgovore klijentu
       const safeQuestions = questions.map(q => ({
@@ -295,7 +317,8 @@ router.get('/:topicId',
           subject: subject || null
         },
         questions: safeQuestions,
-        totalAvailable
+        totalAvailable,
+        exhausted: false
       });
     } catch (err) {
       console.error('Quiz get error:', err);

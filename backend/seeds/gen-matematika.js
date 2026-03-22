@@ -267,8 +267,8 @@ function genNizovi() {
   q.push({ type:"input", difficulty:4, question:"Nastavi niz: 3, 6, 9, 12, ?", correctAnswer:"15" });
   // Emoji uzorci
   [["🔴🔵🔴🔵🔴","🔵"],["⭐🌙⭐🌙⭐","🌙"],["🍎🍎🍏🍎🍎","🍏"],["🐱🐶🐱🐶🐱","🐶"],["△○□△○","□"],["❤️💙💚❤️💙","💚"],["🌳🌻🌳🌻🌳","🌻"]].forEach(([pattern,next]) => {
-    const wrongs = sh(["🔴","🔵","⭐","🌙","🍎","🍏","🐱","🐶"]).filter(x=>x!==next).slice(0,3);
-    q.push({ type:"choice", difficulty:2, visual:pattern, question:"Što dolazi sljedeće?", answers:sh([next,...wrongs]), correctIndex:-1, _c:next });
+    const wrongs = sh(emojiPool.filter(x=>x!==next)).slice(0,3);
+    q.push({ type:"choice", visual:p, question:"Što dolazi sljedeće?", answers:sh([next,...wrongs]), correctIndex:-1, _c:next });
   });
   // Koji ne pripada nizu
   [["2, 4, 6, 7, 8","7"],["1, 3, 5, 6, 7","6"],["10, 8, 6, 5, 4","5"],["5, 10, 15, 17, 20","17"]].forEach(([niz,odd]) => {
