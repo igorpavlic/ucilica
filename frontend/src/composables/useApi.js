@@ -12,7 +12,10 @@ export function useApi() {
     loading.value = true
     error.value = ''
     try {
-      const headers = { 'Content-Type': 'application/json' }
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(opts.headers || {})
+      }
       const t = token()
       if (t) headers['Authorization'] = `Bearer ${t}`
 

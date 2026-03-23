@@ -125,13 +125,16 @@ async function getSeenQuestionIds(userId, topicId, rounds = 10) {
  * Pokreni generator i spremi nova pitanja u bazu.
  * Vraća broj umetnutih dokumenata.
  */
-async function generateAndStore(topic, subjectId, grade) {
+async function generateAndStore(topic, subjectId, grade, requestedCount = null) {
   const gen = GENERATORS[topic.slug];
   if (!gen) return 0;
 
   let raw;
   try {
     raw = gen();
+    if (typeof requestedCount == 'number' && requestedCount > 0) {
+      raw = raw.slice(0, requestedCount);
+    }
   } catch (err) {
     console.error(`Generator greška [${topic.slug}]:`, err.message);
     return 0;
@@ -236,4 +239,4 @@ async function getFreshCount(userId, topicId) {
   });
 }
 
-module.exports = { getQuizQuestions, getFreshCount, GENERATORS };
+module.exports = { getQuizQuestions, getFreshCount, generateAndStore, GENERATORS };

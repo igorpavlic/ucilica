@@ -13,38 +13,39 @@ function generateToken(userId) {
   });
 }
 
-// Pomoćna: ukloni password iz odgovora
 function sanitizeUser(user) {
   const { password, ...safe } = user;
   return safe;
 }
 
-// POST /api/auth/register
+function validate(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ error: errors.array()[0].msg });
+    return false;
+  }
+  return true;
+}
+
 router.post('/register', [
   body('username').trim().isLength({ min: 3, max: 30 }).withMessage('Korisničko ime: 3-30 znakova'),
   body('password').isLength({ min: 4 }).withMessage('Lozinka: minimalno 4 znaka'),
-  body('grade').optional().isInt({ min: 1, max: 8 }).withMessage('Razred: 1-8'),
+  body('displayName').optional().trim().isLength({ min: 1, max: 50 }).withMessage('Ime za prikaz: 1-50 znakova'),
+  body('avatar').optional().isString().isLength({ min: 1, max: 10 }).withMessage('Avatar nije valjan'),
+  body('grade').optional().isInt({ min: 1, max: 8 }).withMessage('Razred: 1-8')
 ], async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ error: errors.array()[0].msg });
-    }
+    if (!validate(req, res)) return;
 
     const { username, password, displayName, avatar, grade } = req.body;
     const db = getDb();
 
-    // Provjeri postoji li korisnik
-    const existing = await db.collection('users').findOne({
-      username: username.toLowerCase()
-    });
+    const existing = await db.collection('users').findOne({ username: username.toLowerCase() });
     if (existing) {
       return res.status(400).json({ error: 'Korisničko ime već postoji.' });
     }
 
-    // Hashiraj lozinku
     const hashedPassword = await bcrypt.hash(password, 12);
-
     const newUser = {
       username: username.toLowerCase(),
       password: hashedPassword,
@@ -61,11 +62,9 @@ router.post('/register', [
     const result = await db.collection('users').insertOne(newUser);
     newUser._id = result.insertedId;
 
-    const token = generateToken(newUser._id);
-
     res.status(201).json({
       message: 'Registracija uspješna!',
-      token,
+      token: generateToken(newUser._id),
       user: sanitizeUser(newUser)
     });
   } catch (err) {
@@ -74,23 +73,17 @@ router.post('/register', [
   }
 });
 
-// POST /api/auth/login
 router.post('/login', [
   body('username').trim().notEmpty().withMessage('Unesite korisničko ime'),
-  body('password').notEmpty().withMessage('Unesite lozinku'),
+  body('password').notEmpty().withMessage('Unesite lozinku')
 ], async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ error: errors.array()[0].msg });
-    }
+    if (!validate(req, res)) return;
 
     const { username, password } = req.body;
     const db = getDb();
 
-    const user = await db.collection('users').findOne({
-      username: username.toLowerCase()
-    });
+    const user = await db.collection('users').findOne({ username: username.toLowerCase() });
     if (!user) {
       return res.status(401).json({ error: 'Neispravno korisničko ime ili lozinka.' });
     }
@@ -100,11 +93,9 @@ router.post('/login', [
       return res.status(401).json({ error: 'Neispravno korisničko ime ili lozinka.' });
     }
 
-    const token = generateToken(user._id);
-
     res.json({
       message: 'Prijava uspješna!',
-      token,
+      token: generateToken(user._id),
       user: sanitizeUser(user)
     });
   } catch (err) {
@@ -113,14 +104,18 @@ router.post('/login', [
   }
 });
 
-// GET /api/auth/me
 router.get('/me', auth, (req, res) => {
   res.json({ user: req.user });
 });
 
-// PATCH /api/auth/me
-router.patch('/me', auth, async (req, res) => {
+router.patch('/me', auth, [
+  body('displayName').optional().trim().isLength({ min: 1, max: 50 }).withMessage('Ime za prikaz: 1-50 znakova'),
+  body('avatar').optional().isString().isLength({ min: 1, max: 10 }).withMessage('Avatar nije valjan'),
+  body('grade').optional().isInt({ min: 1, max: 8 }).withMessage('Razred: 1-8')
+], async (req, res) => {
   try {
+    if (!validate(req, res)) return;
+
     const allowed = ['displayName', 'avatar', 'grade'];
     const updates = { updatedAt: new Date() };
     for (const key of allowed) {
@@ -128,11 +123,7 @@ router.patch('/me', auth, async (req, res) => {
     }
 
     const db = getDb();
-    await db.collection('users').updateOne(
-      { _id: req.user._id },
-      { $set: updates }
-    );
-
+    await db.collection('users').updateOne({ _id: req.user._id }, { $set: updates });
     const user = await db.collection('users').findOne(
       { _id: req.user._id },
       { projection: { password: 0 } }
@@ -140,6 +131,7 @@ router.patch('/me', auth, async (req, res) => {
 
     res.json({ user });
   } catch (err) {
+    console.error('Profile update error:', err);
     res.status(400).json({ error: 'Greška pri ažuriranju profila.' });
   }
 });

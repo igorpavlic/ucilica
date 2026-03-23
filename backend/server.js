@@ -22,6 +22,7 @@ const authRoutes = require('./routes/auth');
 const subjectRoutes = require('./routes/subjects');
 const quizRoutes = require('./routes/quiz');
 const progressRoutes = require('./routes/progress');
+const quizController = require('./modules/quiz/quiz.controller');
 
 const app = express();
 
@@ -109,6 +110,7 @@ const PORT = process.env.PORT || 3000;
 async function start() {
   try {
     await connect();
+    await quizController.ensureIndexes();
     app.listen(PORT, () => {
       console.log(`🚀 Server pokrenut na http://localhost:${PORT}`);
       console.log(`   Okruženje: ${process.env.NODE_ENV || 'development'}`);

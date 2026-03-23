@@ -11,7 +11,6 @@
     </div>
 
     <div v-else-if="questions.length" class="quiz-container">
-      <!-- Progress -->
       <div class="progress-row">
         <span>{{ $route.query.topicIcon }} {{ $route.query.topicName }}</span>
         <span>{{ currentQ + 1 }} / {{ questions.length }}</span>
@@ -20,7 +19,6 @@
         <div class="progress-fill" :style="{ width: ((currentQ + 1) / questions.length * 100) + '%' }"></div>
       </div>
 
-      <!-- Question card -->
       <div class="question-card" :key="currentQ">
         <div v-if="questions[currentQ].visual" class="question-visual">
           {{ questions[currentQ].visual }}
@@ -32,7 +30,6 @@
           {{ questions[currentQ].hint }}
         </div>
 
-        <!-- Choice answers -->
         <div v-if="questions[currentQ].type === 'choice'" class="answers-grid">
           <button
             v-for="(ans, i) in questions[currentQ].answers"
@@ -43,42 +40,34 @@
               wrong: answered && selectedIdx === i && i !== correctIdx,
               disabled: answered
             }"
-            @click="checkChoice(i)"
+            @click="handleChoice(i)"
           >{{ ans }}</button>
         </div>
 
-        <!-- Input answer -->
         <div v-if="questions[currentQ].type === 'input'" class="input-group">
           <input
-            class="form-input"
             v-model="inputAnswer"
+            class="form-input"
             :class="{ correct: answered && isCorrect, wrong: answered && !isCorrect }"
             :disabled="answered"
             :placeholder="questions[currentQ].placeholder || 'Upiši odgovor...'"
-            @keyup.enter="checkInput"
+            @keyup.enter="handleInput"
           >
-          <button
-            v-if="!answered"
-            class="btn-check"
-            @click="checkInput"
-          >Provjeri</button>
+          <button v-if="!answered" class="btn-check" @click="handleInput">Provjeri</button>
         </div>
       </div>
 
-      <!-- Feedback -->
       <div v-if="answered" class="feedback-bar" :class="isCorrect ? 'correct' : 'wrong'">
         <span>{{ isCorrect ? '✓' : '✗' }}</span>
         <span v-if="isCorrect">{{ correctMessages[Math.floor(Math.random() * correctMessages.length)] }}</span>
         <span v-else>Točan odgovor: {{ correctAnswerText }}</span>
       </div>
 
-      <!-- Next button -->
       <button v-if="answered" class="btn-next" @click="nextQuestion">
-        {{ currentQ < questions.length - 1 ? 'Sljedeće pitanje →' : 'Pogledaj rezultat 🏆' }}
+        {{ hasNextQuestion() ? 'Sljedeće pitanje →' : 'Pogledaj rezultat 🏆' }}
       </button>
     </div>
 
-    <!-- Exhausted — sva pitanja viđena u zadnjih 10 rundi -->
     <div v-else-if="exhausted" class="quiz-container">
       <div class="question-card" style="text-align:center">
         <div class="question-visual">🔄</div>
@@ -98,33 +87,44 @@
 </template>
 
 <script setup>
-import { ref, inject, onMounted } from 'vue'
+import { inject, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useApi } from '../composables/useApi'
+import { storeToRefs } from 'pinia'
 import { useAuth } from '../composables/useAuth'
+import { useQuizStore } from '../stores/quiz'
 
 const props = defineProps({ topicId: String })
-const emit = defineEmits(['error', 'stars'])
+const emit = defineEmits(['error'])
 const router = useRouter()
 const route = useRoute()
-const { get, post } = useApi()
-const { user, isLoggedIn, addGuestScore, updateUser } = useAuth()
+const { isLoggedIn, addGuestScore, updateUser } = useAuth()
 const triggerStars = inject('triggerStars')
+const quizStore = useQuizStore()
 
-const questions = ref([])
-const loadingQuiz = ref(true)
-const exhausted = ref(false)
-const exhaustedMsg = ref('')
-const currentQ = ref(0)
-const selectedIdx = ref(null)
-const answered = ref(false)
-const isCorrect = ref(false)
-const correctIdx = ref(null)
-const correctAnswerText = ref('')
-const inputAnswer = ref('')
-const correctCount = ref(0)
-const quizAnswers = ref([])
-let questionStartTime = Date.now()
+const {
+  questions,
+  loadingQuiz,
+  exhausted,
+  exhaustedMsg,
+  currentQ,
+  selectedIdx,
+  answered,
+  isCorrect,
+  correctIdx,
+  correctAnswerText,
+  inputAnswer,
+  correctCount
+} = storeToRefs(quizStore)
+
+const {
+  loadQuiz,
+  checkChoice,
+  checkInput,
+  advanceQuestion,
+  hasNextQuestion,
+  submitQuiz,
+  resetSession
+} = quizStore
 
 const correctMessages = [
   'Bravo! Odlično! 🌟',
@@ -137,114 +137,78 @@ const correctMessages = [
 
 onMounted(async () => {
   try {
-    const data = await get(`/quiz/${props.topicId}?count=7`)
-    if (data.exhausted) {
-      exhausted.value = true
-      exhaustedMsg.value = data.message || 'Sva pitanja su odigrana. Vrati se kasnije!'
-    } else {
-      questions.value = data.questions
-    }
-    questionStartTime = Date.now()
-  } catch (e) {
-    emit('error', e.message)
-  } finally {
-    loadingQuiz.value = false
+    await loadQuiz(props.topicId, 7)
+  } catch (error) {
+    emit('error', error.message)
   }
 })
 
-async function checkChoice(idx) {
-  if (answered.value) return
-  selectedIdx.value = idx
-  try {
-    const data = await post('/quiz/check', {
-      questionId: questions.value[currentQ.value]._id,
-      answer: idx
-    })
-    answered.value = true
-    isCorrect.value = data.isCorrect
-    correctIdx.value = data.correctIndex
-    correctAnswerText.value = data.correctAnswer
-    recordAnswer(data.isCorrect, String(idx))
-  } catch (e) {
-    emit('error', e.message)
-  }
-}
+onUnmounted(() => {
+  resetSession()
+})
 
-async function checkInput() {
-  if (answered.value || !inputAnswer.value.trim()) return
+async function handleChoice(index) {
   try {
-    const data = await post('/quiz/check', {
-      questionId: questions.value[currentQ.value]._id,
-      answer: inputAnswer.value.trim()
-    })
-    answered.value = true
-    isCorrect.value = data.isCorrect
-    correctAnswerText.value = data.correctAnswer
-    recordAnswer(data.isCorrect, inputAnswer.value.trim())
-  } catch (e) {
-    emit('error', e.message)
-  }
-}
-
-function recordAnswer(wasCorrect, userAnswer) {
-  const timeTaken = Date.now() - questionStartTime
-  quizAnswers.value.push({
-    questionId: questions.value[currentQ.value]._id,
-    wasCorrect,
-    userAnswer,
-    timeTaken
-  })
-  if (wasCorrect) {
-    correctCount.value++
-    if (isLoggedIn.value) {
-      updateUser({ totalScore: (user.value.totalScore || 0) + 10 })
-    } else {
-      addGuestScore(10)
+    const result = await checkChoice(index)
+    if (result?.isCorrect) {
+      if (isLoggedIn.value) {
+        triggerStars?.()
+      } else {
+        addGuestScore(10)
+        triggerStars?.()
+      }
     }
-    triggerStars()
+  } catch (error) {
+    emit('error', error.message)
+  }
+}
+
+async function handleInput() {
+  try {
+    const result = await checkInput()
+    if (result?.isCorrect) {
+      if (isLoggedIn.value) {
+        triggerStars?.()
+      } else {
+        addGuestScore(10)
+        triggerStars?.()
+      }
+    }
+  } catch (error) {
+    emit('error', error.message)
   }
 }
 
 async function nextQuestion() {
-  if (currentQ.value < questions.value.length - 1) {
-    currentQ.value++
-    answered.value = false
-    selectedIdx.value = null
-    isCorrect.value = false
-    correctIdx.value = null
-    correctAnswerText.value = ''
-    inputAnswer.value = ''
-    questionStartTime = Date.now()
-  } else {
-    // Submit results
-    if (isLoggedIn.value) {
-      try {
-        const data = await post('/quiz/submit', {
-          topicId: props.topicId,
-          answers: quizAnswers.value
-        })
-        updateUser({
-          totalScore: data.user.totalScore,
-          streak: data.user.streak
-        })
-      } catch (e) {
-        console.warn('Submit error:', e)
-      }
-    }
-
-    // Navigate to results
-    router.push({
-      name: 'results',
-      query: {
-        correct: correctCount.value,
-        total: questions.value.length,
-        topicId: props.topicId,
-        topicName: route.query.topicName,
-        topicIcon: route.query.topicIcon,
-        subjectSlug: route.query.subjectSlug,
-        subjectName: route.query.subjectName
-      }
-    })
+  if (hasNextQuestion()) {
+    advanceQuestion()
+    return
   }
+
+  if (isLoggedIn.value) {
+    try {
+      const data = await submitQuiz(props.topicId)
+      updateUser({
+        totalScore: data.user.totalScore,
+        streak: data.user.streak
+      })
+    } catch (error) {
+      emit('error', error.message)
+      return
+    }
+  }
+
+  router.push({
+    name: 'results',
+    query: {
+      correct: correctCount.value,
+      total: questions.value.length,
+      topicId: props.topicId,
+      topicName: route.query.topicName,
+      topicIcon: route.query.topicIcon,
+      subjectSlug: route.query.subjectSlug,
+      subjectName: route.query.subjectName
+    }
+  })
 }
 </script>

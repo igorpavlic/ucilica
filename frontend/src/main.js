@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
 import './assets/main.css'
@@ -23,18 +24,19 @@ const router = createRouter({
     { path: '/quiz/:topicId', name: 'quiz', component: QuizView, props: true },
     { path: '/results', name: 'results', component: ResultsView },
     { path: '/answers', name: 'answers', component: AnswerHistoryView },
-    { path: '/profile', name: 'profile', component: ProfileView },
+    { path: '/profile', name: 'profile', component: ProfileView }
   ]
 })
 
-// Navigation guard — redirect to home if already logged in
-router.beforeEach((to, from) => {
+router.beforeEach((to) => {
   const token = localStorage.getItem('ucilica_token')
   if ((to.name === 'login' || to.name === 'register') && token) {
     return { name: 'home' }
   }
+  return true
 })
 
 const app = createApp(App)
+app.use(createPinia())
 app.use(router)
 app.mount('#app')
