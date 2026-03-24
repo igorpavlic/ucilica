@@ -129,6 +129,8 @@ async function generateAndStore(topic, subjectId, grade, requestedCount = null) 
   const gen = GENERATORS[topic.slug];
   if (!gen) return 0;
 
+  const db = getDb();
+
   let raw;
   try {
     raw = gen();
