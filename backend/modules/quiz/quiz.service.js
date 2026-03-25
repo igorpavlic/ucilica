@@ -46,7 +46,14 @@ async function getQuizQuestions({ topicId, grade, subject, topic, userId, limit 
     newQuestions = newQuestions.slice(0, missing);
 
     if (newQuestions.length > 0) {
-      await repo.insertQuestions(newQuestions);
+      const insertResult = await repo.insertQuestions(newQuestions);
+
+      // attach inserted IDs back
+      const insertedIds = Object.values(insertResult.insertedIds);
+      newQuestions = newQuestions.map((q, i) => ({
+        ...q,
+        _id: insertedIds[i]
+      }));
     }
 
     questions = [...questions, ...newQuestions];
@@ -71,7 +78,20 @@ async function createSession({ topicId, userId, count }) {
     limit: count
   });
 
-  return { topicId, questions };
+  const attempt = {
+    user_id: userId,
+    topic_id: repo.toObjectId(topicId),
+    question_ids: questions.map(q => q._id),
+    createdAt: new Date()
+  };
+
+  const result = await repo.createAttempt(attempt);
+
+  return {
+    topicId,
+    attemptId: result.insertedId,
+    questions
+  };
 }
 
 function createQuizService() {
