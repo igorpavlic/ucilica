@@ -90,6 +90,8 @@ async function createIndexes() {
   await db.collection('topics').createIndex({ grade: 1, subject_id: 1, order: 1 });
   await db.collection('questions').createIndex({ topic_id: 1, isActive: 1 });
   await db.collection('questions').createIndex({ subject_id: 1, grade: 1 });
+  await db.collection('questions').createIndex({ 'metadata.subjectSlug': 1, 'metadata.grade': 1, topic_id: 1 });
+  await db.collection('questions').createIndex({ 'metadata.outcome': 1 });
   await db.collection('progress').createIndex({ user_id: 1, topic_id: 1 });
   await db.collection('progress').createIndex({ user_id: 1, completedAt: -1 });
   // Quiz attempts — TTL 6h, auto-brisanje starih sesija
