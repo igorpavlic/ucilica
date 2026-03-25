@@ -1,21 +1,18 @@
 {
-  "name": "ucilica",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Učilica - Interaktivna aplikacija za učenje",
-  "scripts": {
-    "install:all": "cd backend && npm install && cd ../frontend && npm install",
-    "dev": "concurrently -k -n BE,FE -c blue,green \"cd backend && npm run dev\" \"wait-on http://localhost:3000/api/subjects && cd frontend && npm run dev\"",
-    "build": "cd frontend && npm run build",
-    "start": "cd backend && npm start",
-    "seed": "cd backend && npm run seed",
-    "seed:2": "cd backend && npm run seed:2",
-    "seed:3": "cd backend && npm run seed:3",
-    "seed:4": "cd backend && npm run seed:4",
-    "seed:all": "cd backend && npm run seed:all"
-  },
-  "devDependencies": {
-    "concurrently": "^9.1.2",
-    "wait-on": "^8.0.3"
-  }
+"name": "backend",
+"version": "1.0.0",
+"description": "Učilica - backend API",
+"main": "server.js",
+"scripts": {
+"start": "node server.js",
+"dev": "node --watch server.js",
+"seed": "node seeds/seed.js",
+    "seed:2": "node seeds/seed-r2.js",
+    "seed:3": "node seeds/seed-r3.js",
+    "seed:4": "node seeds/seed-r4.js",
+    "seed:all": "node seeds/seed.js && node seeds/seed-r2.js && node seeds/seed-r3.js && node seeds/seed-r4.js",
+    "fix:emoji": "node seeds/fix-emoji-inputs.js"
+},
+"keywords": [],
+"author": "",
 }
