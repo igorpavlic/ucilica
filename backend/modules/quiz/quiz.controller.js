@@ -1,4 +1,4 @@
-const { createQuizService } = require('./quiz.service');
+const createQuizService = require('./quiz.service');
 const { quizRepository } = require('./quiz.repository');
 
 const service = createQuizService();
