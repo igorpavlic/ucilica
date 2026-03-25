@@ -1,4 +1,5 @@
-const { getQuizQuestions, generateAndStore } = require('../../services/questionGenerator');
+const { getQuizQuestions, generateAndStore, ensureTopicPool } = require('../../services/questionGenerator');
+const { gradeGenerationTarget } = require('../../services/gikEngine');
 const { quizRepository } = require('./quiz.repository');
 
 function createHttpError(status, message) {
@@ -16,7 +17,13 @@ function mapSafeQuestion(question) {
     hint: question.hint || '',
     answers: question.answers || [],
     placeholder: question.placeholder || 'Upiši odgovor...',
-    difficulty: question.difficulty || 1
+    difficulty: question.difficulty || 1,
+    metadata: question.metadata || {
+      grade: question.grade,
+      subject: 'Nepoznato',
+      outcome: 'GIK',
+      topicName: ''
+    }
   };
 }
 
@@ -58,13 +65,15 @@ function createQuizService() {
   async function createSession({ topicId, userId, count }) {
     const { topic, subject } = await ensureTopic(topicId);
 
-    const questions = await getQuizQuestions({
+    const quizPayload = await getQuizQuestions({
       topic,
       subjectId: topic.subject_id,
       grade: topic.grade || 1,
       userId,
       count
     });
+
+    const questions = quizPayload.questions || [];
 
     if (questions.length === 0) {
       return {
@@ -77,6 +86,7 @@ function createQuizService() {
         questions: [],
         totalAvailable: 0,
         exhausted: true,
+        engine: quizPayload.engine || { mode: 'gik-adaptive' },
         message: 'Sva pitanja za ovu temu su odigrana u zadnjih 10 kvizova. Odigraj druge teme pa se vrati!'
       };
     }
@@ -88,6 +98,7 @@ function createQuizService() {
       subject_id: topic.subject_id,
       grade: topic.grade || 1,
       question_ids: questionIds,
+      engine: quizPayload.engine || { mode: 'gik-adaptive' },
       createdAt: new Date(),
       completedAt: null
     };
@@ -105,7 +116,8 @@ function createQuizService() {
       },
       questions: questions.map(mapSafeQuestion),
       totalAvailable,
-      exhausted: false
+      exhausted: false,
+      engine: quizPayload.engine || { mode: 'gik-adaptive' }
     };
   }
 
@@ -168,7 +180,9 @@ function createQuizService() {
         question_id: question._id,
         wasCorrect: evaluation.isCorrect,
         userAnswer: evaluation.normalizedAnswer,
-        timeTaken: Number.parseInt(answer.timeTaken, 10) || 0
+        timeTaken: Number.parseInt(answer.timeTaken, 10) || 0,
+        metadata: question.metadata || null,
+        difficulty: question.difficulty || 1
       });
     }
 
@@ -184,6 +198,7 @@ function createQuizService() {
       totalQuestions,
       correctAnswers: correctCount,
       score,
+      engine: attempt.engine || { mode: 'gik-adaptive' },
       answers: evaluatedAnswers,
       completedAt: new Date()
     });
@@ -202,32 +217,43 @@ function createQuizService() {
       user: {
         totalScore: updatedUser.totalScore,
         streak: updatedUser.streak
-      }
+      },
+      engine: attempt.engine || { mode: 'gik-adaptive' }
     };
   }
 
   async function generateForTopic({ topicId, count, force }) {
     const { topic } = await ensureTopic(topicId);
     const existingCount = await repo.countActiveQuestionsForTopic(topicId);
+    const target = Math.max(Number(count) || 0, gradeGenerationTarget(topic.grade || 1));
 
-    if (existingCount >= 50 && !force) {
+    if (existingCount >= target && !force) {
       return {
         message: `Tema "${topic.name}" već ima ${existingCount} pitanja.`,
         generated: 0,
         total: existingCount,
-        skipped: true
+        skipped: true,
+        target
       };
     }
 
-    const inserted = await generateAndStore(topic, topic.subject_id, topic.grade || 1, count);
+    if (!force) {
+      await ensureTopicPool(topic, topic.grade || 1, target);
+    }
+
+    const inserted = force
+      ? await generateAndStore(topic, topic.subject_id, topic.grade || 1, Math.max(target - existingCount, count || 0, 20))
+      : Math.max(target - existingCount, 0);
+
     const total = await repo.countActiveQuestionsForTopic(topicId);
 
     return {
-      message: `Generirano ${inserted} novih pitanja za "${topic.name}".`,
+      message: `Tema "${topic.name}" sada ima ${total} pitanja.`,
       generated: inserted,
       inserted,
       total,
-      skipped: false
+      skipped: false,
+      target
     };
   }
 
@@ -239,18 +265,19 @@ function createQuizService() {
     const results = [];
     for (const topic of topics) {
       const existingCount = await repo.countActiveQuestionsForTopic(topic._id);
-      if (existingCount >= 50) {
-        results.push({ topic: topic.name, skipped: true, existing: existingCount, generated: 0 });
+      const target = gradeGenerationTarget(grade);
+      if (existingCount >= target) {
+        results.push({ topic: topic.name, skipped: true, existing: existingCount, generated: 0, target });
         continue;
       }
 
-      const inserted = await generateAndStore(topic, topic.subject_id, topic.grade || grade);
-      results.push({ topic: topic.name, skipped: false, existing: existingCount, generated: inserted });
+      const { generated, total } = await ensureTopicPool(topic, grade, target);
+      results.push({ topic: topic.name, skipped: false, existing: existingCount, generated, total, target });
     }
 
     const totalGenerated = results.reduce((sum, item) => sum + item.generated, 0);
     return {
-      message: `Generirano ukupno ${totalGenerated} pitanja za ${results.length} tema.`,
+      message: `GIK engine je generirao ukupno ${totalGenerated} pitanja za ${results.length} tema.`,
       results
     };
   }
@@ -265,4 +292,4 @@ function createQuizService() {
   };
 }
 
-module.exports = { createQuizService, createHttpError };
+module.exports = { createQuizService };
