@@ -1,7 +1,32 @@
 
 const crypto = require('crypto');
-const repo = require('./quiz.repository');
+const { quizRepository } = require('./quiz.repository');
+const repo = quizRepository();
 const { generateQuestions } = require('../../services/questionGenerator');
+
+async function createSession({ topicId, userId, count }) {
+  // dohvati topic (ako imaš repo funkciju)
+  const topic = await repo.findTopicById(repo.toObjectId(topicId));
+
+  if (!topic) {
+    throw new Error("Topic not found");
+  }
+
+  const { grade, subject, slug } = topic;
+
+  const questions = await getQuizQuestions({
+    grade,
+    subject,
+    topic: slug,
+    userId,
+    limit: count
+  });
+
+  return {
+    topicId,
+    questions
+  };
+}
 
 // hash helper
 function hashQuestion(q) {
@@ -64,8 +89,10 @@ async function getQuizQuestions({ grade, subject, topic, userId, limit = 10 }) {
 
   return questions.slice(0, limit);
 }
+
 function createQuizService() {
   return {
+    createSession,   // ✅ DODANO
     getQuizQuestions
   };
 }

@@ -1,6 +1,10 @@
 const { ObjectId } = require('mongodb');
 const { getDb } = require('../../db/mongo');
 
+async function getTopicById(id) {
+  return await getCollection('topics').findOne({ _id: id });
+}
+
 function collection(name) {
   return getDb().collection(name);
 }
