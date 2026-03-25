@@ -4,31 +4,6 @@ const { quizRepository } = require('./quiz.repository');
 const repo = quizRepository();
 const { generateQuestions } = require('../../services/questionGenerator');
 
-async function createSession({ topicId, userId, count }) {
-  // dohvati topic (ako imaš repo funkciju)
-  const topic = await repo.findTopicById(repo.toObjectId(topicId));
-
-  if (!topic) {
-    throw new Error("Topic not found");
-  }
-
-  const { grade, subject, slug } = topic;
-
-  const questions = await getQuizQuestions({
-    grade,
-    subject,
-    topic: slug,
-    userId,
-    limit: count
-  });
-
-  return {
-    topicId,
-    questions
-  };
-}
-
-// hash helper
 function hashQuestion(q) {
   return crypto
     .createHash('md5')
@@ -36,7 +11,6 @@ function hashQuestion(q) {
     .digest('hex');
 }
 
-// wrapper generator with hash + metadata
 function generateQuestionsForTopic({ grade, subject, topic, count }) {
   const generated = generateQuestions(subject, count);
 
@@ -46,38 +20,29 @@ function generateQuestionsForTopic({ grade, subject, topic, count }) {
     subject,
     topic,
     hash: hashQuestion(q),
-    createdAt: new Date()
+    createdAt: new Date(),
+    isActive: true
   }));
 }
 
-async function getQuizQuestions({ grade, subject, topic, userId, limit = 10 }) {
-  // 1. get from DB
-  let questions = await repo.getRandomQuestions(subject, limit);
+async function getQuizQuestions({ topicId, grade, subject, topic, userId, limit = 10 }) {
+  let questions = await repo.getRandomQuestionsByTopic(topicId, limit);
 
-  // 2. exclude already played
   const playedIds = await repo.getRecentlyPlayedQuestionIds(userId) || [];
-
   questions = questions.filter(q => !playedIds.includes(q._id?.toString()));
 
-  // 3. ensure enough questions
   if (questions.length < limit) {
     const missing = limit - questions.length;
-
-    console.log("⚠️ Generating new questions:", missing);
 
     let newQuestions = generateQuestionsForTopic({
       grade,
       subject,
       topic,
-      count: missing * 2 // generate extra to avoid duplicates
+      count: missing * 2
     });
 
-    // remove duplicates by hash
     const existingHashes = await repo.getAllQuestionHashes(subject);
-
     newQuestions = newQuestions.filter(q => !existingHashes.includes(q.hash));
-
-    // take only needed
     newQuestions = newQuestions.slice(0, missing);
 
     if (newQuestions.length > 0) {
@@ -90,12 +55,30 @@ async function getQuizQuestions({ grade, subject, topic, userId, limit = 10 }) {
   return questions.slice(0, limit);
 }
 
+async function createSession({ topicId, userId, count }) {
+  const topic = await repo.findTopicById(repo.toObjectId(topicId));
+
+  if (!topic) throw new Error("Topic not found");
+
+  const { grade, subject, slug } = topic;
+
+  const questions = await getQuizQuestions({
+    topicId: repo.toObjectId(topicId),
+    grade,
+    subject,
+    topic: slug,
+    userId,
+    limit: count
+  });
+
+  return { topicId, questions };
+}
+
 function createQuizService() {
   return {
-    createSession,   // ✅ DODANO
+    createSession,
     getQuizQuestions
   };
 }
 
 module.exports = createQuizService;
-
