@@ -92,6 +92,9 @@ async function createIndexes() {
   await db.collection('questions').createIndex({ subject_id: 1, grade: 1 });
   await db.collection('progress').createIndex({ user_id: 1, topic_id: 1 });
   await db.collection('progress').createIndex({ user_id: 1, completedAt: -1 });
+  // Quiz attempts — TTL 6h, auto-brisanje starih sesija
+  await db.collection('quiz_attempts').createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 6 });
+  await db.collection('quiz_attempts').createIndex({ user_id: 1, createdAt: -1 });
 
   console.log('✅ Indeksi kreirani');
 }
