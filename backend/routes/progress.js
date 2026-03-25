@@ -193,6 +193,8 @@ router.get('/answers', auth, async (req, res) => {
         visual: q.visual || '',
         type: q.type,
         answers: q.answers || [],
+        metadata: q.metadata || a.metadata || null,
+        difficulty: q.difficulty || a.difficulty || 1,
         correctAnswer: q.type === 'choice'
           ? (q.answers[q.correctIndex] || '')
           : (q.correctAnswer || ''),
