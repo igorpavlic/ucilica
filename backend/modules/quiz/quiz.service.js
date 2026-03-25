@@ -64,7 +64,11 @@ async function getQuizQuestions({ grade, subject, topic, userId, limit = 10 }) {
 
   return questions.slice(0, limit);
 }
+function createQuizService() {
+  return {
+    getQuizQuestions
+  };
+}
 
-module.exports = {
-  getQuizQuestions
-};
+module.exports = createQuizService;
+
