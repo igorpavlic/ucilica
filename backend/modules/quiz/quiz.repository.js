@@ -1,4 +1,3 @@
-
 const { ObjectId } = require('mongodb');
 const { getDb } = require('../../db/mongo');
 
@@ -12,42 +11,65 @@ function quizRepository() {
       return collection('topics').findOne({ _id: topicId });
     },
 
-    // ✅ NEW: random by topic
-    getRandomQuestionsByTopic(topicId, limit) {
-      return collection('questions')
-        .aggregate([
-          { $match: { topic_id: topicId, isActive: true } },
-          { $sample: { size: limit } }
-        ])
-        .toArray();
+    findSubjectById(subjectId) {
+      return collection('subjects').findOne({ _id: subjectId });
     },
 
-    // ✅ NEW: insert
-    insertQuestions(questions) {
-      if (!questions?.length) return Promise.resolve();
-      return collection('questions').insertMany(questions);
+    countActiveQuestionsForTopic(topicId) {
+      return collection('questions').countDocuments({ topic_id: topicId, isActive: true });
     },
 
-    // ✅ NEW: hashes
-    async getAllQuestionHashes(subject) {
-      const docs = await collection('questions')
-        .find({ subject }, { projection: { hash: 1 } })
-        .toArray();
-      return docs.map(d => d.hash).filter(Boolean);
+    findQuestionsByIds(questionIds) {
+      return collection('questions').find({ _id: { $in: questionIds } }).toArray();
     },
 
-    // ✅ NEW: recently played
-    async getRecentlyPlayedQuestionIds(userId) {
-      if (!userId) return [];
+    findQuestionById(questionId) {
+      return collection('questions').findOne({ _id: questionId });
+    },
 
-      const attempts = await collection('quiz_attempts')
-        .find(
-          { user_id: userId },
-          { projection: { question_ids: 1 }, sort: { createdAt: -1 }, limit: 10 }
-        )
-        .toArray();
+    createAttempt(attempt) {
+      return collection('quiz_attempts').insertOne(attempt);
+    },
 
-      return attempts.flatMap(a => a.question_ids || []);
+    findAttemptById(attemptId) {
+      return collection('quiz_attempts').findOne({ _id: attemptId });
+    },
+
+    markAttemptCompleted(attemptId) {
+      return collection('quiz_attempts').updateOne(
+        { _id: attemptId },
+        { $set: { completedAt: new Date() } }
+      );
+    },
+
+    insertProgress(progress) {
+      return collection('progress').insertOne(progress);
+    },
+
+    updateUserScoreAndStreak(userId, score, allCorrect) {
+      const updateOps = {
+        $inc: { totalScore: score },
+        $set: { updatedAt: new Date(), streak: allCorrect ? undefined : 0 }
+      };
+
+      if (allCorrect) {
+        updateOps.$inc.streak = 1;
+        delete updateOps.$set.streak;
+      }
+
+      return collection('users').updateOne({ _id: userId }, updateOps);
+    },
+
+    findSafeUserById(userId) {
+      return collection('users').findOne(
+        { _id: userId },
+        { projection: { password: 0 } }
+      );
+    },
+
+    async createAttemptIndexes() {
+      await collection('quiz_attempts').createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 6 });
+      await collection('quiz_attempts').createIndex({ user_id: 1, createdAt: -1 });
     },
 
     toObjectId(value) {
