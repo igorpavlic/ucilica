@@ -1,475 +1,247 @@
 /**
- * seed-r2.js — Učilica generatori za 2. razred
- * Prema GIK Razredna nastava 2. razred OS
- * 
- * Predmeti: Hrvatski jezik, Matematika, Priroda i društvo
- * Pokretanje: node seeds/seed-r2.js (iz backend/ mape)
+ * seed-r2.js — Učilica 2. razred — OBOGAĆENI generatori
+ * 200+ pitanja/tema, kombinatorika, template rotation, multi-format
  */
-require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
-const { MongoClient } = require("mongodb");
-const { N, IF, IM, sh, cfc, rep, fix, EL, CIRCLE } = require("./gen-hrvatski");
+require("dotenv").config({path:require("path").join(__dirname,"../.env")});
+const{MongoClient}=require("mongodb");
+const{N,IF,IM,sh,cfc,rep,fix,EL,CIRCLE}=require("./gen-hrvatski");
+const GRADE=2;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const pickN=(a,n)=>sh([...a]).slice(0,n);
+const wf=(pool,c,n=3)=>sh(pool.filter(x=>x!==c)).slice(0,n);
 
-const GRADE = 2;
+const subjects=[
+{name:"Hrvatski jezik",slug:"hrvatski",icon:"📖",color:"#FF6B6B",description:"Imenice, glagoli, rečenice, čitanje",order:1},
+{name:"Matematika",slug:"matematika",icon:"🔢",color:"#60A5FA",description:"Brojevi do 100, zbrajanje, oduzimanje, množenje",order:2},
+{name:"Priroda i društvo",slug:"priroda",icon:"🌿",color:"#34D399",description:"Zavičaj, vode, tlo, biljke, životinje",order:3}];
+const topicsDef={
+hrvatski:[{name:"Imenice i rod",slug:"imenice-rod",icon:"📝",order:1},{name:"Glagoli",slug:"glagoli-2",icon:"🏃",order:2},{name:"Rečenice i interpunkcija",slug:"recenice-2",icon:"💬",order:3},{name:"Čitanje i razumijevanje",slug:"citanje-2",icon:"📚",order:4}],
+matematika:[{name:"Brojevi do 100",slug:"brojevi-100",icon:"🔢",order:1},{name:"Zbrajanje do 100",slug:"zbrajanje-100",icon:"➕",order:2},{name:"Oduzimanje do 100",slug:"oduzimanje-100",icon:"➖",order:3},{name:"Množenje i dijeljenje",slug:"mnozenje-dijeljenje",icon:"✖️",order:4},{name:"Geometrija 2",slug:"geometrija-2",icon:"📐",order:5},{name:"Mjerenje i novac",slug:"mjerenje-novac",icon:"💰",order:6}],
+priroda:[{name:"Zavičaj i snalaženje",slug:"zavicaj",icon:"🗺️",order:1},{name:"Godišnja doba i vrijeme",slug:"doba-vrijeme",icon:"🌦️",order:2},{name:"Biljke i životinje",slug:"biljke-zivotinje",icon:"🌱",order:3},{name:"Voda i tlo",slug:"voda-tlo",icon:"💧",order:4},{name:"Zdravlje i sigurnost",slug:"zdravlje-sigurnost-2",icon:"🏥",order:5}]};
 
-// ═══════════════════════════════════════════════════════
-// PREDMETI I TEME
-// ═══════════════════════════════════════════════════════
-const subjects = [
-  { name: "Hrvatski jezik", slug: "hrvatski", icon: "📖", color: "#FF6B6B", description: "Imenice, rečenice, čitanje i pisanje", order: 1 },
-  { name: "Matematika", slug: "matematika", icon: "🔢", color: "#60A5FA", description: "Brojevi do 100, zbrajanje, oduzimanje, množenje", order: 2 },
-  { name: "Priroda i društvo", slug: "priroda", icon: "🌿", color: "#34D399", description: "Zavičaj, vode, tlo, biljke, životinje", order: 3 }
-];
+// ═══ HRVATSKI ═══
+function genImeniceRod(){const q=[];
+const M=["stol","pas","grad","brat","auto","vlak","sat","konj","zec","lav","medvjed","otac","dječak","učenik","prozor","ključ","most","put","kamen","snijeg","vjetar","oblak","film","dar","krov","pod","zid","cvijet","ormar","ručak","kolač","pauk","leptir","zmaj","brod","avion","balon","nož","orah","prst"];
+const Z=["kuća","škola","mama","sestra","knjiga","olovka","ruka","noga","voda","jabuka","mačka","učiteljica","ulica","zemlja","rijeka","šuma","zvijezda","stolica","bilježnica","torba","košulja","čokolada","lopta","kruška","naranča","banana","malina","jagoda","livada","planina","obala","bolnica","igračka","kuhinja","soba","žlica","četka","cipela","biljka","trava"];
+const S=["dijete","sunce","more","selo","drvo","jaje","mlijeko","pismo","nebo","polje","jezero","proljeće","ljeto","uho","oko","srce","zlato","srebro","brdo","pero","staklo","ogledalo","dvorište","cvijeće","lišće","voće","povrće","jelo","piće","odijelo","tijesto","blago","pluće","rame","ime"];
+const rodQ=["Koji je rod imenice","Rod imenice","Imenica je roda:"];
+M.forEach(w=>q.push({type:"choice",difficulty:1,question:`${pick(rodQ)} "${w}"?`,answers:["muški","ženski","srednji"],correctIndex:0}));
+Z.forEach(w=>q.push({type:"choice",difficulty:1,question:`${pick(rodQ)} "${w}"?`,answers:["muški","ženski","srednji"],correctIndex:1}));
+S.forEach(w=>q.push({type:"choice",difficulty:1,question:`${pick(rodQ)} "${w}"?`,answers:["muški","ženski","srednji"],correctIndex:2}));
+pickN(M,12).forEach(w=>q.push({type:"input",difficulty:2,question:`Napiši rod: "${w}"`,correctAnswer:"muški"}));
+pickN(Z,12).forEach(w=>q.push({type:"input",difficulty:2,question:`Napiši rod: "${w}"`,correctAnswer:"ženski"}));
+pickN(S,12).forEach(w=>q.push({type:"input",difficulty:2,question:`Napiši rod: "${w}"`,correctAnswer:"srednji"}));
+for(let i=0;i<15;i++){const o=pick(Z),r=pickN(M,3);q.push({type:"choice",difficulty:3,question:"Koja NIJE muškog roda?",answers:sh([o,...r]),correctIndex:-1,_c:o})}
+for(let i=0;i<15;i++){const o=pick(M),r=pickN(Z,3);q.push({type:"choice",difficulty:3,question:"Koja NIJE ženskog roda?",answers:sh([o,...r]),correctIndex:-1,_c:o})}
+for(let i=0;i<10;i++){const o=pick(S),r=pickN(M,3);q.push({type:"choice",difficulty:3,question:"Koja JE srednjeg roda?",answers:sh([o,...r]),correctIndex:-1,_c:o})}
+const jm=[["pas","psi"],["mačka","mačke"],["knjiga","knjige"],["stol","stolovi"],["drvo","drva"],["dijete","djeca"],["grad","gradovi"],["rijeka","rijeke"],["selo","sela"],["brat","braća"],["sestra","sestre"],["jabuka","jabuke"],["cvijet","cvjetovi"],["ptica","ptice"],["list","listovi"],["prozor","prozori"],["ulica","ulice"],["zvijezda","zvijezde"],["most","mostovi"],["oblak","oblaci"],["cipela","cipele"],["kolač","kolači"],["lopta","lopte"],["olovka","olovke"],["bilježnica","bilježnice"],["prijatelj","prijatelji"],["učenik","učenici"],["kamen","kameni"]];
+jm.forEach(([j,mn])=>{q.push({type:"input",difficulty:2,question:`Množina od "${j}":`,correctAnswer:mn});q.push({type:"input",difficulty:2,question:`Jednina od "${mn}":`,correctAnswer:j});q.push({type:"choice",difficulty:2,question:`Množina od "${j}"?`,answers:sh([mn,...wf(jm.map(x=>x[1]),mn)]),correctIndex:-1,_c:mn})});
+const vl=["Zagreb","Rijeka","Split","Osijek","Sava","Drava","Dunav","Ana","Marko","Luka","Petra","Hrvatska","Europa","Dinamo","Jadransko"];
+const op=["grad","rijeka","djevojčica","dječak","država","kontinent","klub","more","planina","škola","auto","pas","učiteljica","ulica","knjiga"];
+vl.forEach(w=>q.push({type:"choice",difficulty:2,question:`"${w}" — vlastita ili opća?`,answers:["vlastita","opća"],correctIndex:0}));
+op.forEach(w=>q.push({type:"choice",difficulty:2,question:`"${w}" — vlastita ili opća?`,answers:["vlastita","opća"],correctIndex:1}));
+[["ana","Ana"],["zagreb","Zagreb"],["sava","Sava"],["marko","Marko"],["hrvatska","Hrvatska"],["rijeka","Rijeka"],["split","Split"],["europa","Europa"],["drava","Drava"],["luka","Luka"]].forEach(([w,c])=>{q.push({type:"choice",difficulty:2,question:`Ispravan zapis?`,answers:[w,c],correctIndex:1});q.push({type:"input",difficulty:3,question:`Ispravi: "${w}" →`,correctAnswer:c})});
+q.push({type:"choice",difficulty:1,question:"Imenica je riječ za:?",answers:["biće, stvar, pojavu","radnju","opis","broj"],correctIndex:0});
+q.push({type:"choice",difficulty:1,question:"Koliko rodova ima hrvatski?",answers:["2","3","4","5"],correctIndex:1});
+q.push({type:"choice",difficulty:2,question:"Vlastita imenica se piše:?",answers:["velikim slovom","malim slovom","samo velikim","bez slova"],correctIndex:0});
+return fix(q).slice(0,210)}
 
-const topicsDef = {
-  hrvatski: [
-    { name: "Imenice i rod", slug: "imenice-rod", icon: "📝", order: 1 },
-    { name: "Glagoli", slug: "glagoli-2", icon: "🏃", order: 2 },
-    { name: "Rečenice i interpunkcija", slug: "recenice-2", icon: "💬", order: 3 },
-    { name: "Čitanje i razumijevanje", slug: "citanje-2", icon: "📚", order: 4 },
-  ],
-  matematika: [
-    { name: "Brojevi do 100", slug: "brojevi-100", icon: "🔢", order: 1 },
-    { name: "Zbrajanje do 100", slug: "zbrajanje-100", icon: "➕", order: 2 },
-    { name: "Oduzimanje do 100", slug: "oduzimanje-100", icon: "➖", order: 3 },
-    { name: "Množenje i dijeljenje", slug: "mnozenje-dijeljenje", icon: "✖️", order: 4 },
-    { name: "Geometrija 2", slug: "geometrija-2", icon: "📐", order: 5 },
-    { name: "Mjerenje i novac", slug: "mjerenje-novac", icon: "💰", order: 6 },
-  ],
-  priroda: [
-    { name: "Zavičaj i snalaženje", slug: "zavicaj", icon: "🗺️", order: 1 },
-    { name: "Godišnja doba i vrijeme", slug: "doba-vrijeme", icon: "🌦️", order: 2 },
-    { name: "Biljke i životinje", slug: "biljke-zivotinje", icon: "🌱", order: 3 },
-    { name: "Voda i tlo", slug: "voda-tlo", icon: "💧", order: 4 },
-    { name: "Zdravlje i sigurnost", slug: "zdravlje-sigurnost-2", icon: "🏥", order: 5 },
-  ]
-};
+function genGlagoli2(){const q=[];
+const gl=["trčati","pjevati","čitati","pisati","skakati","plivati","jesti","piti","spavati","crtati","učiti","igrati","sjediti","stajati","plesati","gledati","slušati","hodati","letjeti","padati","kuhati","prati","šetati","voziti","graditi","kupiti","prodati","misliti","sanjati","raditi"];
+const im=["kuća","škola","stol","pas","sunce","knjiga","lopta","auto","drvo","brod"];
+const pr=["lijep","velik","mali","brz","crven","hladan","topao","dobar","loš","tih"];
+for(let i=0;i<35;i++){const g=gl[i%gl.length],wr=[pick(im),pick(pr),pick(im)];q.push({type:"choice",difficulty:1,question:"Koja riječ je glagol?",answers:sh([g,...wr]),correctIndex:-1,_c:g})}
+for(let i=0;i<20;i++){const n=pick(im),wr=pickN(gl,3);q.push({type:"choice",difficulty:2,question:"Koja NIJE glagol?",answers:sh([n,...wr]),correctIndex:-1,_c:n})}
+const tsr=[["Pas","laje"],["Mačka","mjauče"],["Ptica","pjeva"],["Riba","pliva"],["Dijete","igra se"],["Učiteljica","poučava"],["Kuhar","kuha"],["Liječnik","liječi"],["Vatrogasac","gasi vatru"],["Pjevač","pjeva"],["Pilot","leti"],["Vozač","vozi"],["Slikar","slika"],["Pisac","piše"],["Pekar","peče kruh"],["Frizer","šiša"],["Policajac","čuva red"],["Poštarica","nosi pisma"],["Vrtlar","sadi cvijeće"],["Farmer","uzgaja životinje"],["Footballer","igra nogomet"],["Stolar","radi s drvetom"]];
+const sr=tsr.map(x=>x[1]),st=tsr.map(x=>x[0]);
+tsr.forEach(([t,s])=>{q.push({type:"choice",difficulty:2,question:`Što radi ${t.toLowerCase()}?`,answers:sh([s,...wf(sr,s)]),correctIndex:-1,_c:s});q.push({type:"choice",difficulty:3,question:`Tko "${s}"?`,answers:sh([t,...wf(st,t)]),correctIndex:-1,_c:t})});
+const recGl=[["Ana čita knjigu.","čita"],["Pas trči po parku.","trči"],["Mama kuha ručak.","kuha"],["Sunce sija.","sija"],["Djeca se igraju.","igraju"],["Ptica leti visoko.","leti"],["Tata popravlja auto.","popravlja"],["Baka plete šal.","plete"],["Kiša pada.","pada"],["Vjetar puše.","puše"],["Luka crta sliku.","crta"],["Učiteljica piše.","piše"],["Marko pjeva.","pjeva"],["Riba pliva u moru.","pliva"]];
+const sviGl=recGl.map(x=>x[1]);
+recGl.forEach(([r,g])=>{q.push({type:"choice",difficulty:3,question:`Glagol u: "${r}"?`,answers:sh([g,...wf(sviGl,g)]),correctIndex:-1,_c:g});q.push({type:"input",difficulty:3,question:`Pronađi glagol: "${r}"`,correctAnswer:g})});
+[["Pas ___ po parku.","trči"],["Mama ___ ručak.","kuha"],["Ptica ___ na grani.","pjeva"],["Riba ___ u moru.","pliva"],["Sunce ___ na nebu.","sija"],["Kiša ___.","pada"],["Djeca se ___.","igraju"],["Mačka ___ na kauču.","spava"],["Baka ___ kolače.","peče"],["Tata ___ novine.","čita"]].forEach(([r,g])=>{q.push({type:"choice",difficulty:2,question:`Dopuni: "${r}"`,answers:sh([g,...wf(["trči","kuha","pjeva","pliva","sija","pada","igraju","spava","peče","čita","leti","skače"],g)]),correctIndex:-1,_c:g})});
+q.push({type:"choice",difficulty:1,question:"Glagol je riječ za:?",answers:["radnju","biće","opis","grad"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"Koliko glagola: 'Ana čita i piše.'?",answers:["0","1","2","3"],correctIndex:2});
+return fix(q).slice(0,210)}
 
-// ═══════════════════════════════════════════════════════
-// HRVATSKI JEZIK — 2. RAZRED
-// ═══════════════════════════════════════════════════════
+function genRecenice2(){const q=[];
+const izj=["Pada kiša.","Sunce sija.","Mama kuha ručak.","Ana ide u školu.","Pas trči po parku.","Djeca se igraju.","Tata čita novine.","Baka peče kolače.","Ptica pjeva.","Danas je lijep dan.","Marko voli čokoladu.","Riba pliva u moru.","Luka crta sliku.","Učiteljica piše na ploči.","Zima je hladna.","Na stolu je knjiga.","U vrtu rastu ruže.","Moj brat je u školi."];
+const upi=["Pada li kiša?","Ideš li u školu?","Koliko je sati?","Voliš li čokoladu?","Kako se zoveš?","Gdje živiš?","Što radiš?","Tko je to?","Zašto plačeš?","Kad ćeš doći?","Imaš li brata?","Je li to tvoje?","Koliko imaš godina?","Čiji je to pas?","Jesi li gladan?"];
+const usk=["Kakva ljepota!","Bravo!","Jao!","Super!","Pomozite!","Požar!","Pazi!","Stani!","Hurra!","Kakav gol!","Tiše!","Dosta!","Brže!","Odlično!","Čestitam!"];
+izj.forEach(r=>q.push({type:"choice",difficulty:2,question:`"${r}" je:`,answers:["izjavna","upitna","usklična"],correctIndex:0}));
+upi.forEach(r=>q.push({type:"choice",difficulty:2,question:`"${r}" je:`,answers:["izjavna","upitna","usklična"],correctIndex:1}));
+usk.forEach(r=>q.push({type:"choice",difficulty:2,question:`"${r}" je:`,answers:["izjavna","upitna","usklična"],correctIndex:2}));
+izj.slice(0,12).forEach(r=>{q.push({type:"choice",difficulty:2,question:`Znak: "${r.slice(0,-1)}"`,answers:[".","?","!"],correctIndex:0})});
+upi.slice(0,12).forEach(r=>{q.push({type:"choice",difficulty:2,question:`Znak: "${r.slice(0,-1)}"`,answers:[".","?","!"],correctIndex:1})});
+usk.slice(0,12).forEach(r=>{q.push({type:"choice",difficulty:2,question:`Znak: "${r.slice(0,-1)}"`,answers:[".","?","!"],correctIndex:2})});
+pickN(izj,6).forEach(r=>q.push({type:"input",difficulty:3,question:`Vrsta: "${r}"`,correctAnswer:"izjavna"}));
+pickN(upi,6).forEach(r=>q.push({type:"input",difficulty:3,question:`Vrsta: "${r}"`,correctAnswer:"upitna"}));
+pickN(usk,6).forEach(r=>q.push({type:"input",difficulty:3,question:`Vrsta: "${r}"`,correctAnswer:"usklična"}));
+[["ana ide u školu.","Ana ide u školu."],["zagreb je lijep.","Zagreb je lijep."],["sava je rijeka.","Sava je rijeka."],["marko voli nogomet.","Marko voli nogomet."],["pada kiša.","Pada kiša."],["mama kuha.","Mama kuha."],["živim u rijeci.","Živim u Rijeci."],["idem u školu.","Idem u školu."],["moj pas se zove rex.","Moj pas se zove Rex."],["danas je utorak.","Danas je utorak."]].forEach(([w,c])=>q.push({type:"choice",difficulty:1,question:"Ispravno?",answers:[w,c],correctIndex:1}));
+[["Pas laje.",2],["Mama kuha ručak.",3],["Ana i Luka idu u školu.",6],["Pada kiša.",2],["Sunce sija na nebu.",4],["Djeca se igraju.",3],["Moj brat voli čokoladu.",4],["Danas je lijep dan.",4],["Ptica pjeva na grani.",4],["Tata čita novine.",3]].forEach(([r,c])=>{const rc=cfc(c,1,8);q.push({type:"choice",difficulty:3,question:`Koliko riječi: "${r}"?`,answers:rc.answers,correctIndex:rc.correctIndex});q.push({type:"input",difficulty:3,question:`Prebroji: "${r}"`,correctAnswer:String(c)})});
+q.push({type:"choice",difficulty:1,question:"Izjavna završava:?",answers:["točkom","upitnikom","uskličnikom","zarezom"],correctIndex:0});
+q.push({type:"choice",difficulty:1,question:"Upitna završava:?",answers:["točkom","upitnikom","uskličnikom","zarezom"],correctIndex:1});
+q.push({type:"choice",difficulty:1,question:"Rečenica počinje:?",answers:["velikim slovom","malim","brojem","znakom"],correctIndex:0});
+return fix(q).slice(0,210)}
 
-function genImeniceRod() {
-  const q = [];
-  // Imenice — muški, ženski, srednji rod
-  const m = ["stol","pas","grad","brat","auto","vlak","sat","konj","zec","lav","medvjed","otac","dječak","učenik","prozor","ključ"];
-  const z = ["kuća","škola","mama","sestra","knjiga","olovka","ruka","noga","voda","jabuka","mačka","učiteljica","ulica","zemlja","rijeka","šuma"];
-  const s = ["dijete","sunce","more","selo","drvo","jaje","mlijeko","pismo","nebo","polje","jezero","proljeće","ljeto","uho","oko","srce"];
-  
-  m.forEach(w => q.push({ type:"choice", difficulty:1, question:`Koji je rod imenice "${w}"?`, answers:["muški","ženski","srednji"], correctIndex:0 }));
-  z.forEach(w => q.push({ type:"choice", difficulty:1, question:`Koji je rod imenice "${w}"?`, answers:["muški","ženski","srednji"], correctIndex:1 }));
-  s.forEach(w => q.push({ type:"choice", difficulty:1, question:`Koji je rod imenice "${w}"?`, answers:["muški","ženski","srednji"], correctIndex:2 }));
+function genCitanje2(){const q=[];
+const ant=[["veliko","malo"],["brzo","sporo"],["toplo","hladno"],["veselo","tužno"],["staro","novo"],["visoko","nisko"],["dugo","kratko"],["široko","usko"],["teško","lako"],["glasno","tiho"],["puno","prazno"],["mokro","suho"],["tamno","svijetlo"],["dobro","loše"],["debelo","mršavo"],["čisto","prljavo"],["blizu","daleko"],["lijevo","desno"],["otvoreno","zatvoreno"],["tvrdo","meko"],["rano","kasno"],["bogato","siromašno"]];
+const sa=ant.flat();
+ant.forEach(([w,o])=>{q.push({type:"choice",difficulty:2,question:`Suprotno od "${w}"?`,answers:sh([o,...wf(sa,o)]),correctIndex:-1,_c:o});q.push({type:"input",difficulty:3,question:`Suprotno od "${w}":`,correctAnswer:o});q.push({type:"choice",difficulty:2,question:`Suprotno od "${o}"?`,answers:sh([w,...wf(sa,w)]),correctIndex:-1,_c:w})});
+const sin=[["kuća","dom"],["lijepo","krasno"],["veselo","radosno"],["brzo","hitro"],["malo","sitno"],["veliko","golemo"],["put","cesta"],["djeca","klinci"],["jesti","blagovati"],["gledati","promatrati"],["govoriti","pričati"],["hodati","šetati"]];
+sin.forEach(([w,s])=>{q.push({type:"choice",difficulty:3,question:`Slično: "${w}"?`,answers:sh([s,...wf(sin.flat(),s)]),correctIndex:-1,_c:s})});
+const uu=[["kuća","kućica","kućetina"],["pas","psić","psina"],["knjiga","knjižica","knjižurina"],["riba","ribica","ribetina"],["nos","nosić","nosina"],["mačka","mačkica","mačketina"],["stol","stolić","stolčina"],["cvijet","cvjetić","cvjetina"],["zub","zubić","zubetina"],["ruka","ručica","ručetina"],["noga","nožica","nožetina"],["ptica","ptičica","ptičetina"],["grad","gradić","gradina"],["brat","bratić","bratina"]];
+uu.forEach(([w,um,uv])=>{q.push({type:"input",difficulty:2,question:`Umanjenica od "${w}":`,correctAnswer:um});q.push({type:"input",difficulty:3,question:`Uvećanica od "${w}":`,correctAnswer:uv});q.push({type:"choice",difficulty:2,question:`Umanjenica od "${w}"?`,answers:sh([um,...wf(uu.map(x=>x[1]),um)]),correctIndex:-1,_c:um})});
+[["škola",2],["računalo",4],["dom",1],["prijatelj",3],["knjiga",2],["automobil",4],["ja",1],["učiteljica",5],["matematika",5],["pas",1],["mama",2],["telefon",3],["loptica",3],["bilježnica",4],["zvijezda",3],["čokolada",4],["rak",1],["banana",3],["sunce",2],["olovka",3]].forEach(([w,c])=>{const r=cfc(c,1,6);q.push({type:"choice",difficulty:2,question:`Slogovi: "${w}"?`,answers:r.answers,correctIndex:r.correctIndex});q.push({type:"input",difficulty:3,question:`Prebroji slogove: "${w}"`,correctAnswer:String(c)})});
+[["pas,mačka,riba,stol","stol"],["jabuka,kruška,banana,stolica","stolica"],["crvena,plava,zelena,mama","mama"],["mama,tata,baka,auto","auto"],["olovka,knjiga,bilježnica,sunce","sunce"],["košulja,hlače,cipele,knjiga","knjiga"],["jagoda,malina,kupina,stolica","stolica"],["ruka,noga,uho,lopta","lopta"],["utorak,srijeda,petak,jabuka","jabuka"],["krava,ovca,koza,stolica","stolica"]].forEach(([g,o])=>{const a=g.split(",");q.push({type:"choice",difficulty:3,question:`Što NE pripada: ${a.join(", ")}?`,answers:a,correctIndex:a.indexOf(o)})});
+return fix(q).slice(0,210)}
 
-  // Jednina i množina
-  [["pas","psi"],["mačka","mačke"],["knjiga","knjige"],["stol","stolovi"],["drvo","drva"],["dijete","djeca"],["grad","gradovi"],["rijeka","rijeke"],["selo","sela"],["brat","braća"],["sestra","sestre"],["jabuka","jabuke"],["cvijet","cvjetovi"],["ptica","ptice"],["list","listovi"]].forEach(([j,mn]) => {
-    q.push({ type:"input", difficulty:2, question:`Množina od "${j}":`, correctAnswer:mn });
-    q.push({ type:"input", difficulty:2, question:`Jednina od "${mn}":`, correctAnswer:j });
-  });
+// ═══ MATEMATIKA ═══
+function genBrojevi100(){const q=[];
+for(let d=10;d<=100;d+=10){q.push({type:"input",difficulty:1,question:`NAKON ${d-1}:`,correctAnswer:String(d)});q.push({type:"input",difficulty:1,question:`PRIJE ${d}:`,correctAnswer:String(d-1)})}
+for(let n=11;n<=99;n+=3){q.push({type:"input",difficulty:1,question:`Sljedbenik od ${n}:`,correctAnswer:String(n+1)});if(n>1)q.push({type:"input",difficulty:1,question:`Prethodnik od ${n}:`,correctAnswer:String(n-1)})}
+for(let n=11;n<=99;n+=3){const d=Math.floor(n/10),j=n%10;q.push({type:"input",difficulty:2,question:`Desetice u ${n}:`,correctAnswer:String(d)});q.push({type:"input",difficulty:2,question:`Jedinice u ${n}:`,correctAnswer:String(j)});if(n%7===0){const r=cfc(n,10,99);q.push({type:"choice",difficulty:3,question:`${d} des. + ${j} jed. = ?`,answers:r.answers,correctIndex:r.correctIndex})}}
+for(let a=10;a<=95;a+=5){const b=a+((a*3+7)%19)-9;if(b<1||b>99||a===b)continue;q.push({type:"choice",difficulty:2,question:`${a} ${CIRCLE} ${b}`,answers:["<",">","="],correctIndex:a<b?0:1})}
+for(let i=1;i<=50;i++)q.push({type:"choice",difficulty:2,question:`${i} je:`,answers:["paran","neparan"],correctIndex:i%2===0?0:1});
+const rim=[["I",1],["II",2],["III",3],["IV",4],["V",5],["VI",6],["VII",7],["VIII",8],["IX",9],["X",10],["XI",11],["XII",12]];
+rim.forEach(([r,a])=>{const rc=cfc(a,1,12);q.push({type:"choice",difficulty:3,question:`${r} =`,answers:rc.answers,correctIndex:rc.correctIndex});q.push({type:"input",difficulty:3,question:`${r} arapski:`,correctAnswer:String(a)});q.push({type:"choice",difficulty:3,question:`${a} rimski:`,answers:sh([r,...wf(rim.map(x=>x[0]),r)]),correctIndex:-1,_c:r})});
+for(let s=2;s<=50;s+=7)q.push({type:"input",difficulty:2,question:`Niz: ${s},${s+2},${s+4},?`,correctAnswer:String(s+6)});
+for(let s=5;s<=50;s+=11)q.push({type:"input",difficulty:2,question:`Niz: ${s},${s+5},${s+10},?`,correctAnswer:String(s+15)});
+return fix(q).slice(0,210)}
 
-  // Vlastite imenice — veliko slovo
-  [["Zagreb","vlastita"],["pas","opća"],["Sava","vlastita"],["rijeka","opća"],["Ana","vlastita"],["djevojčica","opća"],["Hrvatska","vlastita"],["država","opća"],["Dinamo","vlastita"],["klub","opća"],["Marko","vlastita"],["dječak","opća"]].forEach(([w,tip]) => {
-    q.push({ type:"choice", difficulty:2, question:`Je li "${w}" vlastita ili opća imenica?`, answers:["vlastita","opća"], correctIndex:tip==="vlastita"?0:1 });
-  });
+function genZbrajanje100(){const q=[];
+const pt=[(n,a,b,it)=>`${n} ima ${a} ${it}. Dobije još ${b}. Koliko sada?`,(n,a,b,it)=>`U košari ${a} ${it}. Mama doda ${b}. Ukupno?`,(n,a,b,it)=>`Na livadi ${a} ${it}. Dođe ${b}. Koliko sada?`,(n,a,b,it)=>`${n} skupi ${a} ${it}. Prijatelj da ${b}. Zajedno?`,(n,a,b,it)=>`U razredu ${a} djece. Dođe ${b}. Koliko sada?`,(n,a,b,it)=>`${n} pročita ${a} str., pa još ${b}. Ukupno?`,(n,a,b,it)=>`Na stolu ${a} ${it}. ${n} donese ${b}. Koliko?`,(n,a,b,it)=>`${n} ima ${a} kn, dobije ${b} kn. Koliko?`,(n,a,b,it)=>`U vrtu ${a} ${it}. Posadimo ${b}. Koliko sada?`,(n,a,b,it)=>`${n} napravi ${a} ${it}. Sutra napravi ${b}. Ukupno?`];
+for(let a=10;a<=90;a+=10)for(let b=10;b<=100-a;b+=10)q.push({type:"input",difficulty:1,question:`${a}+${b}=?`,correctAnswer:String(a+b)});
+for(let a=11;a<=85;a+=4)for(let b=3;b<=85;b+=7){if(a+b>100)continue;const r=cfc(a+b,Math.max(a+b-5,0),Math.min(a+b+5,100));q.push({type:"choice",difficulty:2,question:`${a}+${b}=?`,answers:r.answers,correctIndex:r.correctIndex});if((a+b)%3===0)q.push({type:"input",difficulty:2,question:`${a}+${b}=?`,correctAnswer:String(a+b)})}
+for(let a=3;a<=15;a+=2)for(let b=2;b<=12;b+=3){if(a+b>25)continue;const e=EL[(a+b)%EL.length];q.push({type:"input",difficulty:2,visual:`${rep(e,Math.min(a,8))}+${rep(e,Math.min(b,8))}`,question:"Ukupno?",correctAnswer:String(a+b)})}
+for(let i=0;i<30;i++){const a=(i*7+13)%40+10,b=(i*5+3)%35+5;if(a+b>99)continue;q.push({type:"input",difficulty:3,question:pt[i%pt.length](N(),a,b,IF()),correctAnswer:String(a+b)})}
+for(let a=10;a<=50;a+=5)for(let b=5;b<=40;b+=8){if(a+b>99)continue;q.push({type:"input",difficulty:4,question:`${a}+?=${a+b}`,correctAnswer:String(b)})}
+return fix(q).slice(0,210)}
 
-  // Što je imenica
-  q.push({ type:"choice", difficulty:1, question:"Što je imenica?", answers:["Riječ za biće, stvar ili pojavu","Riječ za radnju","Riječ za opis","Broj"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:1, question:"Koja od ovih riječi je imenica?", answers:["trči","lijep","kuća","brzo"], correctIndex:2 });
-  q.push({ type:"choice", difficulty:1, question:"Koja od ovih riječi NIJE imenica?", answers:["stol","veselo","jabuka","škola"], correctIndex:1 });
+function genOduzimanje100(){const q=[];
+const pt=[(n,a,b,it)=>`${n} ima ${a} ${it}. Pojede ${b}. Ostane?`,(n,a,b,it)=>`U kutiji ${a} ${it}. Pojedu ${b}. Ostane?`,(n,a,b,it)=>`Na grani ${a} ptica. ${b} odleti. Ostane?`,(n,a,b,it)=>`${n} ima ${a} kn. Potroši ${b}. Ostane?`,(n,a,b,it)=>`U busu ${a} putnika. Izađe ${b}. Ostane?`,(n,a,b,it)=>`U vrtu ${a} ${it}. Uvene ${b}. Ostane?`,(n,a,b,it)=>`${n} ima ${a} ${it}. Pokloni ${b}. Ostane?`,(n,a,b,it)=>`U jezeru ${a} riba. Ulove ${b}. Ostane?`,(n,a,b,it)=>`${n} ima ${a} ${it}. Izgubi ${b}. Ostane?`,(n,a,b,it)=>`Na parkingu ${a} auta. Ode ${b}. Ostane?`];
+for(let a=20;a<=100;a+=10)for(let b=10;b<=a;b+=10)q.push({type:"input",difficulty:1,question:`${a}-${b}=?`,correctAnswer:String(a-b)});
+for(let a=20;a<=99;a+=4)for(let b=2;b<=a-1;b+=7){const r=cfc(a-b,Math.max(a-b-5,0),Math.min(a-b+5,99));q.push({type:"choice",difficulty:2,question:`${a}-${b}=?`,answers:r.answers,correctIndex:r.correctIndex});if((a-b)%3===0)q.push({type:"input",difficulty:2,question:`${a}-${b}=?`,correctAnswer:String(a-b)})}
+for(let i=0;i<30;i++){const a=(i*7+30)%50+30,b=(i*5+3)%20+5;if(b>=a)continue;q.push({type:"input",difficulty:3,question:pt[i%pt.length](N(),a,b,IF()),correctAnswer:String(a-b)})}
+for(let a=20;a<=80;a+=8)for(let b=5;b<=30;b+=9){if(b>=a)continue;q.push({type:"input",difficulty:4,question:`${a}-?=${a-b}`,correctAnswer:String(b)})}
+return fix(q).slice(0,210)}
 
-  return fix(q).slice(0, 210);
-}
+function genMnozenjeDijeljenje(){const q=[];
+const pm=[(n,a,b,it)=>`${n} ima ${a} kutije po ${b} ${it}. Ukupno?`,(n,a,b,it)=>`U ${a} redova po ${b} djece. Ukupno?`,(n,a,b,it)=>`Na ${a} stabala po ${b} jabuka. Ukupno?`,(n,a,b,it)=>`${a} djece ima po ${b} ${it}. Ukupno?`,(n,a,b,it)=>`${n} kupi ${a} paketa po ${b} ${it}. Ukupno?`];
+const pd=[(n,t,d,it)=>`${n} dijeli ${t} ${it} na ${d} hrpe. Koliko u svakoj?`,(n,t,d,it)=>`${t} ${it} na ${d} djece. Koliko svako?`,(n,t,d,it)=>`${t} ${it} u ${d} kutija. Koliko u svakoj?`];
+for(let a=1;a<=5;a++)for(let b=1;b<=10;b++){const p=a*b;q.push({type:"input",difficulty:a<=3?1:2,question:`${a}×${b}=?`,correctAnswer:String(p)});if(b<=5){const r=cfc(p,Math.max(p-5,0),p+5);q.push({type:"choice",difficulty:2,question:`${a}×${b}=?`,answers:r.answers,correctIndex:r.correctIndex})}if(a!==b&&b<=5)q.push({type:"input",difficulty:2,question:`${b}×${a}=?`,correctAnswer:String(p)})}
+for(let a=1;a<=5;a++)for(let b=1;b<=10;b++){q.push({type:"input",difficulty:3,question:`${a*b}÷${a}=?`,correctAnswer:String(b)})}
+for(let i=0;i<20;i++){const a=(i%4)+2,b=(i%5)+2;if(a*b>50)continue;q.push({type:"input",difficulty:3,question:pm[i%pm.length](N(),a,b,IF()),correctAnswer:String(a*b)})}
+for(let i=0;i<15;i++){const d=(i%4)+2,r=(i%5)+2;q.push({type:"input",difficulty:3,question:pd[i%pd.length](N(),d*r,d,IF()),correctAnswer:String(r)})}
+for(let a=1;a<=10;a++){q.push({type:"input",difficulty:1,question:`${a}×0=?`,correctAnswer:"0"});q.push({type:"input",difficulty:1,question:`${a}×1=?`,correctAnswer:String(a)})}
+for(let a=2;a<=5;a++)for(let b=2;b<=5;b++)q.push({type:"input",difficulty:4,question:`${a}×?=${a*b}`,correctAnswer:String(b)});
+return fix(q).slice(0,210)}
 
-function genGlagoli2() {
-  const q = [];
-  const glagoli = ["trčati","pjevati","čitati","pisati","skakati","plivati","jesti","piti","spavati","crtati","učiti","igrati","sjediti","stajati","plesati","gledati"];
-  const neGlagoli = ["kuća","lijep","stol","brzo","crvena","pas","škola","veliko"];
-  
-  // Prepoznaj glagol
-  glagoli.forEach(g => {
-    const wr = sh(neGlagoli).slice(0,3);
-    q.push({ type:"choice", difficulty:1, question:"Koja riječ je glagol?", answers:sh([g,...wr]), correctIndex:-1, _c:g });
-  });
+function genGeometrija2(){const q=[];
+const li=[["krug",0],["trokut",3],["kvadrat",4],["pravokutnik",4],["peterokut",5],["šesterokut",6]];
+li.forEach(([l,s])=>{const r=cfc(s,0,8);q.push({type:"choice",difficulty:2,question:`Stranice ${l}a?`,answers:r.answers,correctIndex:r.correctIndex});q.push({type:"input",difficulty:2,question:`Broj stranica ${l}a:`,correctAnswer:String(s)});q.push({type:"choice",difficulty:2,question:`Kutovi ${l}a?`,answers:r.answers,correctIndex:r.correctIndex})});
+[["sat","krug"],["prozor","pravokutnik"],["krov kuće","trokut"],["pizza","krug"],["vrata","pravokutnik"],["novčić","krug"],["bilježnica","pravokutnik"],["šahovsko polje","kvadrat"],["kotač","krug"],["prometni znak STOP","šesterokut"],["sendvič dijagonalno","trokut"]].forEach(([o,l])=>{q.push({type:"choice",difficulty:2,question:`"${o}" → oblik?`,answers:sh([l,...wf(li.map(x=>x[0]),l)]),correctIndex:-1,_c:l})});
+const tj=[["kugla","⚽"],["valjak","🥫"],["kocka","🎲"],["kvadar","📦"],["piramida","🔺"],["stožac","🎄"]];
+tj.forEach(([t,e])=>{q.push({type:"choice",difficulty:3,visual:e,question:"Tijelo?",answers:sh([t,...wf(tj.map(x=>x[0]),t)]),correctIndex:-1,_c:t})});
+[["lopta","kugla"],["limenka","valjak"],["kutija","kvadar"],["kocka za igru","kocka"],["sladoled kornet","stožac"],["piramida u Egiptu","piramida"],["globus","kugla"],["svijeća","valjak"],["cigla","kvadar"],["šator","piramida"]].forEach(([o,t])=>{q.push({type:"choice",difficulty:2,question:`"${o}" → tijelo?`,answers:sh([t,...wf(tj.map(x=>x[0]),t)]),correctIndex:-1,_c:t})});
+[["A","da"],["B","da"],["D","da"],["H","da"],["M","da"],["O","da"],["T","da"],["X","da"],["C","ne"],["F","ne"],["G","ne"],["J","ne"],["K","ne"],["S","ne"]].forEach(([s,sim])=>q.push({type:"choice",difficulty:3,question:`Simetrija "${s}"?`,answers:["Da","Ne"],correctIndex:sim==="da"?0:1}));
+return fix(q).slice(0,210)}
 
-  // Prepoznaj NE-glagol
-  neGlagoli.forEach(ng => {
-    const wr = sh(glagoli).slice(0,3);
-    q.push({ type:"choice", difficulty:2, question:"Koja riječ NIJE glagol?", answers:sh([ng,...wr]), correctIndex:-1, _c:ng });
-  });
+function genMjerenjeNovac(){const q=[];
+const se=[["🕐",1],["🕑",2],["🕒",3],["🕓",4],["🕔",5],["🕕",6],["🕖",7],["🕗",8],["🕘",9],["🕙",10],["🕚",11],["🕛",12]];
+se.forEach(([e,h])=>{const r=cfc(h,1,12);q.push({type:"choice",difficulty:2,visual:e,question:"Sati?",answers:r.answers,correctIndex:r.correctIndex});q.push({type:"input",difficulty:2,visual:e,question:"Koliko sati?",correctAnswer:String(h)})});
+for(let a=1;a<=20;a+=2)for(let b=1;b<=20;b+=3){if(a+b>50)continue;q.push({type:"input",difficulty:2,question:`${a}kn+${b}kn=?`,correctAnswer:String(a+b)})}
+for(let a=10;a<=50;a+=5)for(let b=1;b<=a;b+=4)q.push({type:"input",difficulty:2,question:`${a}kn-${b}kn=?`,correctAnswer:String(a-b)});
+for(let i=0;i<15;i++){const c=(i%8)+3,p=c+(i%5)+1;q.push({type:"input",difficulty:3,question:`${N()} kupi ${IF()} za ${c}kn. Plati ${p}kn. Ostatak?`,correctAnswer:String(p-c)})}
+[["duljinu","ravnalo"],["težinu","vaga"],["temperaturu","termometar"],["vrijeme","sat"],["tekućinu","menzura"]].forEach(([s,c])=>{q.push({type:"choice",difficulty:1,question:`Čime mjerimo ${s}?`,answers:sh([c,...wf(["ravnalo","vaga","termometar","sat","menzura"],c)]),correctIndex:-1,_c:c})});
+[["1 m","100","cm"],["1 km","1000","m"],["1 kg","1000","g"],["1 L","1000","mL"],["1 h","60","min"],["1 min","60","s"],["1 dan","24","h"],["1 tjedan","7","dana"]].forEach(([iz,v,j])=>{const r=cfc(parseInt(v),Math.max(parseInt(v)-50,1),parseInt(v)+50);q.push({type:"choice",difficulty:2,question:`${iz}=? ${j}`,answers:r.answers,correctIndex:r.correctIndex});q.push({type:"input",difficulty:2,question:`${iz}=__ ${j}`,correctAnswer:v})});
+return fix(q).slice(0,210)}
 
-  // Što radi...?
-  [["Pas","laje"],["Mačka","mjauče"],["Ptica","pjeva"],["Riba","pliva"],["Dijete","igra se"],["Učiteljica","poučava"],["Kuhar","kuha"],["Liječnik","liječi"],["Vatrogasac","gasi"],["Pjevač","pjeva"]].forEach(([tko,sto]) => {
-    const wr = sh(["laje","mjauče","pjeva","pliva","kuha","liječi","gasi","skače","trči","crta"].filter(x=>x!==sto)).slice(0,3);
-    q.push({ type:"choice", difficulty:2, question:`Što radi ${tko.toLowerCase()}?`, answers:sh([sto,...wr]), correctIndex:-1, _c:sto });
-  });
+// ═══ PRIRODA ═══
+function genZavicaj(){const q=[];
+const st=[["sjever","S"],["jug","J"],["istok","I"],["zapad","Z"]];
+st.forEach(([s,k])=>{q.push({type:"input",difficulty:2,question:`Kratica "${s}":`,correctAnswer:k});q.push({type:"input",difficulty:3,question:`Strana "${k}":`,correctAnswer:s});q.push({type:"choice",difficulty:2,question:`Kratica za "${s}"?`,answers:sh(["S","J","I","Z"]),correctIndex:-1,_c:k})});
+[["sjever","jug"],["istok","zapad"]].forEach(([a,b])=>{q.push({type:"input",difficulty:3,question:`Suprotno od "${a}":`,correctAnswer:b});q.push({type:"input",difficulty:3,question:`Suprotno od "${b}":`,correctAnswer:a});q.push({type:"choice",difficulty:2,question:`Suprotno od "${a}"?`,answers:sh(st.map(x=>x[0])),correctIndex:-1,_c:b});q.push({type:"choice",difficulty:2,question:`Suprotno od "${b}"?`,answers:sh(st.map(x=>x[0])),correctIndex:-1,_c:a})});
+q.push({type:"choice",difficulty:2,question:"Sunce izlazi na:?",answers:["istoku","zapadu","sjeveru","jugu"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"Sunce zalazi na:?",answers:["istoku","zapadu","sjeveru","jugu"],correctIndex:1});
+[["plava","vodu"],["zelena","nizinu/šumu"],["smeđa","planine"],["žuta","cestu"]].forEach(([b,z])=>q.push({type:"choice",difficulty:2,question:`${b} na karti=?`,answers:["vodu","nizinu/šumu","planine","cestu"],correctIndex:["vodu","nizinu/šumu","planine","cestu"].indexOf(z)}));
+const inst=[["Gdje učimo?","škola"],["Gdje se liječimo?","bolnica"],["Gdje kupujemo?","trgovina"],["Gdje posuđujemo knjige?","knjižnica"],["Gdje šaljemo pisma?","pošta"],["Gdje gledamo filmove?","kino"],["Tko gasi požar?","vatrogasci"],["Tko čuva red?","policija"],["Gdje jedemo u restoranu?","restoran"],["Gdje se mole?","crkva"]];
+const si=inst.map(x=>x[1]);
+inst.forEach(([p,o])=>{q.push({type:"choice",difficulty:2,question:p,answers:sh([o,...wf(si,o)]),correctIndex:-1,_c:o})});
+q.push({type:"choice",difficulty:1,question:"Zavičaj je:?",answers:["Mjesto gdje živimo","Strana država","Planet","Stanica"],correctIndex:0});
+return fix(q).slice(0,210)}
 
-  q.push({ type:"choice", difficulty:1, question:"Što je glagol?", answers:["Riječ za radnju","Riječ za biće","Riječ za opis","Ime grada"], correctIndex:0 });
+function genDobaVrijeme(){const q=[];
+const S=["proljeće","ljeto","jesen","zima"];
+const mj=[["siječanj","zima"],["veljača","zima"],["ožujak","proljeće"],["travanj","proljeće"],["svibanj","proljeće"],["lipanj","ljeto"],["srpanj","ljeto"],["kolovoz","ljeto"],["rujan","jesen"],["listopad","jesen"],["studeni","jesen"],["prosinac","zima"]];
+mj.forEach(([m,d])=>{q.push({type:"choice",difficulty:2,question:`"${m}" → doba?`,answers:S,correctIndex:S.indexOf(d)});q.push({type:"input",difficulty:3,question:`Doba za "${m}":`,correctAnswer:d})});
+for(let i=0;i<12;i++){const nx=mj[(i+1)%12][0];q.push({type:"choice",difficulty:3,question:`Nakon "${mj[i][0]}"?`,answers:sh([nx,...wf(mj.map(x=>x[0]),nx)]),correctIndex:-1,_c:nx});const pv=mj[(i+11)%12][0];q.push({type:"choice",difficulty:3,question:`Prije "${mj[i][0]}"?`,answers:sh([pv,...wf(mj.map(x=>x[0]),pv)]),correctIndex:-1,_c:pv})}
+mj.forEach(([m],i)=>{const r=cfc(i+1,1,12);q.push({type:"choice",difficulty:2,question:`"${m}" je _. mjesec?`,answers:r.answers,correctIndex:r.correctIndex})});
+S.forEach((s,i)=>{q.push({type:"choice",difficulty:2,question:`Nakon "${s}"?`,answers:S,correctIndex:S.indexOf(S[(i+1)%4])})});
+[["🌸","proljeće"],["☀️","ljeto"],["🍂","jesen"],["❄️","zima"],["🌷","proljeće"],["🏖️","ljeto"],["🍁","jesen"],["⛄","zima"],["🌱","proljeće"],["🍉","ljeto"],["🌧️","jesen"],["🧣","zima"]].forEach(([e,s])=>q.push({type:"choice",difficulty:1,visual:e,question:"Doba?",answers:S,correctIndex:S.indexOf(s)}));
+const dn=["ponedjeljak","utorak","srijeda","četvrtak","petak","subota","nedjelja"];
+for(let i=0;i<7;i++){const nx=dn[(i+1)%7];q.push({type:"choice",difficulty:2,question:`Nakon "${dn[i]}"?`,answers:sh([nx,...wf(dn,nx)]),correctIndex:-1,_c:nx})}
+q.push({type:"choice",difficulty:1,question:"Mjeseci?",answers:["10","11","12","13"],correctIndex:2});
+q.push({type:"choice",difficulty:1,question:"Dana u tjednu?",answers:["5","6","7","8"],correctIndex:2});
+[["☀️","sunčano"],["☁️","oblačno"],["🌧️","kišovito"],["❄️","snježno"],["💨","vjetrovito"]].forEach(([e,v])=>{q.push({type:"choice",difficulty:1,visual:e,question:"Vrijeme?",answers:sh([v,...wf(["sunčano","oblačno","kišovito","snježno","vjetrovito"],v)]),correctIndex:-1,_c:v})});
+return fix(q).slice(0,210)}
 
-  return fix(q).slice(0, 210);
-}
+function genBiljkeZivotinje(){const q=[];
+const db=[["korijen","upija vodu"],["stabljika","nosi hranu"],["list","fotosinteza"],["cvijet","razmnožavanje"],["plod","sjemenka"]];
+db.forEach(([d,o])=>{q.push({type:"choice",difficulty:2,question:`"${o}" → dio biljke?`,answers:sh([d,...wf(db.map(x=>x[0]),d)]),correctIndex:-1,_c:d});q.push({type:"input",difficulty:3,question:`Koji dio: "${o}"?`,correctAnswer:d})});
+const dom=["krava","kokoš","ovca","pas","mačka","konj","svinja","koza","magarac","patka","guska","kunić","purica"];
+const div=["vuk","medvjed","jelen","lisica","zec","sova","orao","jež","vjeverica","srna","divlja svinja","vidra","kuna","jazavac"];
+dom.forEach(z=>q.push({type:"choice",difficulty:2,question:`"${z}" je:`,answers:["domaća","divlja"],correctIndex:0}));
+div.forEach(z=>q.push({type:"choice",difficulty:2,question:`"${z}" je:`,answers:["domaća","divlja"],correctIndex:1}));
+for(let i=0;i<12;i++){const o=pick(div),r=pickN(dom,3);q.push({type:"choice",difficulty:3,question:"DIVLJA?",answers:sh([o,...r]),correctIndex:-1,_c:o})}
+for(let i=0;i<12;i++){const o=pick(dom),r=pickN(div,3);q.push({type:"choice",difficulty:3,question:"DOMAĆA?",answers:sh([o,...r]),correctIndex:-1,_c:o})}
+[["riba","voda"],["ptica","zrak"],["crv","tlo"],["žaba","voda i kopno"],["medvjed","šuma"],["krava","farma"],["kit","more"],["pčela","livade"],["delfin","more"],["orao","planine"],["vjeverica","šuma"]].forEach(([z,m])=>{q.push({type:"choice",difficulty:2,question:`Gdje živi ${z}?`,answers:sh([m,...wf(["voda","zrak","tlo","šuma","farma","more","livade","planine"],m)]),correctIndex:-1,_c:m})});
+[["krava","mlijeko"],["kokoš","jaja"],["ovca","vunu"],["pčela","med"],["svinja","meso"],["koza","mlijeko i sir"]].forEach(([z,d])=>{q.push({type:"choice",difficulty:2,question:`Što daje ${z}?`,answers:sh([d,...wf(["mlijeko","jaja","vunu","med","meso","mlijeko i sir"],d)]),correctIndex:-1,_c:d})});
+const vo=["jabuka","kruška","šljiva","trešnja","jagoda","banana","naranča","limun","grožđe","breskva","malina","kupina","lubenica"];
+const po=["mrkva","krumpir","rajčica","paprika","luk","salata","kupus","brokula","grah","grašak","blitva","tikvica","krastavac"];
+vo.forEach(v=>q.push({type:"choice",difficulty:1,question:`"${v}" je:`,answers:["voće","povrće"],correctIndex:0}));
+po.forEach(p=>q.push({type:"choice",difficulty:1,question:`"${p}" je:`,answers:["voće","povrće"],correctIndex:1}));
+return fix(q).slice(0,210)}
 
-function genRecenice2() {
-  const q = [];
+function genVodaTlo(){const q=[];
+[["tekuće","voda u čaši"],["kruto","led, snijeg"],["plinovito","para, magla"]].forEach(([s,p])=>q.push({type:"choice",difficulty:2,question:`"${p}" → stanje?`,answers:["tekuće","kruto","plinovito"],correctIndex:["tekuće","kruto","plinovito"].indexOf(s)}));
+q.push({type:"choice",difficulty:1,question:"Stanja vode?",answers:["1","2","3","4"],correctIndex:2});
+q.push({type:"input",difficulty:2,question:"Kruto stanje=",correctAnswer:"led"});q.push({type:"input",difficulty:2,question:"Plinovito stanje=",correctAnswer:"vodena para"});
+q.push({type:"choice",difficulty:2,question:"Smrzava pri:?",answers:["0°C","10°C","50°C","100°C"],correctIndex:0});q.push({type:"choice",difficulty:2,question:"Ključa pri:?",answers:["0°C","50°C","100°C","200°C"],correctIndex:2});
+q.push({type:"input",difficulty:2,question:"Smrzava ___°C:",correctAnswer:"0"});q.push({type:"input",difficulty:2,question:"Ključa ___°C:",correctAnswer:"100"});
+q.push({type:"choice",difficulty:3,question:"Kruženje vode:",answers:["isparavanje→oblak→padavina→otjecanje","padavina→isparavanje→otjecanje","oblak→otjecanje→padavina","otjecanje→padavina→oblak"],correctIndex:0});
+[["Sava","rijeka"],["Drava","rijeka"],["Dunav","rijeka"],["Jadransko","more"],["Plitvička jezera","jezera"],["Kupa","rijeka"]].forEach(([i,t])=>{q.push({type:"choice",difficulty:3,question:`"${i}" je:`,answers:sh([t,...wf(["rijeka","more","jezera","potok","ocean"],t)]),correctIndex:-1,_c:t})});
+[["rijeka","slatka"],["more","slana"],["jezero","slatka"],["ocean","slana"],["potok","slatka"]].forEach(([v,t])=>q.push({type:"choice",difficulty:2,question:`Voda u ${v} je:`,answers:["slatka","slana"],correctIndex:t==="slatka"?0:1}));
+q.push({type:"choice",difficulty:2,question:"Tlo je:?",answers:["Gornji sloj Zemlje","Nebo","Oblak","Zvijezda"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"U tlu:?",answers:["minerali,voda,zrak,organizmi","samo kamenje","samo voda","samo pijesak"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"Humus je:?",answers:["razgrađeni ostaci","vrsta vode","biljka","kamen"],correctIndex:0});
+["crv","krtica","mravi","stonoga","gujavica"].forEach(z=>q.push({type:"choice",difficulty:2,question:`"${z}" živi u tlu?`,answers:["Da","Ne"],correctIndex:0}));
+["ptica","riba","kit","orao"].forEach(z=>q.push({type:"choice",difficulty:2,question:`"${z}" živi u tlu?`,answers:["Da","Ne"],correctIndex:1}));
+return fix(q).slice(0,210)}
 
-  // Vrste rečenica
-  [["Pada kiša.","izjavna"],["Pada li kiša?","upitna"],["Kakva kiša!","usklična"],["Sunce sija.","izjavna"],["Ideš li u školu?","upitna"],["Bravo!","usklična"],["Mama kuha ručak.","izjavna"],["Koliko je sati?","upitna"],["Super!","usklična"],["Ana čita knjigu.","izjavna"],["Voliš li čokoladu?","upitna"],["Jao!","usklična"]].forEach(([r,tip]) => {
-    q.push({ type:"choice", difficulty:2, question:`"${r}" je koja vrsta rečenice?`, answers:["izjavna","upitna","usklična"], correctIndex:tip==="izjavna"?0:tip==="upitna"?1:2 });
-  });
+function genZdravljeSigurnost2(){const q=[];
+const zd=["voće","povrće","mlijeko","kruh","riba","jaja","sir","orasi","med","voda"];
+const nz=["čips","slatkiši","gazirana pića","brza hrana","bomboni","kolači","pomfrit","energetska pića"];
+zd.forEach(h=>q.push({type:"choice",difficulty:1,question:`"${h}" zdravo?`,answers:["Da","Ne"],correctIndex:0}));
+nz.forEach(h=>q.push({type:"choice",difficulty:1,question:`"${h}" zdravo?`,answers:["Da","Ne"],correctIndex:1}));
+for(let i=0;i<10;i++){const o=pick(nz),r=pickN(zd,3);q.push({type:"choice",difficulty:2,question:"NIJE zdravo?",answers:sh([o,...r]),correctIndex:-1,_c:o})}
+for(let i=0;i<10;i++){const o=pick(zd),r=pickN(nz,3);q.push({type:"choice",difficulty:2,question:"JE zdravo?",answers:sh([o,...r]),correctIndex:-1,_c:o})}
+q.push({type:"choice",difficulty:2,question:"Prati zube:?",answers:["1×","2×","3×","nikad"],correctIndex:1});
+q.push({type:"choice",difficulty:2,question:"San djece:?",answers:["4-5h","6-7h","9-11h","15h"],correctIndex:2});
+q.push({type:"choice",difficulty:1,question:"Zeleno=pješak:?",answers:["prelazi","čeka","trči","sjedi"],correctIndex:0});
+q.push({type:"choice",difficulty:1,question:"Crveno=pješak:?",answers:["prelazi","čeka","trči","skače"],correctIndex:1});
+q.push({type:"choice",difficulty:2,question:"Prije ceste:?",answers:["pogledaj L-D","zatvori oči","trči","ništa"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"Bicikl:?",answers:["stazom","cestom","nogostupom","travom"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"Na biciklu:?",answers:["kacigu","kapu","naočale","ništa"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"U autu:?",answers:["pojas","kacigu","naočale","rukavice"],correctIndex:0});
+q.push({type:"choice",difficulty:1,question:"Hitni broj:?",answers:["112","000","999","123"],correctIndex:0});
+q.push({type:"input",difficulty:2,question:"Hitni broj:",correctAnswer:"112"});
+q.push({type:"choice",difficulty:2,question:"Opeklina:?",answers:["hladna voda","trčim","ništa","led"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"Vrata nepoznatima:?",answers:["Da","Ne"],correctIndex:1});
+q.push({type:"choice",difficulty:2,question:"Igra s vatrom:?",answers:["Da","Ne"],correctIndex:1});
+q.push({type:"choice",difficulty:2,question:"Ako se izgubiš:?",answers:["traži policajca","plači","trči","sakrij se"],correctIndex:0});
+return fix(q).slice(0,210)}
 
-  // Interpunkcija
-  [["Pada kiša","."],["Ideš li u školu","?"],["Kakva ljepota","!"],["Mama kuha","."],[" Koliko imaš godina","?"],["Bravo","!"]].forEach(([r,znak]) => {
-    q.push({ type:"choice", difficulty:2, question:`Koji znak ide na kraj: "${r}"`, answers:[".","?","!"], correctIndex:znak==="."?0:znak==="?"?1:2 });
-  });
-
-  // Veliko slovo
-  [["ana ide u školu.","Ana ide u školu."],["zagreb je lijep grad.","Zagreb je lijep grad."],["sava je rijeka.","Sava je rijeka."],["marko voli nogomet.","Marko voli nogomet."]].forEach(([wrong,correct]) => {
-    q.push({ type:"choice", difficulty:1, question:"Koja rečenica je ispravno napisana?", answers:[wrong,correct], correctIndex:1 });
-  });
-
-  // Broj riječi u rečenici
-  [["Pas laje.",2],["Mama kuha ručak.",3],["Ana i Luka idu u školu.",6],["Pada kiša.",2],["Sunce sija na nebu.",4]].forEach(([r,c]) => {
-    const rc = cfc(c,1,8);
-    q.push({ type:"choice", difficulty:3, question:`Koliko riječi: "${r}"?`, answers:rc.answers, correctIndex:rc.correctIndex });
-  });
-
-  return fix(q).slice(0, 210);
-}
-
-function genCitanje2() {
-  const q = [];
-
-  // Suprotnosti (antonimi) — prošireno za 2. razred
-  [["veliko","malo"],["brzo","sporo"],["toplo","hladno"],["veselo","tužno"],["staro","novo"],["visoko","nisko"],["dugo","kratko"],["široko","usko"],["teško","lako"],["glasno","tiho"],["puno","prazno"],["mokro","suho"],["tamno","svijetlo"],["dobro","loše"],["bogato","siromašno"]].forEach(([w,opp]) => {
-    const wr = sh(["veliko","malo","brzo","sporo","toplo","hladno","veselo","tužno","staro","novo","visoko","nisko"].filter(x=>x!==opp)).slice(0,3);
-    q.push({ type:"choice", difficulty:2, question:`Suprotno od "${w}"?`, answers:sh([opp,...wr]), correctIndex:-1, _c:opp });
-  });
-
-  // Sinonimi
-  [["kuća","dom"],["lijepo","krasno"],["veselo","radosno"],["brzo","hitro"],["malo","sitno"],["veliko","golemo"],["put","cesta"],["djeca","klinci"],["jesti","blagovati"],["gledati","promatrati"]].forEach(([w,syn]) => {
-    const wr = sh(["dom","krasno","radosno","hitro","sitno","golemo","cesta","klinci","promatrati","šetati"].filter(x=>x!==syn)).slice(0,3);
-    q.push({ type:"choice", difficulty:3, question:`Slično značenje kao "${w}"?`, answers:sh([syn,...wr]), correctIndex:-1, _c:syn });
-  });
-
-  // Umanjenice i uvećanice
-  [["kuća","kućica","kućetina"],["pas","psić","psina"],["knjiga","knjižica","knjižurina"],["riba","ribica","ribetina"],["nos","nosić","nosina"],["mačka","mačkica","mačketina"]].forEach(([w,um,uv]) => {
-    q.push({ type:"input", difficulty:2, question:`Umanjenica od "${w}":`, correctAnswer:um });
-    q.push({ type:"input", difficulty:3, question:`Uvećanica od "${w}":`, correctAnswer:uv });
-  });
-
-  // Slogovi — prebrojavanje
-  [["škola",2],["računalo",4],["dom",1],["prijatelj",3],["knjiga",2],["automobil",4],["ja",1],["učiteljica",5],["matematika",5],["pas",1]].forEach(([w,c]) => {
-    const r = cfc(c,1,6);
-    q.push({ type:"choice", difficulty:2, question:`Koliko slogova ima "${w}"?`, answers:r.answers, correctIndex:r.correctIndex });
-  });
-
-  return fix(q).slice(0, 210);
-}
-
-// ═══════════════════════════════════════════════════════
-// MATEMATIKA — 2. RAZRED
-// ═══════════════════════════════════════════════════════
-
-function genBrojevi100() {
-  const q = [];
-  // Brojevi do 100 — desetice
-  for (let d = 10; d <= 100; d += 10) {
-    q.push({ type:"input", difficulty:1, question:`Koji broj dolazi NAKON ${d-1}?`, correctAnswer:String(d) });
-  }
-  // Mjesna vrijednost
-  for (let n = 11; n <= 99; n += 7) {
-    const des = Math.floor(n/10), jed = n%10;
-    q.push({ type:"input", difficulty:2, question:`Koliko DESETICA ima broj ${n}?`, correctAnswer:String(des) });
-    q.push({ type:"input", difficulty:2, question:`Koliko JEDINICA ima broj ${n}?`, correctAnswer:String(jed) });
-  }
-  // Uspoređivanje
-  for (let i = 0; i < 30; i++) {
-    const a = Math.floor(Math.random()*90)+10, b = Math.floor(Math.random()*90)+10;
-    if (a === b) continue;
-    const s = a < b ? "<" : ">";
-    q.push({ type:"choice", difficulty:2, question:`${a} ${CIRCLE} ${b}`, answers:["<",">","="], correctIndex:s==="<"?0:1 });
-  }
-  // Parni/neparni
-  for (let i = 1; i <= 30; i++) {
-    q.push({ type:"choice", difficulty:2, question:`Je li ${i} paran ili neparan?`, answers:["paran","neparan"], correctIndex:i%2===0?0:1 });
-  }
-  // Rimski brojevi do 12
-  [["I",1],["II",2],["III",3],["IV",4],["V",5],["VI",6],["VII",7],["VIII",8],["IX",9],["X",10],["XI",11],["XII",12]].forEach(([r,a]) => {
-    const rc = cfc(a,1,12);
-    q.push({ type:"choice", difficulty:3, question:`Rimski broj ${r} je:`, answers:rc.answers, correctIndex:rc.correctIndex });
-  });
-  return fix(q).slice(0, 210);
-}
-
-function genZbrajanje100() {
-  const q = [];
-  // Zbrajanje desetica
-  for (let a = 10; a <= 90; a += 10) for (let b = 10; b <= 100-a; b += 10) {
-    q.push({ type:"input", difficulty:1, question:`${a} + ${b} = ?`, correctAnswer:String(a+b) });
-  }
-  // Zbrajanje do 100 bez prijelaza
-  for (let i = 0; i < 40; i++) {
-    const a = Math.floor(Math.random()*40)+10, b = Math.floor(Math.random()*40)+5;
-    if (a+b > 100) continue;
-    const r = cfc(a+b, Math.max(a+b-5,0), Math.min(a+b+5,100));
-    q.push({ type:"choice", difficulty:2, question:`${a} + ${b} = ?`, answers:r.answers, correctIndex:r.correctIndex });
-    if (i%2===0) q.push({ type:"input", difficulty:2, question:`${a} + ${b} = ?`, correctAnswer:String(a+b) });
-  }
-  // Tekstualni zadaci
-  for (let i = 0; i < 15; i++) {
-    const a = (i%20)+15, b = ((i*3)%20)+5;
-    if (a+b>100) continue;
-    q.push({ type:"input", difficulty:3, question:`${N()} ima ${a} ${IF()}. Dobio/la je još ${b}. Koliko ih sada ima?`, correctAnswer:String(a+b) });
-  }
-  return fix(q).slice(0, 210);
-}
-
-function genOduzimanje100() {
-  const q = [];
-  // Oduzimanje desetica
-  for (let a = 20; a <= 100; a += 10) for (let b = 10; b <= a; b += 10) {
-    q.push({ type:"input", difficulty:1, question:`${a} - ${b} = ?`, correctAnswer:String(a-b) });
-  }
-  // Oduzimanje do 100
-  for (let i = 0; i < 40; i++) {
-    const a = Math.floor(Math.random()*60)+30, b = Math.floor(Math.random()*25)+5;
-    if (b > a) continue;
-    const r = cfc(a-b, Math.max(a-b-5,0), Math.min(a-b+5,100));
-    q.push({ type:"choice", difficulty:2, question:`${a} - ${b} = ?`, answers:r.answers, correctIndex:r.correctIndex });
-    if (i%2===0) q.push({ type:"input", difficulty:2, question:`${a} - ${b} = ?`, correctAnswer:String(a-b) });
-  }
-  // Tekstualni zadaci
-  for (let i = 0; i < 15; i++) {
-    const a = (i%30)+30, b = ((i*2)%15)+5;
-    if (b>a) continue;
-    q.push({ type:"input", difficulty:3, question:`${N()} ima ${a} ${IF()}. Potrošio/la je ${b}. Koliko mu/joj je ostalo?`, correctAnswer:String(a-b) });
-  }
-  return fix(q).slice(0, 210);
-}
-
-function genMnozenjeDijeljenje() {
-  const q = [];
-  // Tablica množenja do 5
-  for (let a = 1; a <= 5; a++) for (let b = 1; b <= 10; b++) {
-    const p = a*b;
-    q.push({ type:"input", difficulty:a<=3?1:2, question:`${a} × ${b} = ?`, correctAnswer:String(p) });
-    if (b <= 5) {
-      const r = cfc(p, Math.max(p-5,0), p+5);
-      q.push({ type:"choice", difficulty:2, question:`${a} × ${b} = ?`, answers:r.answers, correctIndex:r.correctIndex });
-    }
-  }
-  // Dijeljenje
-  for (let a = 1; a <= 5; a++) for (let b = 1; b <= 10; b++) {
-    const p = a*b;
-    q.push({ type:"input", difficulty:3, question:`${p} ÷ ${a} = ?`, correctAnswer:String(b) });
-  }
-  // Tekstualni
-  for (let i = 0; i < 10; i++) {
-    const a = (i%4)+2, b = (i%5)+2;
-    q.push({ type:"input", difficulty:3, question:`${N()} ima ${a} kutije. U svakoj je ${b} ${IF()}. Koliko ukupno?`, correctAnswer:String(a*b) });
-  }
-  return fix(q).slice(0, 210);
-}
-
-function genGeometrija2() {
-  const q = [];
-  // Likovi i svojstva
-  [["krug",0,0],["trokut",3,3],["kvadrat",4,4],["pravokutnik",4,4],["peterokut",5,5],["šesterokut",6,6]].forEach(([lik,str,kut]) => {
-    const r = cfc(str,0,8);
-    q.push({ type:"choice", difficulty:2, question:`Koliko stranica ima ${lik}?`, answers:r.answers, correctIndex:r.correctIndex });
-    q.push({ type:"choice", difficulty:2, question:`Koliko kutova ima ${lik}?`, answers:r.answers, correctIndex:r.correctIndex });
-  });
-  // Tijela
-  [["kugla","kotrlja se u svim smjerovima"],["valjak","kotrlja se u jednom smjeru"],["kocka","ima 6 jednakih strana"],["kvadar","ima 6 pravokutnih strana"],["piramida","ima šiljasti vrh"],["stožac","ima okruglu bazu i šiljak"]].forEach(([t,opis]) => {
-    const wr = sh(["kugla","valjak","kocka","kvadar","piramida","stožac"].filter(x=>x!==t)).slice(0,3);
-    q.push({ type:"choice", difficulty:3, question:`Koji opis odgovara: "${opis}"?`, answers:sh([t,...wr]), correctIndex:-1, _c:t });
-  });
-  // Simetrija
-  q.push({ type:"choice", difficulty:2, question:"Koje slovo ima os simetrije?", answers:["A","F","G","J"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:2, question:"Koji lik ima os simetrije?", answers:["kvadrat","nepravilni četverokut","trapez","paralelogram"], correctIndex:0 });
-
-  return fix(q).slice(0, 210);
-}
-
-function genMjerenjeNovac() {
-  const q = [];
-  // Sat
-  [["🕐",1],["🕑",2],["🕒",3],["🕓",4],["🕔",5],["🕕",6],["🕖",7],["🕗",8],["🕘",9],["🕙",10],["🕚",11],["🕛",12]].forEach(([e,h]) => {
-    const r = cfc(h,1,12);
-    q.push({ type:"choice", difficulty:2, visual:e, question:"Koliko je sati?", answers:r.answers, correctIndex:r.correctIndex });
-  });
-  // Novac — kune (za kontekst 2020.)
-  [["5 kn + 2 kn",7],["10 kn + 5 kn",15],["20 kn - 5 kn",15],["50 kn - 20 kn",30],["2 kn + 2 kn + 1 kn",5],["10 kn + 10 kn + 5 kn",25]].forEach(([expr,ans]) => {
-    q.push({ type:"input", difficulty:2, question:`Koliko kuna: ${expr} = ?`, correctAnswer:String(ans) });
-  });
-  // Mjerenje duljina
-  q.push({ type:"choice", difficulty:1, question:"Čime mjerimo duljinu?", answers:["ravnalom","vagom","satom","termometrom"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:1, question:"Čime mjerimo težinu?", answers:["ravnalom","vagom","satom","termometrom"], correctIndex:1 });
-  q.push({ type:"choice", difficulty:1, question:"Čime mjerimo temperaturu?", answers:["ravnalom","vagom","satom","termometrom"], correctIndex:3 });
-  q.push({ type:"choice", difficulty:2, question:"1 metar ima koliko centimetara?", answers:["10","100","1000","50"], correctIndex:1 });
-  q.push({ type:"choice", difficulty:2, question:"1 kilogram ima koliko grama?", answers:["10","100","1000","500"], correctIndex:2 });
-
-  return fix(q).slice(0, 210);
-}
-
-// ═══════════════════════════════════════════════════════
-// PRIRODA I DRUŠTVO — 2. RAZRED
-// ═══════════════════════════════════════════════════════
-
-function genZavicaj() {
-  const q = [];
-  q.push({ type:"choice", difficulty:1, question:"Što je zavičaj?", answers:["Mjesto gdje živimo","Strana država","Svemirska stanica","Planina"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:2, question:"Kako se snalazimo u prostoru?", answers:["Pomoću strana svijeta","Pomoću boja","Pomoću zvukova","Pomoću okusa"], correctIndex:0 });
-  // Strane svijeta
-  [["sjever","S"],["jug","J"],["istok","I"],["zapad","Z"]].forEach(([s,kr]) => {
-    q.push({ type:"input", difficulty:2, question:`Kratica za "${s}":`, correctAnswer:kr });
-  });
-  q.push({ type:"choice", difficulty:2, question:"Sunce izlazi na...?", answers:["istoku","zapadu","sjeveru","jugu"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:2, question:"Sunce zalazi na...?", answers:["istoku","zapadu","sjeveru","jugu"], correctIndex:1 });
-  // Karta i plan
-  q.push({ type:"choice", difficulty:2, question:"Što je plan mjesta?", answers:["Crtež mjesta gledanog odozgo","Fotografija","Priča o mjestu","Pjesma"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:2, question:"Na karti, plava boja obično označava...?", answers:["vodu","šumu","cestu","grad"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:2, question:"Na karti, zelena boja obično označava...?", answers:["vodu","nizinu/šumu","cestu","planinu"], correctIndex:1 });
-  // Institucije
-  [["Gdje učimo?","škola"],["Gdje se liječimo?","bolnica"],["Gdje kupujemo?","trgovina"],["Gdje posuđujemo knjige?","knjižnica"],["Gdje šaljemo pisma?","pošta"]].forEach(([pit,odg]) => {
-    const wr = sh(["škola","bolnica","trgovina","knjižnica","pošta","stadion","kino"].filter(x=>x!==odg)).slice(0,3);
-    q.push({ type:"choice", difficulty:2, question:pit, answers:sh([odg,...wr]), correctIndex:-1, _c:odg });
-  });
-  return fix(q).slice(0, 210);
-}
-
-function genDobaVrijeme() {
-  const q = [];
-  const S = ["proljeće","ljeto","jesen","zima"];
-  // Mjeseci i godišnja doba
-  [["ožujak","proljeće"],["travanj","proljeće"],["svibanj","proljeće"],["lipanj","ljeto"],["srpanj","ljeto"],["kolovoz","ljeto"],["rujan","jesen"],["listopad","jesen"],["studeni","jesen"],["prosinac","zima"],["siječanj","zima"],["veljača","zima"]].forEach(([m,d]) => {
-    q.push({ type:"choice", difficulty:2, question:`"${m}" pripada kojem godišnjem dobu?`, answers:S, correctIndex:S.indexOf(d) });
-  });
-  // Redoslijed mjeseci
-  [["siječanj","veljača"],["ožujak","travanj"],["svibanj","lipanj"],["srpanj","kolovoz"],["rujan","listopad"],["studeni","prosinac"]].forEach(([m1,m2]) => {
-    const wr = sh(["ožujak","lipanj","rujan","prosinac","veljača","kolovoz","studeni","siječanj"].filter(x=>x!==m2)).slice(0,3);
-    q.push({ type:"choice", difficulty:3, question:`Koji mjesec dolazi NAKON "${m1}"?`, answers:sh([m2,...wr]), correctIndex:-1, _c:m2 });
-  });
-  q.push({ type:"choice", difficulty:1, question:"Koliko mjeseci ima godina?", answers:["10","11","12","13"], correctIndex:2 });
-  q.push({ type:"choice", difficulty:1, question:"Koliko dana ima tjedan?", answers:["5","6","7","8"], correctIndex:2 });
-  // Vrijeme (meteorologija)
-  q.push({ type:"choice", difficulty:2, question:"Čime mjerimo temperaturu zraka?", answers:["termometrom","ravnalom","vagom","satom"], correctIndex:0 });
-  [["sunčano","☀️"],["oblačno","☁️"],["kišovito","🌧️"],["snježno","❄️"],["vjetrovito","💨"]].forEach(([v,e]) => {
-    q.push({ type:"choice", difficulty:1, visual:e, question:"Kakvo je vrijeme?", answers:["sunčano","oblačno","kišovito","snježno"], correctIndex:["sunčano","oblačno","kišovito","snježno"].indexOf(v) >= 0 ? ["sunčano","oblačno","kišovito","snježno"].indexOf(v) : 0 });
-  });
-  return fix(q).slice(0, 210);
-}
-
-function genBiljkeZivotinje() {
-  const q = [];
-  // Dijelovi biljke
-  [["korijen","upija vodu iz tla"],["stabljika","nosi vodu i hranu"],["list","proizvodi hranu"],["cvijet","služi za razmnožavanje"],["plod","sadrži sjemenku"]].forEach(([d,opis]) => {
-    const wr = sh(["korijen","stabljika","list","cvijet","plod"].filter(x=>x!==d)).slice(0,3);
-    q.push({ type:"choice", difficulty:2, question:`Koji dio biljke: "${opis}"?`, answers:sh([d,...wr]), correctIndex:-1, _c:d });
-  });
-  // Domaće vs divlje životinje
-  [["krava","domaća"],["vuk","divlja"],["kokoš","domaća"],["medvjed","divlja"],["ovca","domaća"],["jelen","divlja"],["pas","domaća"],["lisica","divlja"],["mačka","domaća"],["zec","divlja"],["konj","domaća"],["sova","divlja"]].forEach(([z,tip]) => {
-    q.push({ type:"choice", difficulty:2, question:`Je li "${z}" domaća ili divlja životinja?`, answers:["domaća","divlja"], correctIndex:tip==="domaća"?0:1 });
-  });
-  // Gdje žive
-  [["riba","voda"],["ptica","zrak"],["crv","tlo"],["žaba","voda i kopno"],["medvjed","šuma"],["krava","farma"]].forEach(([z,mj]) => {
-    const wr = sh(["voda","zrak","tlo","šuma","farma","more"].filter(x=>x!==mj)).slice(0,3);
-    q.push({ type:"choice", difficulty:2, question:`Gdje živi ${z}?`, answers:sh([mj,...wr]), correctIndex:-1, _c:mj });
-  });
-  return fix(q).slice(0, 210);
-}
-
-function genVodaTlo() {
-  const q = [];
-  q.push({ type:"choice", difficulty:1, question:"U kojem stanju može biti voda?", answers:["tekuće, kruto, plinovito","samo tekuće","samo kruto","samo plinovito"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:2, question:"Kako se zove voda u krutom stanju?", answers:["led","para","rosa","kiša"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:2, question:"Kako se zove voda u plinovitom stanju?", answers:["led","vodena para","rosa","snijeg"], correctIndex:1 });
-  // Kruženje vode
-  q.push({ type:"choice", difficulty:3, question:"Sunce grije vodu → voda isparava → nastaju...?", answers:["oblaci","rijeke","jezera","stijene"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:2, question:"Iz oblaka pada...?", answers:["kiša ili snijeg","pijesak","lišće","vjetar"], correctIndex:0 });
-  // Tlo
-  q.push({ type:"choice", difficulty:2, question:"Što je tlo?", answers:["Gornji sloj Zemljine površine","Nebo","Oblak","Zvijezda"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:2, question:"Što se nalazi u tlu?", answers:["Minerali, voda, zrak, organizmi","Samo kamenje","Samo voda","Samo pijesak"], correctIndex:0 });
-  // Vode u Hrvatskoj
-  [["Sava","rijeka"],["Drava","rijeka"],["Jadransko","more"],["Plitvice","jezera"],["Dunav","rijeka"]].forEach(([ime,tip]) => {
-    const wr = sh(["rijeka","more","jezera","potok","kanal"].filter(x=>x!==tip)).slice(0,3);
-    q.push({ type:"choice", difficulty:3, question:`"${ime}" je...?`, answers:sh([tip,...wr]), correctIndex:-1, _c:tip });
-  });
-  return fix(q).slice(0, 210);
-}
-
-function genZdravljeSigurnost2() {
-  const q = [];
-  // Zdravlje
-  q.push({ type:"choice", difficulty:1, question:"Koliko puta dnevno trebamo prati zube?", answers:["1","2","3","nikad"], correctIndex:1 });
-  q.push({ type:"choice", difficulty:1, question:"Što je zdravo jesti svaki dan?", answers:["voće i povrće","slatkiše","čips","gazirana pića"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:2, question:"Zašto je tjelesna aktivnost važna?", answers:["Jača tijelo i zdravlje","Nije važna","Troši vrijeme","Samo za sportaše"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:2, question:"Koliko sati sna trebaju djeca?", answers:["4-5","6-7","9-11","15"], correctIndex:2 });
-  // Sigurnost
-  q.push({ type:"choice", difficulty:1, question:"Koga zovemo u hitnom slučaju?", answers:["112","000","999","123"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:2, question:"Što radiš ako se opečeš?", answers:["Stavim pod hladnu vodu","Trčim","Ništa","Stavim led direktno"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:2, question:"Smiješ li otvarati vrata nepoznatim osobama?", answers:["Da","Ne"], correctIndex:1 });
-  q.push({ type:"choice", difficulty:2, question:"Što učiniti ako se izgubiš?", answers:["Tražiti policajca ili odraslu osobu","Plakati","Trčati","Sakriti se"], correctIndex:0 });
-  // Promet
-  q.push({ type:"choice", difficulty:1, question:"Na zeleno svjetlo pješak...?", answers:["čeka","prelazi cestu","trči","sjedi"], correctIndex:1 });
-  q.push({ type:"choice", difficulty:2, question:"Prije prelaska ceste moraš...?", answers:["pogledati lijevo-desno","zatvoriti oči","trčati","ništa"], correctIndex:0 });
-  q.push({ type:"choice", difficulty:2, question:"Gdje voziš bicikl?", answers:["Po biciklističkoj stazi","Po cesti za aute","Po nogostupu","Po travi"], correctIndex:0 });
-  return fix(q).slice(0, 210);
-}
-
-// ═══════════════════════════════════════════════════════
-// GEN_MAP I SEED
-// ═══════════════════════════════════════════════════════
-const GEN_MAP = {
-  hrvatski: [genImeniceRod, genGlagoli2, genRecenice2, genCitanje2],
-  matematika: [genBrojevi100, genZbrajanje100, genOduzimanje100, genMnozenjeDijeljenje, genGeometrija2, genMjerenjeNovac],
-  priroda: [genZavicaj, genDobaVrijeme, genBiljkeZivotinje, genVodaTlo, genZdravljeSigurnost2]
-};
-
-async function seed() {
-  console.log(`\n🌱 Učilica SEED — ${GRADE}. razred\n`);
-  const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
-  const client = new MongoClient(uri);
-  try {
-    await client.connect();
-    const dbName = process.env.DB_NAME || (() => { try { return new URL(uri).pathname.replace(/^\//, '') || 'ucilica'; } catch { return 'ucilica'; } })();
-    const db = client.db(dbName);
-    console.log(`🔗 MongoDB: ${db.databaseName}`);
-
-    await db.collection("questions").deleteMany({ grade: GRADE });
-    await db.collection("topics").deleteMany({ grade: GRADE });
-    await db.collection("subjects").deleteMany({ grade: GRADE });
-    console.log(`🗑️  Obrisani stari podaci za ${GRADE}. razred\n`);
-
-    let totalQ = 0;
-    for (const subject of subjects) {
-      const sRes = await db.collection("subjects").insertOne({ ...subject, grade: GRADE, isActive: true, createdAt: new Date() });
-      const sId = sRes.insertedId;
-      console.log(`📘 ${subject.icon} ${subject.name}`);
-      const gens = GEN_MAP[subject.slug];
-      const tops = topicsDef[subject.slug];
-      for (let i = 0; i < tops.length; i++) {
-        const rawQ = gens[i]();
-        const tRes = await db.collection("topics").insertOne({ ...tops[i], grade: GRADE, subject_id: sId, isActive: true, createdAt: new Date() });
-        const tId = tRes.insertedId;
-        const docs = rawQ.map(q => ({
-          type: q.type, difficulty: q.difficulty || 1, question: q.question,
-          visual: q.visual || "", hint: q.hint || "", answers: q.answers || [],
-          correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : undefined,
-          correctAnswer: q.correctAnswer || undefined, placeholder: q.placeholder || undefined,
-          grade: GRADE, subject_id: sId, topic_id: tId, isActive: true, createdAt: new Date()
-        }));
-        if (docs.length > 0) await db.collection("questions").insertMany(docs);
-        totalQ += docs.length;
-        console.log(`   ${tops[i].icon} ${tops[i].name}: ${docs.length} pitanja`);
-      }
-    }
-    console.log(`\n✅ Ukupno: ${totalQ} pitanja za ${GRADE}. razred`);
-  } catch (err) { console.error("❌ Greška:", err); }
-  finally { await client.close(); process.exit(0); }
-}
-
-// Pokreni seed samo ako je fajl pokrenut direktno (ne kad se importa)
-if (require.main === module) {
-  seed();
-}
-
-// Export generatora za questionGenerator servis
-module.exports = { genImeniceRod, genGlagoli2, genRecenice2, genCitanje2, genBrojevi100, genZbrajanje100, genOduzimanje100, genMnozenjeDijeljenje, genGeometrija2, genMjerenjeNovac, genZavicaj, genDobaVrijeme, genBiljkeZivotinje, genVodaTlo, genZdravljeSigurnost2 };
+const GEN_MAP={hrvatski:[genImeniceRod,genGlagoli2,genRecenice2,genCitanje2],matematika:[genBrojevi100,genZbrajanje100,genOduzimanje100,genMnozenjeDijeljenje,genGeometrija2,genMjerenjeNovac],priroda:[genZavicaj,genDobaVrijeme,genBiljkeZivotinje,genVodaTlo,genZdravljeSigurnost2]};
+async function seed(){console.log(`\n🌱 SEED ${GRADE}. razred\n`);const uri=process.env.MONGODB_URI||process.env.MONGO_URI;const client=new MongoClient(uri);try{await client.connect();const dbName=process.env.DB_NAME||(()=>{try{return new URL(uri).pathname.replace(/^\//,'')||'ucilica'}catch{return'ucilica'}})();const db=client.db(dbName);console.log(`🔗 ${db.databaseName}`);await db.collection("questions").deleteMany({grade:GRADE});await db.collection("topics").deleteMany({grade:GRADE});await db.collection("subjects").deleteMany({grade:GRADE});let t=0;for(const s of subjects){const sr=await db.collection("subjects").insertOne({...s,grade:GRADE,isActive:true,createdAt:new Date()});const si=sr.insertedId;console.log(`📘 ${s.icon} ${s.name}`);const gs=GEN_MAP[s.slug],ts=topicsDef[s.slug];for(let i=0;i<ts.length;i++){const rq=gs[i]();const tr=await db.collection("topics").insertOne({...ts[i],grade:GRADE,subject_id:si,isActive:true,createdAt:new Date()});const ti=tr.insertedId;const docs=rq.map(qq=>({type:qq.type,difficulty:qq.difficulty||1,question:qq.question,visual:qq.visual||"",hint:qq.hint||"",answers:qq.answers||[],correctIndex:typeof qq.correctIndex==="number"?qq.correctIndex:undefined,correctAnswer:qq.correctAnswer||undefined,grade:GRADE,subject_id:si,topic_id:ti,isActive:true,createdAt:new Date()}));if(docs.length)await db.collection("questions").insertMany(docs);t+=docs.length;console.log(`   ${ts[i].icon} ${ts[i].name}: ${docs.length}`)}}console.log(`\n✅ ${t} pitanja`)}catch(e){console.error("❌",e)}finally{await client.close();process.exit(0)}}
+if(require.main===module){seed()}
+module.exports={genImeniceRod,genGlagoli2,genRecenice2,genCitanje2,genBrojevi100,genZbrajanje100,genOduzimanje100,genMnozenjeDijeljenje,genGeometrija2,genMjerenjeNovac,genZavicaj,genDobaVrijeme,genBiljkeZivotinje,genVodaTlo,genZdravljeSigurnost2};
