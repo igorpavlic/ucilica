@@ -4,6 +4,7 @@
 require("dotenv").config({path:require("path").join(__dirname,"../.env")});
 const{MongoClient}=require("mongodb");
 const{N,IF,IM,sh,cfc,rep,fix,EL,CIRCLE}=require("./gen-hrvatski");
+const{mathCombi,storyProb,smartChoice,multiFormat,oddOneOut,trueFalse,pick:_pick,pickN:_pickN,wf:_wf}=require("./gen-engine");
 const GRADE=3;
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const pickN=(a,n)=>sh([...a]).slice(0,n);
@@ -72,15 +73,17 @@ return fix(q).slice(0,210)}
 
 function genZbrOduz1000(){const q=[];
 for(let a=100;a<=900;a+=100)for(let b=100;b<=1000-a;b+=100)q.push({type:"input",difficulty:1,question:`${a}+${b}=?`,correctAnswer:String(a+b)});
-for(let i=0;i<40;i++){const a=(i*73+100)%400+100,b=(i*51+50)%400+50;if(a+b>1000)continue;q.push({type:"input",difficulty:2,question:`${a}+${b}=?`,correctAnswer:String(a+b)})}
-for(let i=0;i<40;i++){const a=(i*67+300)%600+300,b=(i*41+50)%250+50;q.push({type:"input",difficulty:2,question:`${a}-${b}=?`,correctAnswer:String(a-b)})}
-for(let i=0;i<15;i++){const a=(i%4)*100+250,b=(i%3)*50+75;q.push({type:"input",difficulty:3,question:`U knjižnici ${a} knjiga. Stiglo ${b}. Koliko sada?`,correctAnswer:String(a+b)});q.push({type:"input",difficulty:3,question:`Škola ima ${a} učenika. ${b} na izletu. Koliko ostalo?`,correctAnswer:String(a-b)})}
+q.push(...mathCombi("+",{a:[100,900,47],b:[50,800,53]},(a,b,r)=>r<=1000,60));
+q.push(...mathCombi("-",{a:[200,999,41],b:[50,500,37]},(a,b,r)=>r>=0,60));
+q.push(...storyProb("+",{a:[100,500],b:[50,300]},25));
+q.push(...storyProb("-",{a:[200,600],b:[50,200]},25));
 return fix(q).slice(0,210)}
 
 function genMnozDijel3(){const q=[];
-for(let a=2;a<=10;a++)for(let b=1;b<=10;b++){q.push({type:"input",difficulty:a<=5?1:2,question:`${a}×${b}=?`,correctAnswer:String(a*b)})}
-for(let a=2;a<=10;a++)for(let b=1;b<=10;b++){q.push({type:"input",difficulty:a<=5?2:3,question:`${a*b}÷${a}=?`,correctAnswer:String(b)})}
-for(let i=0;i<15;i++){const a=(i%5)+3,b=(i%7)+2;q.push({type:"input",difficulty:3,question:`${N()} ima ${a} vrećice po ${b} ${IF()}. Ukupno?`,correctAnswer:String(a*b)});q.push({type:"input",difficulty:3,question:`${a*b} ${IF()} na ${a} djece. Koliko svako?`,correctAnswer:String(b)})}
+q.push(...mathCombi("*",{a:[2,10,1],b:[1,10,1]},(a,b,r)=>r<=100,90));
+for(let a=2;a<=10;a++)for(let b=1;b<=10;b++)q.push({type:"input",difficulty:a<=5?2:3,question:`${a*b}÷${a}=?`,correctAnswer:String(b)});
+q.push(...storyProb("*",{a:[2,8],b:[2,8]},20));
+q.push(...storyProb("/",{a:[20,80],b:[2,8]},15));
 for(let a=2;a<=10;a++)for(let b=2;b<=5;b++)q.push({type:"input",difficulty:4,question:`${a}×?=${a*b}`,correctAnswer:String(b)});
 return fix(q).slice(0,210)}
 
