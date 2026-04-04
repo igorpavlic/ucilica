@@ -5,6 +5,7 @@
 require("dotenv").config({path:require("path").join(__dirname,"../.env")});
 const{MongoClient}=require("mongodb");
 const{N,IF,IM,sh,cfc,rep,fix,EL,CIRCLE}=require("./gen-hrvatski");
+const{mathCombi,storyProb,smartChoice,multiFormat,oddOneOut,trueFalse,pick:_pick,pickN:_pickN,wf:_wf}=require("./gen-engine");
 const GRADE=2;
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const pickN=(a,n)=>sh([...a]).slice(0,n);
@@ -109,19 +110,17 @@ for(let s=5;s<=50;s+=11)q.push({type:"input",difficulty:2,question:`Niz: ${s},${
 return fix(q).slice(0,210)}
 
 function genZbrajanje100(){const q=[];
-const pt=[(n,a,b,it)=>`${n} ima ${a} ${it}. Dobije još ${b}. Koliko sada?`,(n,a,b,it)=>`U košari ${a} ${it}. Mama doda ${b}. Ukupno?`,(n,a,b,it)=>`Na livadi ${a} ${it}. Dođe ${b}. Koliko sada?`,(n,a,b,it)=>`${n} skupi ${a} ${it}. Prijatelj da ${b}. Zajedno?`,(n,a,b,it)=>`U razredu ${a} djece. Dođe ${b}. Koliko sada?`,(n,a,b,it)=>`${n} pročita ${a} str., pa još ${b}. Ukupno?`,(n,a,b,it)=>`Na stolu ${a} ${it}. ${n} donese ${b}. Koliko?`,(n,a,b,it)=>`${n} ima ${a} kn, dobije ${b} kn. Koliko?`,(n,a,b,it)=>`U vrtu ${a} ${it}. Posadimo ${b}. Koliko sada?`,(n,a,b,it)=>`${n} napravi ${a} ${it}. Sutra napravi ${b}. Ukupno?`];
 for(let a=10;a<=90;a+=10)for(let b=10;b<=100-a;b+=10)q.push({type:"input",difficulty:1,question:`${a}+${b}=?`,correctAnswer:String(a+b)});
-for(let a=11;a<=85;a+=4)for(let b=3;b<=85;b+=7){if(a+b>100)continue;const r=cfc(a+b,Math.max(a+b-5,0),Math.min(a+b+5,100));q.push({type:"choice",difficulty:2,question:`${a}+${b}=?`,answers:r.answers,correctIndex:r.correctIndex});if((a+b)%3===0)q.push({type:"input",difficulty:2,question:`${a}+${b}=?`,correctAnswer:String(a+b)})}
+q.push(...mathCombi("+",{a:[11,85,4],b:[3,85,7]},(a,b,r)=>r<=100,70));
 for(let a=3;a<=15;a+=2)for(let b=2;b<=12;b+=3){if(a+b>25)continue;const e=EL[(a+b)%EL.length];q.push({type:"input",difficulty:2,visual:`${rep(e,Math.min(a,8))}+${rep(e,Math.min(b,8))}`,question:"Ukupno?",correctAnswer:String(a+b)})}
-for(let i=0;i<30;i++){const a=(i*7+13)%40+10,b=(i*5+3)%35+5;if(a+b>99)continue;q.push({type:"input",difficulty:3,question:pt[i%pt.length](N(),a,b,IF()),correctAnswer:String(a+b)})}
+q.push(...storyProb("+",{a:[10,60],b:[5,35]},35));
 for(let a=10;a<=50;a+=5)for(let b=5;b<=40;b+=8){if(a+b>99)continue;q.push({type:"input",difficulty:4,question:`${a}+?=${a+b}`,correctAnswer:String(b)})}
 return fix(q).slice(0,210)}
 
 function genOduzimanje100(){const q=[];
-const pt=[(n,a,b,it)=>`${n} ima ${a} ${it}. Pojede ${b}. Ostane?`,(n,a,b,it)=>`U kutiji ${a} ${it}. Pojedu ${b}. Ostane?`,(n,a,b,it)=>`Na grani ${a} ptica. ${b} odleti. Ostane?`,(n,a,b,it)=>`${n} ima ${a} kn. Potroši ${b}. Ostane?`,(n,a,b,it)=>`U busu ${a} putnika. Izađe ${b}. Ostane?`,(n,a,b,it)=>`U vrtu ${a} ${it}. Uvene ${b}. Ostane?`,(n,a,b,it)=>`${n} ima ${a} ${it}. Pokloni ${b}. Ostane?`,(n,a,b,it)=>`U jezeru ${a} riba. Ulove ${b}. Ostane?`,(n,a,b,it)=>`${n} ima ${a} ${it}. Izgubi ${b}. Ostane?`,(n,a,b,it)=>`Na parkingu ${a} auta. Ode ${b}. Ostane?`];
 for(let a=20;a<=100;a+=10)for(let b=10;b<=a;b+=10)q.push({type:"input",difficulty:1,question:`${a}-${b}=?`,correctAnswer:String(a-b)});
-for(let a=20;a<=99;a+=4)for(let b=2;b<=a-1;b+=7){const r=cfc(a-b,Math.max(a-b-5,0),Math.min(a-b+5,99));q.push({type:"choice",difficulty:2,question:`${a}-${b}=?`,answers:r.answers,correctIndex:r.correctIndex});if((a-b)%3===0)q.push({type:"input",difficulty:2,question:`${a}-${b}=?`,correctAnswer:String(a-b)})}
-for(let i=0;i<30;i++){const a=(i*7+30)%50+30,b=(i*5+3)%20+5;if(b>=a)continue;q.push({type:"input",difficulty:3,question:pt[i%pt.length](N(),a,b,IF()),correctAnswer:String(a-b)})}
+q.push(...mathCombi("-",{a:[20,99,4],b:[2,50,7]},(a,b,r)=>b<a&&r>=0,70));
+q.push(...storyProb("-",{a:[30,80],b:[5,25]},35));
 for(let a=20;a<=80;a+=8)for(let b=5;b<=30;b+=9){if(b>=a)continue;q.push({type:"input",difficulty:4,question:`${a}-?=${a-b}`,correctAnswer:String(b)})}
 return fix(q).slice(0,210)}
 
