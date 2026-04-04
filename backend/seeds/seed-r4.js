@@ -4,6 +4,7 @@
 require("dotenv").config({path:require("path").join(__dirname,"../.env")});
 const{MongoClient}=require("mongodb");
 const{N,IF,IM,sh,cfc,rep,fix,EL,CIRCLE}=require("./gen-hrvatski");
+const{mathCombi,storyProb,smartChoice,multiFormat,oddOneOut,trueFalse,pick:_pick,pickN:_pickN,wf:_wf}=require("./gen-engine");
 const GRADE=4;
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const pickN=(a,n)=>sh([...a]).slice(0,n);
@@ -68,16 +69,18 @@ for(let n=1234;n<=9999;n+=1111){q.push({type:"input",difficulty:3,question:`Zaok
 return fix(q).slice(0,210)}
 
 function genPisanoZbrOduz(){const q=[];
-for(let i=0;i<35;i++){const a=(i*7123+10000)%90000+10000,b=(i*5237+10000)%90000+10000;if(a+b>999999)continue;q.push({type:"input",difficulty:2,question:`${a.toLocaleString('hr')}+${b.toLocaleString('hr')}=?`,correctAnswer:String(a+b)})}
-for(let i=0;i<35;i++){const a=(i*6789+20000)%80000+20000,b=(i*4321+1000)%15000+1000;q.push({type:"input",difficulty:2,question:`${a.toLocaleString('hr')}-${b.toLocaleString('hr')}=?`,correctAnswer:String(a-b)})}
-for(let i=0;i<12;i++){const a=(i+1)*5000+12345,b=(i+1)*1000+2345;q.push({type:"input",difficulty:3,question:`Grad: ${a.toLocaleString('hr')} + ${b.toLocaleString('hr')} doseljenih = ?`,correctAnswer:String(a+b)})}
+q.push(...mathCombi("+",{a:[10000,90000,7123],b:[10000,90000,5237]},(a,b,r)=>r<=999999,60));
+q.push(...mathCombi("-",{a:[20000,99000,6789],b:[1000,20000,4321]},(a,b,r)=>r>=0,60));
+q.push(...storyProb("+",{a:[10000,50000],b:[5000,30000]},20));
+q.push(...storyProb("-",{a:[30000,80000],b:[5000,20000]},20));
 return fix(q).slice(0,210)}
 
 function genPisanoMnozDijel(){const q=[];
-for(let a=12;a<=999;a+=37)for(let b=2;b<=9;b++){if(a*b>999999)continue;q.push({type:"input",difficulty:2,question:`${a}×${b}=?`,correctAnswer:String(a*b)})}
-for(let i=0;i<25;i++){const a=(i*13+10)%90+10,b=(i*17+10)%90+10;q.push({type:"input",difficulty:3,question:`${a}×${b}=?`,correctAnswer:String(a*b)})}
-for(let b=2;b<=9;b++)for(let r=10;r<=100;r+=13){q.push({type:"input",difficulty:2,question:`${r*b}÷${b}=?`,correctAnswer:String(r)})}
-for(let i=0;i<20;i++){const b=(i*11+11)%40+11,r=(i*7+5)%50+5;q.push({type:"input",difficulty:3,question:`${b*r}÷${b}=?`,correctAnswer:String(r)})}
+q.push(...mathCombi("*",{a:[12,200,13],b:[2,9,1]},(a,b,r)=>r<=999999,80));
+q.push(...mathCombi("*",{a:[10,99,7],b:[10,99,11]},(a,b,r)=>r<=999999,40));
+for(let b=2;b<=9;b++)for(let r=10;r<=100;r+=13)q.push({type:"input",difficulty:2,question:`${r*b}÷${b}=?`,correctAnswer:String(r)});
+q.push(...storyProb("*",{a:[5,30],b:[3,12]},20));
+q.push(...storyProb("/",{a:[20,100],b:[2,10]},15));
 return fix(q).slice(0,210)}
 
 function genGeometrijaKutovi(){const q=[];
