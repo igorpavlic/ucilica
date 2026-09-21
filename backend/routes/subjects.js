@@ -4,6 +4,21 @@ const { optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
+/**
+ * GET /api/subjects/razredi — razredi za koje postoji sadržaj.
+ * Sučelje nudi samo njih; bez ovoga dijete odabere 5. razred i dobije prazan zaslon.
+ * Stoji PRIJE /:slug/topics jer je jednosegmentna ruta.
+ */
+router.get('/razredi', async (req, res, next) => {
+  try {
+    const db = getDb();
+    const razredi = await db.collection('subjects').distinct('grade', { isActive: true });
+    res.json({ razredi: razredi.filter(Number.isFinite).sort((a, b) => a - b) });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/subjects?grade=1
 router.get('/', optionalAuth, async (req, res) => {
   try {

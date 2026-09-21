@@ -1,5 +1,7 @@
 const { getQuizQuestions, generateAndStore } = require('../../services/questionGenerator');
 const { quizRepository } = require('./quiz.repository');
+const vjestine = require('../../services/vjestine');
+const { tocan, ocisti } = require('../../seeds/jasnoca');
 
 function createHttpError(status, message) {
   const error = new Error(message);
@@ -8,7 +10,7 @@ function createHttpError(status, message) {
 }
 
 function mapSafeQuestion(question) {
-  return {
+  const osnovno = {
     _id: question._id,
     type: question.type,
     question: question.question,
@@ -18,9 +20,56 @@ function mapSafeQuestion(question) {
     placeholder: question.placeholder || 'Upiši odgovor...',
     difficulty: question.difficulty || 1
   };
+
+  // Spajanje parova: klijent dobiva dva promiješana stupca, bez veze među njima.
+  // Točan raspored ostaje na serveru.
+  if (question.type === 'match') {
+    osnovno.answers = [];
+    osnovno.lijevo = (question.pairs || []).map((p, i) => ({ id: i, tekst: p[0] }));
+    osnovno.desno = promijesaj((question.pairs || []).map((p, i) => ({ id: i, tekst: p[1] })));
+  }
+
+  return osnovno;
+}
+
+/** Fisher-Yates — klijent ne smije dobiti parove u izvornom redoslijedu */
+function promijesaj(niz) {
+  const a = [...niz];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 function evaluateQuestion(question, rawAnswer) {
+  // Spajanje parova: odgovor je { lijeviId: desniId, ... }.
+  // Točno je kad je svaki lijevi spojen sa svojim izvornim parom.
+  if (question.type === 'match') {
+    const parovi = question.pairs || [];
+    const veze = (rawAnswer && typeof rawAnswer === 'object' && !Array.isArray(rawAnswer))
+      ? rawAnswer : {};
+
+    // Usporedba po TEKSTU, ne po indeksu: ako se isti desni član pojavi
+    // dvaput, svako značenjski ispravno spajanje se priznaje.
+    let tocnih = 0;
+    for (let i = 0; i < parovi.length; i++) {
+      const spojenNa = veze[i];
+      if (spojenNa === undefined || spojenNa === null) continue;
+      const ponudeni = parovi[Number(spojenNa)];
+      if (ponudeni && String(ponudeni[1]) === String(parovi[i][1])) tocnih++;
+    }
+
+    return {
+      normalizedAnswer: veze,
+      isCorrect: parovi.length > 0 && tocnih === parovi.length,
+      tocnihVeza: tocnih,
+      ukupnoVeza: parovi.length,
+      correctAnswer: parovi.map((p) => `${p[0]} → ${p[1]}`).join(', '),
+      correctIndex: null
+    };
+  }
+
   if (question.type === 'choice') {
     const selectedIndex = Number.parseInt(rawAnswer, 10);
     return {
@@ -31,12 +80,19 @@ function evaluateQuestion(question, rawAnswer) {
     };
   }
 
-  const normalized = String(rawAnswer ?? '').trim();
-  const expected = String(question.correctAnswer ?? '').trim();
+  // Upis odgovora. Strogoća ovisi o tome što se pitanjem provjerava.
+  //
+  // Dosad se uspoređivao cijeli niz znakova, pa je "Pas trči" bilo netočno
+  // kad se očekivalo "Pas trči." — čak i kad zadatak nije o interpunkciji.
+  // Sada završni znak i veliko početno slovo ulaze u ocjenu samo kad su oni
+  // ono što se poučava (konstrukt "recenica" ili "interpunkcija").
+  // Dijakritike su uvijek bitne: "cetiri" nije "četiri".
+  const normalized = ocisti(rawAnswer);
+  const expected = ocisti(question.correctAnswer);
 
   return {
     normalizedAnswer: normalized,
-    isCorrect: normalized.localeCompare(expected, undefined, { sensitivity: 'accent' }) === 0,
+    isCorrect: tocan(normalized, expected, question.konstrukt, question.prihvatljivi || []),
     correctAnswer: expected,
     correctIndex: null
   };
@@ -150,6 +206,7 @@ function createQuizService() {
     const questionMap = new Map(questions.map((question) => [question._id.toString(), question]));
 
     const evaluatedAnswers = [];
+    const stavkeVjestina = []; // ulaz za FSRS — jedna stavka po odgovoru
     let correctCount = 0;
 
     for (const answer of answers) {
@@ -164,12 +221,24 @@ function createQuizService() {
       const evaluation = evaluateQuestion(question, answer.userAnswer);
       if (evaluation.isCorrect) correctCount += 1;
 
+      const vrijemeMs = Number.parseInt(answer.timeTaken, 10) || 0;
+
       evaluatedAnswers.push({
         question_id: question._id,
         wasCorrect: evaluation.isCorrect,
         userAnswer: evaluation.normalizedAnswer,
-        timeTaken: Number.parseInt(answer.timeTaken, 10) || 0
+        timeTaken: vrijemeMs
       });
+
+      if (question.gik?.outcome) {
+        stavkeVjestina.push({
+          skill: question.gik.outcome,
+          meta: question.gik,
+          tocno: evaluation.isCorrect,
+          vrijemeMs,
+          difficulty: question.difficulty || 1
+        });
+      }
     }
 
     const score = correctCount * 10;
@@ -190,6 +259,16 @@ function createQuizService() {
 
     await repo.updateUserScoreAndStreak(userId, score, allCorrect);
     await repo.markAttemptCompleted(attemptId);
+
+    // Krivulja zaboravljanja: svaka dodirnuta vještina dobiva novi rok ponavljanja.
+    // Ne smije srušiti predaju kviza ako zapne — rezultat je već spremljen.
+    let vjestineIshod = [];
+    try {
+      vjestineIshod = await vjestine.zabiljeziKviz(userId, stavkeVjestina);
+    } catch (err) {
+      console.error('⚠️  Zapis vještina nije uspio:', err.message);
+    }
+
     const updatedUser = await repo.findSafeUserById(userId);
 
     return {
@@ -202,7 +281,11 @@ function createQuizService() {
       user: {
         totalScore: updatedUser.totalScore,
         streak: updatedUser.streak
-      }
+      },
+      vjestine: vjestineIshod.map((v) => ({
+        skill: v.skill,
+        sljedecePonavljanje: v.due
+      }))
     };
   }
 

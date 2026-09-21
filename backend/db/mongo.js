@@ -95,6 +95,9 @@ async function createIndexes() {
   // Quiz attempts — TTL 6h, auto-brisanje starih sesija
   await db.collection('quiz_attempts').createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 6 });
   await db.collection('quiz_attempts').createIndex({ user_id: 1, createdAt: -1 });
+  // Stanje vještina (FSRS) — jedan zapis po korisniku i ishodu iz kurikula
+  await db.collection('skill_states').createIndex({ user_id: 1, skill: 1 }, { unique: true });
+  await db.collection('skill_states').createIndex({ user_id: 1, 'card.due': 1 });
 
   console.log('✅ Indeksi kreirani');
 }

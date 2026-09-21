@@ -43,7 +43,10 @@ const topics = ref([])
 
 onMounted(async () => {
   try {
-    const data = await get(`/subjects/${props.slug}/topics?grade=${grade.value}`)
+    // Razred iz upita ima prednost: izbornik na početnom zaslonu ga proslijedi,
+    // a gostu se izbor ne sprema u profil pa bi inače pao natrag na 1.
+    const g = Number.parseInt(route.query.grade, 10) || grade.value
+    const data = await get(`/subjects/${props.slug}/topics?grade=${g}`)
     topics.value = data.topics
   } catch (e) {
     emit('error', e.message)

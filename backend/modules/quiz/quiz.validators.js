@@ -24,6 +24,9 @@ const checkAnswerValidators = [
   objectIdRule('attemptId', 'Neispravan ID kviz sesije.'),
   objectIdRule('questionId', 'Neispravan ID pitanja.'),
   body('answer').exists().withMessage('answer je obavezan')
+    .bail()
+    .custom((v) => ['string', 'number', 'object'].includes(typeof v))
+    .withMessage('answer mora biti broj, tekst ili mapa parova')
 ];
 
 const submitQuizValidators = [
@@ -31,7 +34,10 @@ const submitQuizValidators = [
   objectIdRule('topicId', 'Neispravan ID teme.'),
   body('answers').isArray({ min: 1 }).withMessage('answers mora biti neprazan array'),
   body('answers.*.questionId').custom((value) => ObjectId.isValid(value)).withMessage('questionId mora biti valjani ObjectId'),
-  body('answers.*.userAnswer').exists().withMessage('userAnswer je obavezan'),
+  body('answers.*.userAnswer').exists().withMessage('userAnswer je obavezan')
+    .bail()
+    .custom((v) => ['string', 'number', 'object'].includes(typeof v))
+    .withMessage('userAnswer mora biti broj, tekst ili mapa parova'),
   body('answers.*.timeTaken').optional().isInt({ min: 0 }).withMessage('timeTaken mora biti nenegativan broj')
 ];
 

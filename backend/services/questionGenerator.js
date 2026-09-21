@@ -7,6 +7,9 @@
 
 const { ObjectId } = require('mongodb');
 const { getDb } = require('../db/mongo');
+const EMOJI_ONLY = /^[\p{Emoji_Presentation}\p{Extended_Pictographic}\u{200D}\u{FE0F}\u{20E3}]+$/u;
+const vjestine = require('./vjestine');
+const { buildQuestionMetadata, decideDifficultyTarget, pickBalancedQuestions } = require('./gikEngine');
 
 // Generatori iz seeds/
 // Razred 1
@@ -122,6 +125,33 @@ async function getSeenQuestionIds(userId, topicId, rounds = 10) {
 }
 
 /**
+ * Uspješnost učenika na temi iz zadnjih N rundi — ulaz za odabir težine.
+ */
+async function getTopicStats(userId, topicId, rounds = 5) {
+  if (!userId) return { accuracy: 0.65, streak: 0 };
+  const db = getDb();
+  const recent = await db.collection('progress')
+    .find({ user_id: userId, topic_id: topicId })
+    .sort({ completedAt: -1 })
+    .limit(rounds)
+    .project({ totalQuestions: 1, correctAnswers: 1 })
+    .toArray();
+
+  if (recent.length === 0) return { accuracy: 0.65, streak: 0 };
+
+  const uk = recent.reduce((s, r) => s + (r.totalQuestions || 0), 0);
+  const tocno = recent.reduce((s, r) => s + (r.correctAnswers || 0), 0);
+
+  // niz uzastopnih rundi s >= 80 % točnosti, od najnovije
+  let streak = 0;
+  for (const r of recent) {
+    if (r.totalQuestions > 0 && r.correctAnswers / r.totalQuestions >= 0.8) streak++;
+    else break;
+  }
+  return { accuracy: uk > 0 ? tocno / uk : 0.65, streak };
+}
+
+/**
  * Pokreni generator i spremi nova pitanja u bazu.
  * Vraća broj umetnutih dokumenata.
  */
@@ -160,17 +190,26 @@ async function generateAndStore(topic, subjectId, grade, requestedCount = null) 
       answers: q.answers || [],
       ...(q.type === 'choice' ? { correctIndex: ci } : {}),
       ...(q.type === 'input' ? { correctAnswer: q.correctAnswer, placeholder: q.placeholder || '' } : {}),
+      // konstrukt = što se pitanjem zapravo provjerava; određuje strogoću ocjene
+      ...(q.konstrukt ? { konstrukt: q.konstrukt } : {}),
+      ...(q.prihvatljivi?.length ? { prihvatljivi: q.prihvatljivi } : {}),
+      ...(q.type === 'match' ? { pairs: q.pairs } : {}),
       grade,
       subject_id: subjectId,
+      gik: buildQuestionMetadata({ topic, subject: null, difficulty: q.difficulty || 1 }),
       topic_id: topic._id,
       isActive: true,
       createdAt: new Date()
     };
   }).filter(d => {
+    // Nikad ne upisuj input pitanje čiji je odgovor emoji — dijete ga ne može utipkati
+    if (d.type === 'input' && EMOJI_ONLY.test(String(d.correctAnswer || '').trim())) return false;
     // Odbaci choice pitanja bez valjanog correctIndex
     if (d.type === 'choice' && (d.correctIndex === undefined || d.correctIndex < 0)) return false;
     // Odbaci input pitanja bez odgovora
     if (d.type === 'input' && !d.correctAnswer) return false;
+    // Spajanje treba 3-5 parova; manje je trivijalno, više je previše za dijete
+    if (d.type === 'match' && (!Array.isArray(d.pairs) || d.pairs.length < 3 || d.pairs.length > 5)) return false;
     return true;
   });
 
@@ -204,22 +243,46 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
     ...(seenOids.length > 0 ? { _id: { $nin: seenOids } } : {})
   };
 
-  // 2. Pokušaj iz baze
-  let questions = await db.collection('questions')
-    .aggregate([{ $match: matchFresh }, { $sample: { size: count } }])
+  // 2. Širi uzorak kandidata — treba ih više od `count` da se može birati po težini
+  const poolSize = Math.max(count * 6, 30);
+  let pool = await db.collection('questions')
+    .aggregate([{ $match: matchFresh }, { $sample: { size: poolSize } }])
     .toArray();
 
-  // 3. Nedovoljno? Generiraj nova
-  if (questions.length < count) {
+  // 3. Nedovoljno? Generiraj nova pa ponovi
+  if (pool.length < count) {
     const generated = await generateAndStore(topic, subjectId, grade);
-
     if (generated > 0) {
-      // Ponovo traži (uključujući upravo generirana)
-      questions = await db.collection('questions')
-        .aggregate([{ $match: matchFresh }, { $sample: { size: count } }])
+      pool = await db.collection('questions')
+        .aggregate([{ $match: matchFresh }, { $sample: { size: poolSize } }])
         .toArray();
     }
   }
+  if (pool.length === 0) return [];
+
+  // 4. Prednost vještinama koje su dospjele za ponavljanje (FSRS).
+  //    Vještina je ishod iz kurikula koji pitanje nosi u gik.outcome.
+  //    Ako zapne, nastavi bez prioritizacije — kviz je važniji od rasporeda.
+  try {
+    const sveVjestine = [...new Set(pool.map((q) => q.gik?.outcome).filter(Boolean))];
+    if (sveVjestine.length > 1 && userId) {
+      const dospjele = await vjestine.dospjele(userId, sveVjestine);
+      if (dospjele.size > 0 && dospjele.size < sveVjestine.length) {
+        const prioritet = pool.filter((q) => dospjele.has(q.gik?.outcome));
+        const ostatak = pool.filter((q) => !dospjele.has(q.gik?.outcome));
+        // Dospjelo ide naprijed, ostatak ostaje kao dopuna ako nema dovoljno
+        if (prioritet.length >= count) pool = prioritet;
+        else pool = [...prioritet, ...ostatak];
+      }
+    }
+  } catch (err) {
+    console.error('⚠️  Prioritizacija vještina preskočena:', err.message);
+  }
+
+  // 5. Težina prema dosadašnjoj uspješnosti na ovoj temi
+  const stats = await getTopicStats(userId, topicId, 5);
+  const { quotas } = decideDifficultyTarget(stats);
+  const questions = pickBalancedQuestions(pool, count, quotas);
 
   // 4. Još uvijek nedovoljno? Sva pitanja su viđena u zadnjih 10 rundi.
   //    Ne vraćamo stara — korisnik mora odigrati druge teme pa se vratiti.
@@ -241,4 +304,4 @@ async function getFreshCount(userId, topicId) {
   });
 }
 
-module.exports = { getQuizQuestions, getFreshCount, generateAndStore, GENERATORS };
+module.exports = { getQuizQuestions, getTopicStats, getFreshCount, generateAndStore, GENERATORS };

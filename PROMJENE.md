@@ -1,0 +1,493 @@
+# Promjene u ovom paketu
+
+Pregled svega što je popravljeno, s načinom provjere.
+
+---
+
+## 1. Hrvatska gramatika — glavni popravak
+
+**Bilo:** od 212 parova „broj + imenica" u generiranim pitanjima, **153 (72 %)
+gramatički netočno.**
+
+```
+✗ Ana ima 6 jabuke. Dobije još 3.
+✗ Nina ubere 1 bojice. Mama ubere 2.
+✗ U prvom redu 3, u drugom 5 igračke.
+```
+
+Uzrok: rječnici `ITEMS_F` / `ITEMS_M` držali su nominativ množine
+(`["jabuke", "olovke", …]`) i lijepili ga iza svakog broja.
+
+**Sada:** novi `backend/seeds/hr-gramatika.js` — tablica od 42 imenice s tri
+oblika (N jd, paukal, G mn), rodom, oznakom `jestivo` i `predmet`, te 39 imena
+s eksplicitnim rodom. Kategoriju broja daje ugrađeni `Intl.PluralRules("hr")`.
+
+```
+✓ Ana ima 6 jabuka. Dobije još 3 jabuke.
+✓ Nina ubere 1 bojicu. Mama ubere 2 bojice.
+✓ U prvom redu su 3 igračke, a u drugom 5 igračaka.
+```
+
+Pokriveno:
+
+- **Slaganje broja i imenice** — 1 jabuka / 2 jabuke / 5 jabuka, uz iznimke
+  na 11–14 i 21, 101
+- **Padež** — `brojIme(1, 'naranca', 'A')` → „1 naranču" za objekt
+- **Rod** — particip (`dobio` / `dobila`), zamjenica (`mu` / `joj`),
+  posvojni pridjev (`Lukin`, `Markov`); *Luka, Noa, Roko, Karlo* prepoznati
+  kao muška imena na -a/-o
+- **Slaganje glagola** — *1 jabuka je*, *2 jabuke su*, *5 jabuka je*
+- **Semantika** — `jestivo` sprječava „pojeo 3 markera"; `predmet` odvaja
+  stvari koje dijete skuplja od strukturnih imenica (red, kutija, stablo)
+
+`gen-engine.js` — `storyProb()` prepisan: 29 predložaka prima gramatički
+kontekst umjesto gotovog niza. Nestale su sve kose crte `Dobio/la` i `mu/joj`.
+
+**Provjera:** `npm test` → „Slaganje broja i imenice ✓" (0 od 6 207 pitanja).
+
+---
+
+## 2. Duplicirani ponuđeni odgovori
+
+**Bilo:** 23 pitanja s ponovljenim izborom — dijete je vidjelo isto slovo dvaput.
+
+```
+✗ Slovo nakon "V"?  →  ["U", "Ž", "Ž", "Z"]
+✗ Slovo prije "B"?  →  ["C", "Z", "A", "A"]
+```
+
+Nastajalo na rubovima abecede gdje su se `abc[i-1]` i fiksni distraktor `"Ž"`
+poklapali.
+
+**Sada:** dva popravka.
+
+1. `fix()` u `gen-hrvatski.js` sada centralno deduplicira odgovore, ponovno
+   izračuna `correctIndex` i odbaci pitanje ako nakon čišćenja ostane manje od
+   dva izbora. Štiti sve generatore, ne samo ovaj.
+2. Nova `distraktoriSlova()` bira tri različita slova iz abecede, prvenstveno
+   iz okoline točnog odgovora.
+
+**Provjera:** `npm test` → „Choice s dupliciranim odgovorima ✓".
+
+---
+
+## 3. Vizual za prebrojavanje izlazi izvan kartice
+
+**Bilo:** kod pitanja „Prebroji koliko ih ima" zadnja zvjezdica bila je odrezana.
+Zadatak koji traži brojanje, a ne pokazuje sve elemente, nije rješiv.
+
+Uzrok: `.question-visual` ima `flex-wrap: wrap`, ali vizual se ispisivao kao
+jedna interpolacija `{{ visual }}`. Neprekinuti tekst je u flex spremniku **jedan**
+element, pa se prelamanje nikad nije primijenilo.
+
+**Sada:**
+
+- `QuizView.vue` razlaže vizual na pojedinačne znakove preko `Intl.Segmenter`
+  (emoji sa spojnicama, npr. 👨‍👩‍👧, ostaju jedan znak) i svaki renderira kao
+  vlastiti `<span>` — tek tada `flex-wrap` radi
+- Kod 6+ jednakih znakova grupira po 5, pa dijete prepoznaje skupine umjesto da
+  broji jedan po jedan
+- `main.css`: `font-size: clamp(1.6rem, 7vw, 2.5rem)` — pri mnogo elemenata font
+  se sam smanjuje umjesto da sadržaj isteče; prilagodbe i na 600 px i 380 px
+
+**Provjera:** 7 zvjezdica → 2 skupine (5 + 2); 20 → 4 skupine; miješani vizual
+(`🍎🍎🍎 + 🍏🍏`) se ne grupira nego ostaje niz pojedinačnih znakova.
+
+---
+
+## 4. `seed.js` brisao bazu pri importu
+
+**Bilo:** `backend/seeds/seed.js` završavao je golim pozivom `seed();`. Svaki
+`require` te datoteke spojio bi se na bazu, obrisao podatke 1. razreda i pozvao
+`process.exit(0)`. `seed-r2/r3/r4.js` bili su zaštićeni, `seed.js` nije.
+
+**Sada:** `if (require.main === module) { seed(); }` — kao i ostali.
+
+**Provjera:** `node -e 'require("./seeds/seed.js")'` se vrati bez ijednog upita
+prema bazi.
+
+---
+
+## 5. Emoji kao odgovor na input pitanje
+
+**Bilo:** `fix-emoji-inputs.js` je jednokratna migracija baze, ali
+`questionGenerator.js` pri generiranju u hodu upisivao je ista pitanja natrag
+bez provjere. Dijete je dobivalo „Napiši emoji." i moralo utipkati 🎁.
+
+**Sada:** filtar u `generateAndStore()` odbacuje svako `input` pitanje čiji je
+odgovor sastavljen samo od emojija — bug se više ne može vratiti kroz
+generiranje. Migracija ostaje za već postojeće zapise.
+
+**Provjera:** `npm test` → „Input pitanja s emoji odgovorom ✓".
+
+---
+
+## 6. Adaptivnost — `difficulty` se konačno koristi
+
+**Bilo:** svako pitanje nosi `difficulty`, ali se pri odabiru nigdje nije čitao.
+Dijete koje savršeno zbraja dobivalo je iste zadatke kao ono koje muku muči.
+`gikEngine.js` je imao gotove funkcije (`decideDifficultyTarget`,
+`pickBalancedQuestions`, `inferDifficultyBand`) koje nitko nije pozivao.
+
+**Sada:** `getQuizQuestions()` čita uspješnost na temi iz zadnjih 5 rundi
+(nova `getTopicStats()`), traži širi uzorak neviđenih pitanja (`count × 6`) i
+raspoređuje ga po kvotama:
+
+| Uspješnost | Razina | Lako / Srednje / Teško |
+|---|---|---|
+| ≥ 85 % i niz ≥ 2 | napredna | 1 / 2 / 4 |
+| ≥ 65 % | uravnotežena | 2 / 3 / 2 |
+| < 65 % | podrška | 4 / 2 / 1 |
+
+---
+
+## 7. GIK metapodaci na pitanjima
+
+`gikEngine.js` ima 59 tema s ishodima iz kurikula, ali ga ništa nije uvozilo.
+Sada i generiranje u hodu i sve četiri seed skripte dodaju `gik` na svako
+pitanje:
+
+```json
+{ "outcome": "MAT OŠ A.1.4", "outcomeText": "zbraja u skupu brojeva do 20",
+  "domain": "Računske operacije", "difficultyBand": "medium" }
+```
+
+Time je otvoren put prema praćenju po vještinama (vidi „Što dalje").
+
+---
+
+## 8. Mrtav kod
+
+`modules/quiz/quiz.generator.js` obrisan — 47 redaka nedovršenog generatora koji
+je proizvodio polje `options` (shema ga ne poznaje, ostatak koda koristi
+`answers`). Nitko ga nije uvozio.
+
+---
+
+## 9. Testovi
+
+Novi `backend/test/`, spojen na `npm test`:
+
+**`provjeri-pitanja.js`** — 13 provjera nad svih ~6 200 generiranih pitanja.
+Izlazni kod 1 ruši CI. Provjere slaganja grade se iz same tablice imenica, pa
+dodavanje nove imenice automatski proširuje pokrivenost.
+
+**`provjeri-tijek.js`** — podmeće lažnu bazu i prolazi cijeli tijek kviza bez
+MongoDB-a. Uz osnovni put provjerava i da:
+
+- pitanja poslana klijentu **ne** sadrže `correctIndex`, `correctAnswer` ni `gik`
+- odgovor na pitanje izvan sesije vraća 403
+- ponovna predaja iste sesije vraća 409
+- bodovi i niz se ispravno ažuriraju
+
+`npm run seed:all` pokreće oboje prije nego dotakne bazu.
+
+---
+
+## 10. Sitnije
+
+- `backend/.env.example` — server odbija start bez `JWT_SECRET` i `MONGODB_URI`,
+  a predloška nije bilo
+- `package.json` (oba) — dodani `test`, `test:tijek`, `test:sve`, `seed:3`,
+  `seed:4`; `seed:all` sada prvo testira
+- README prepisan: nova struktura, pravila hrvatske gramatike, testovi,
+  tablica adaptivnosti
+
+---
+
+## Provjereno
+
+```
+npm test                          → 16/16 ✓   (6 260 pitanja)
+cd backend && npm run test:tijek  → 31/31 ✓
+```
+
+Test je provjeren i s namjerno ubačenim greškama („Ana ima 5 jabuke",
+duplicirani odgovori) — uredno pada.
+
+**Nije provjereno u ovom okruženju:** `npm run build` na frontendu. Sandbox
+blokira `vue-demi` (ovisnost Pinie), pa Vite nije mogao instalirati. Umjesto
+toga provjereno: sintaksa `<script setup>` kroz `node --check`, balans tagova u
+templateu, da su svi identifikatori iz templatea definirani, balans vitičastih
+zagrada u CSS-u i logika razlaganja znakova u Nodeu. Pokreni build lokalno prije
+deploya.
+
+---
+
+# Drugi krug — plan iz analize
+
+## 11. Rječnik proširen na 120 imenica
+
+Bilo 42, sada **120** u deset kategorija (škola, hrana, igračke, priroda,
+životinje, kućanstvo, promet, ljudi, mjere, strukturne). Podaci su odvojeni u
+`seeds/hr-imenice.js`, logika ostaje u `hr-gramatika.js`.
+
+Kategorija služi da predložak izabere tematski prikladnu imenicu — zadatak o
+livadi više ne dobiva olovke.
+
+**Živo i neživo.** Muški rod razlikuje akuzativ prema živosti: *vidim stol*, ali
+*vidim psa*. Prije se to nije razlikovalo. Sada životinje i ljudi nose
+`zivo: true`, a `akuzativJd()` to poštuje.
+
+**Nove provjere.** Rječnik je pisan rukom, pa ga stroj provjerava: poklapa li se
+ključ s nominativom, završava li genitiv jednine ženskog roda na -e, akuzativ na
+-u, ima li životinja u muškom rodu oznaku `zivo`. Provjereno s namjerno
+ubačenim greškama — uredno pada.
+
+### hrLex nije bilo moguće preuzeti ovdje
+
+`tools/hrlex-izvuci.js` je napisan i provjeren na umjetnom uzorku, ali sam
+leksikon nisam mogao dohvatiti: mrežni proxy ovog okruženja odbija clarin.si i
+nlp.ffzg.hr s 403 (organizacijska zabrana, ne kvar). Skriptu pokreni lokalno:
+
+```bash
+curl -L -o hrLex_v1.3.gz \
+  "https://www.clarin.si/repository/xmlui/bitstream/handle/11356/1232/hrLex_v1.3.gz"
+node tools/hrlex-izvuci.js hrLex_v1.3.gz
+```
+
+Skripta čita MSD oznake (`Ncfsn`, `Ncfsg`, `Ncfpg`, `Ncfsa`), bira češći oblik
+kad postoje dublete (*olovaka* / *olovki*), prepoznaje živost iz akuzativa i
+preskače vlastite imenice. Provjereno: iz uzorka je ispravno izvukla i
+`pas → psa` (živo) i `stol → stol` (neživo).
+
+---
+
+## 12. Ponavljanje po krivulji zaboravljanja (FSRS)
+
+Dosad: „viđeno u zadnjih 10 rundi" — binarno, bez razlike između pogotka iz
+prve i trećeg pokušaja, bez pojma kada je nešto vrijeme ponoviti.
+
+Sada se prati **vještina**, ne pitanje. Vještina je GIK ishod koji svako pitanje
+već nosi (`gik.outcome`, npr. `MAT OŠ A.1.4`).
+
+Ocjena se izvodi iz točnosti i vremena, uz prag koji raste s težinom pitanja —
+na teškom zadatku 10 s nije sporo. Ako je ijedan odgovor iz iste vještine bio
+netočan, cijela vještina ide na `Again`: promašaj je jači signal od pogotka.
+
+`createSession` daje prednost pitanjima čija je vještina dospjela, pa tek onda
+primjenjuje kvote težine. Zapis vještina je u `try/catch` — ako zakaže, rezultat
+kviza je već spremljen i kviz se ne ruši.
+
+Nova kolekcija `skill_states` s indeksima. Novi krajnji resurs
+`GET /api/progress/vjestine` vraća stanje po vještinama, najslabije prvo —
+osnova za roditeljski pregled.
+
+Koristi [ts-fsrs](https://github.com/open-spaced-repetition/ts-fsrs) 5.4.2, MIT,
+bez ovisnosti.
+
+---
+
+## 13. Novi tip pitanja: spajanje parova
+
+Dotad samo `choice` i `input`. Za 1. i 2. razred je spajanje prirodnije od
+tipkanja.
+
+Interakcija je klik-pa-klik, ne povlačenje — na dodirnicima pouzdanije i mlađem
+djetetu lakše. Veze se označavaju brojevima umjesto crtanjem linija, pa raspored
+radi na svakoj širini zaslona. Ponovni klik na spojeni član razvezuje.
+
+70 pitanja kroz sve razrede: životinja → glasanje i dom (1. r.), imenica → rod
+i životinja → proizvod (2. r.), riječ → vrsta riječi (3. r.), organ → sustav,
+osjetilo → organ i grad → kraj (4. r.).
+
+Dva nalaza usput:
+
+- **`sh()` je determinističan** (`j = (i*7+3) % (i+1)`) — namjerno, za stabilan
+  redoslijed distraktora. Ali `pickN` to nasljeđuje, pa je uvijek vraćao isti
+  podskup: od 18 traženih pitanja nastajala su 2. Dodan `shR` / `pickNR` za
+  slučajeve kad treba stvarna nasumičnost.
+- **Dvosmisleni zadaci.** Kod „imenica → rod" desni stupac je imao „ženski"
+  dvaput — dijete ne može znati koji je pravi par. Generator sada bira samo
+  različite desne članove, a ocjenjivanje uspoređuje **tekst** umjesto indeksa,
+  pa se priznaje svako značenjski ispravno spajanje.
+
+Usput popravljeno: `module.exports` u `routes/progress.js` stajao je na liniji
+109, a ruta `/answers` registrirala se poslije njega. Radilo je jer se router
+mutira, ali je krhko — export je premješten na kraj.
+
+---
+
+## Tri prijave iz zadnjeg pokretanja
+
+**1. `Cannot find module 'ts-fsrs'`**
+
+Nije greška u kodu — `ts-fsrs` je nova ovisnost (ponavljanje po krivulji
+zaboravljanja) i zapisana je u `backend/package.json`, ali `node_modules` je
+star. Rješenje:
+
+```
+cd backend
+npm install
+```
+
+**2. `npm run seed` napunio samo 1. razred**
+
+`seed` je pokazivao na `seeds/seed.js`, a to je skripta samo za 1. razred.
+Sada `npm run seed` pokreće **sva četiri razreda**; pojedinačni razred je
+`npm run seed:1` … `seed:4`.
+
+Usput: sve četiri skripte zvale su `process.exit(0)` i kad bi uhvatile grešku,
+pa bi lanac `&&` u `seed:all` tiho nastavio preko pada. Dodana zastavica
+`pogreska` i `process.exit(pogreska ? 1 : 0)`. Svaka skripta briše samo svoj
+razred (`deleteMany({ grade: GRADE })`), pa ulančavanje ne gazi prethodne.
+
+**3. U aplikaciji nema izbora razreda**
+
+Izbornik je postojao samo u profilu, iza sličice u zaglavlju, i nudio je
+razrede 1–8 iako sadržaja ima za 1–4.
+
+- nova ruta `GET /api/subjects/razredi` vraća razrede za koje u bazi postoji
+  aktivan predmet;
+- `HomeView.vue` ima izbornik razreda na vrhu, prije popisa predmeta; prijavljenom
+  korisniku se izbor pamti (`PATCH /auth/me`), gostu traje do osvježenja;
+- ako razred korisnika nema sadržaja, zaslon se prebaci na prvi koji ga ima;
+- prazna baza više ne daje prazan zaslon nego uputu da se pokrene `npm run seed`;
+- `ProfileView.vue` više ne nudi razrede kojih nema.
+
+---
+
+## Jasnoća pitanja
+
+**Prijava:** „nije bilo jasno da se treba staviti znak za završetak rečenice."
+
+Zadatak je glasio:
+
+```
+Popravi rečenicu: "pada kiša"
+```
+
+Očekivalo se `Pada kiša.` Dijete koje upiše `Pada kiša` dobije netočno — a
+nigdje nije pisalo da treba i točku. To nije pogreška u pravopisu nego u
+pogađanju što se traži.
+
+### Izvori
+
+Pravila su uzeta iz smjernica za sastavljanje zadataka, ne izmišljena:
+
+| Izvor | Što kaže |
+|---|---|
+| [NCVVO, Smjernice za izradu ispitnih zadataka (2020)](https://www.ncvvo.hr/wp-content/uploads/2020/04/NCVVO_Smjernice-za-izradu-ispitnih-zadataka_PRVI-DIO_04_2020.pdf) | „Osnovu zadatka treba oblikovati u upitnome obliku." „Ometači ne smiju biti djelomično točni niti previše slični točnomu odgovoru." |
+| [Haladyna, Downing & Rodriguez (2002)](https://site.ufvjm.edu.br/fammuc/files/2016/05/item-writing-guidelines.pdf) | Pitanje ispred nedovršene rečenice; tri ponuđena odgovora su dovoljna; ometači iz tipičnih dječjih pogrešaka. |
+| [TIMSS 2019 Item Writing Guidelines](https://timssandpirls.bc.edu/timss2019/pdf/T19-item-writing-guidelines.pdf) | Naznačiti očekivanu razinu detalja odgovora; količina čitanja na najmanju mjeru. |
+| [Čubrić, M., Pravopisni zadatci](https://hrcak.srce.hr/file/253904) | Upisivanje samo znaka, izvan rečenice, djetetu je neprirodno — „mogućnost zabune razrješuje se kontekstom". |
+| [Profil Klett, Metodologija izrade zadataka](https://www.profil-klett.hr/sites/default/files/datoteke/metodologija_izrade_zadataka_corr_pk_2020-clanak.pdf) | Uputa počinje glagolom koji opisuje radnju; ponuđeni odgovori istog reda i podjednake duljine. |
+| [Deque — čitači zaslona i interpunkcija](https://www.deque.com/blog/dont-screen-readers-read-whats-screen-part-1-punctuation-typographic-symbols/) | Samostalan interpunkcijski znak čitač zaslona ne izgovara pouzdano. |
+
+Sve je skupljeno u novi `backend/seeds/jasnoca.js`, s izvorima u zaglavlju.
+
+### Što je popravljeno
+
+**1. Zadatak s upisom sada kaže u kojem se obliku odgovara.**
+
+```
+✗ Popravi rečenicu: "pada kiša"
+✓ Napiši ovu rečenicu pravilno: "pada kiša" Napiši cijelu rečenicu —
+  velikim početnim slovom i s rečeničnim znakom na kraju.
+
+✗ Doba snijega?
+✓ U koje godišnje doba pada snijeg? Napiši jednu riječ.
+```
+
+Oblik se izvodi iz samog odgovora (`dopuniFormat`), pa vrijedi za sva 2426
+zadatka s upisom bez ručnog prepisivanja generatora. Čisti računski zadaci
+(`Koliko je 7 + 0?`) se preskaču — ondje nema dvojbe.
+
+**2. Ocjena je stroga samo u onome što zadatak i uči.**
+
+Prije se uspoređivao cijeli niz znakova, pa je `Pada kiša` bilo netočno i
+kad zadatak uopće nije bio o interpunkciji. Sada svako pitanje nosi
+`konstrukt` — što se njime zapravo provjerava:
+
+| konstrukt | točka na kraju | veliko slovo | dijakritici |
+|---|---|---|---|
+| `recenica` | traži se | traži se | traže se |
+| `rijec`, `broj`, `slovo` | ne kažnjava se | ne kažnjava se | traže se |
+
+Tako `zima.`, `Zima` i `zima` prolaze na pitanju o godišnjem dobu, a
+`proljece` i dalje ne prolazi — dijakritici su uvijek dio odgovora.
+
+**3. Gumb sa znakom nosi i ime znaka.**
+
+```
+✗ [ . ]  [ ? ]  [ ! ]
+✓ [ . točka ]  [ ? upitnik ]  [ ! uskličnik ]
+✓ [ < manje ]  [ > veće ]  [ = jednako ]
+```
+
+Točka na gumbu je nekoliko piksela zaslona, a čitač zaslona je uopće ne
+pročita.
+
+**4. Pitanje je cijela rečenica, ne natuknica.** Prepisano 541 obrazaca
+kroz sva četiri razreda:
+
+```
+✗ Prostorija?                  ✓ Koja je prostorija na slici?
+✗ Plinovito stanje=            ✓ Kako se zove voda u plinovitom stanju?
+✗ Sustav za "srce":            ✓ Kojem sustavu organa pripada "srce"?
+✗ "skijanje" → doba?           ✓ U koje godišnje doba radimo ovo: "skijanje"?
+✗ Nakon ljeta dolazi...        ✓ Koje godišnje doba dolazi nakon ljeta?
+✗ Slovo nakon "A"?             ✓ Koje slovo u abecedi dolazi nakon slova "A"?
+✗ Bicikl:?                     ✓ Što obavezno nosimo na biciklu?
+```
+
+**5. Ponude koje se razlikuju jedva vidljivo.** Zadatak „Koja rečenica je
+ispravno napisana?" nudio je četiri gotovo iste rečenice — razlika je bila
+samo u veličini prvoga slova i točki na kraju. To je bilo traženje razlike,
+ne provjera znanja. Sada se provjerava jedno po jedno pravilo, s dvije
+ponude i uputom što pogledati.
+
+**6. Pitanja s više točnih odgovora.**
+
+```
+✗ Slovo nedostaje: "_uka"?   → "r"   (ali muka, luka, buka su jednako dobre)
+✓ Koje slovo nedostaje u riječi "_uća"? [slika kuće]
+
+✗ Kako se pravilno piše "rijeka"?     (rijeka je voda, Rijeka je grad)
+✓ Kako se pravilno piše ime koje označava veliku luku u Kvarneru?
+```
+
+**7. Sadržajne pogreške.** U rimama je stajalo `yoga` — slovo *y* nije u
+hrvatskoj abecedi, a isti generator dijete upravo to uči. Uz to `puća`
+(nije riječ) i `plata` (hrvatski je *plaća*). Zamijenjeni s `duga`, `vruća`
+i `vrata`. Popravljeno i `Koji organ dišu?` → `Kojim organom dišemo?`
+
+### Šest novih provjera u `npm test`
+
+Da se ovo ne vrati:
+
+| Provjera | Hvata |
+|---|---|
+| Pitanje nije cijela rečenica | natuknice, strelice, nedovršene rečenice |
+| Upis bez opisa oblika odgovora | **upravo prijavljenu grešku** |
+| Upis traži znak bez nabrajanja mogućih | „napiši znak" bez popisa znakova |
+| Gol znak kao ponuđeni odgovor | gumb koji je samo `.` |
+| Ponude razlikuju se samo točkom | četiri gotovo iste rečenice |
+| Upitnik umjesto crte za prazno mjesto | `1, ?, 3, 4` |
+
+I trinaest novih tvrdnji u `npm run test:tijek` koje provjeravaju samo
+ocjenjivanje: `Pada kiša` pada na pravopisnom zadatku, `zima.` prolazi na
+sadržajnom, `proljece` ne prolazi nigdje.
+
+Ukupno: **22 provjere nad 6266 pitanja** i **47 tvrdnji o tijeku kviza**.
+
+---
+
+## Što dalje
+
+Redoslijed po omjeru koristi i truda:
+
+1. **Pokrenuti `tools/hrlex-izvuci.js` lokalno** i proširiti rječnik s 120 na
+   nekoliko stotina imenica. Skripta je gotova; ovdje je samo preuzimanje bilo
+   blokirano.
+
+2. **Roditeljski pregled.** Podaci već postoje — `GET /api/progress/vjestine`
+   vraća stanje po vještinama. Nedostaje zaslon: što dijete zna, gdje zapinje,
+   koliko je vježbalo.
+
+3. **Još tipova pitanja.** Spajanje je uvedeno; sljedeće bi bilo slaganje
+   redoslijeda (dani, mjeseci, brojevi po veličini, slijed radnji u priči).
+
+4. **Kalibrirati FSRS pragove na stvarnim podacima.** Sadašnji pragovi brzine
+   (3 s + 2 s po razini težine) su razumna početna procjena, ne mjerenje.
+   Kad se skupi dovoljno rundi, vrijedi ih provjeriti.

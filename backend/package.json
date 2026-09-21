@@ -1,30 +1,35 @@
 {
-"name": "backend",
-"version": "1.0.0",
-"description": "Učilica - backend API",
-"main": "server.js",
-"scripts": {
-"start": "node server.js",
-"dev": "node --watch server.js",
-"seed": "node seeds/seed.js",
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Učilica — backend API i generatori pitanja",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test/provjeri-pitanja.js",
+    "seed": "npm run seed:all",
+    "seed:1": "node seeds/seed.js",
     "seed:2": "node seeds/seed-r2.js",
     "seed:3": "node seeds/seed-r3.js",
     "seed:4": "node seeds/seed-r4.js",
-    "seed:all": "node seeds/seed.js && node seeds/seed-r2.js && node seeds/seed-r3.js && node seeds/seed-r4.js",
-    "fix:emoji": "node seeds/fix-emoji-inputs.js"
-},
-"keywords": [],
-"author": "",
-"license": "ISC",
-"dependencies": {
-"bcryptjs": "^3.0.3",
-"cors": "^2.8.6",
-"dotenv": "^17.3.1",
-"express": "^5.2.1",
-"express-rate-limit": "^7.5.0",
-"express-validator": "^7.3.1",
-"helmet": "^8.1.0",
-"jsonwebtoken": "^9.0.3",
-"mongodb": "^7.1.0"
-}
+    "seed:all": "npm run test:sve && node seeds/seed.js && node seeds/seed-r2.js && node seeds/seed-r3.js && node seeds/seed-r4.js",
+    "fix:emoji": "node seeds/fix-emoji-inputs.js",
+    "test:tijek": "node test/provjeri-tijek.js",
+    "test:sve": "npm test && npm run test:tijek"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^7.5.0",
+    "express-validator": "^7.3.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.1.0",
+    "ts-fsrs": "^5.4.2"
+  }
 }

@@ -5,6 +5,7 @@
  */
 require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
 const { MongoClient } = require("mongodb");
+const { buildQuestionMetadata } = require("../services/gikEngine");
 
 const { genSlova, genGlasovi, genRijeci, genRecenice } = require("./gen-hrvatski");
 const { genBrojevi, genZbrajanje, genOduzimanje, genUsporedbe, genGeometrija, genNizovi } = require("./gen-matematika");
@@ -50,6 +51,7 @@ const GEN_MAP = {
 };
 
 async function seed() {
+  let pogreska = false;
   console.log(`\n🌱 Učilica SEED V4 — ${GRADE}. razred\n`);
   const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
   const client = new MongoClient(uri);
@@ -93,10 +95,19 @@ async function seed() {
           answers: q.answers || [],
           correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
           correctAnswer: q.correctAnswer || "",
+          // konstrukt = što se pitanjem zapravo provjerava; određuje strogoću ocjene
+          ...(q.konstrukt ? { konstrukt: q.konstrukt } : {}),
+          ...(q.prihvatljivi?.length ? { prihvatljivi: q.prihvatljivi } : {}),
+          ...(q.type === "match" ? { pairs: q.pairs } : {}),
           placeholder: q.placeholder || "Upiši odgovor...",
           grade: GRADE,
           subject_id: sId,
           topic_id: tId,
+          gik: buildQuestionMetadata({
+            topic: { ...tops[i], grade: GRADE },
+            subject: null,
+            difficulty: q.difficulty || 1
+          }),
           isActive: true,
           createdAt: new Date()
         }));
@@ -127,10 +138,14 @@ async function seed() {
     console.log(`   Prosjek po temi: ${Math.round(totalQ / totalTopics)}\n`);
   } catch (err) {
     console.error("❌ Greška:", err);
+    pogreska = true;
   } finally {
     await client.close();
-    process.exit(0);
+    // Izlazni kod 1 pri grešci — inače `seed:all` nastavi lancem i sakrije pad
+    process.exit(pogreska ? 1 : 0);
   }
 }
 
-seed();
+if (require.main === module) {
+  seed();
+}

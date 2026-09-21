@@ -621,21 +621,39 @@ select.form-input {
 }
 
 .question-visual {
-  font-size: 2.5rem;
+  /* clamp: kod mnogo elemenata font se sam smanji umjesto da isteče van kartice */
+  font-size: clamp(1.6rem, 7vw, 2.5rem);
   text-align: center;
   margin-bottom: var(--space-md);
-  line-height: 1.4;
-  /* Emoji grid — svaki emoji dobije prostor, wrapa se uredno */
+  line-height: 1.25;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 4px;
-  /* Za višelinijske vizuale (npr. piktogrami s \n) */
-  white-space: pre-line;
-  word-break: break-word;
-  overflow-wrap: break-word;
+  gap: 6px 4px;
   max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Svaki znak je vlastiti flex element — tek tako flex-wrap uopće radi.
+   Bez ovoga je neprekinuti niz emojija JEDAN element i isteče izvan kartice. */
+.question-visual .visual-item {
+  display: inline-block;
+  line-height: 1;
+}
+
+/* Prebrojavanje: skupine po 5 ostaju na okupu i vizualno se odvajaju */
+.question-visual.is-counting {
+  gap: 10px 14px;
+}
+
+.question-visual .visual-group {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px 6px;
+  border-radius: var(--r-sm, 8px);
+  background: rgba(26, 22, 21, 0.035);
 }
 
 .question-text {
@@ -925,7 +943,8 @@ select.form-input {
   .topic-grid { grid-template-columns: 1fr 1fr; }
   .answers-grid { grid-template-columns: 1fr; }
   .question-card { padding: var(--space-md); }
-  .question-visual { font-size: 1.8rem; gap: 2px; }
+  .question-visual { font-size: clamp(1.4rem, 8vw, 1.8rem); gap: 4px 3px; }
+  .question-visual.is-counting { gap: 8px 10px; }
   .question-text { font-size: 1.1rem; margin-bottom: var(--space-md); }
   .page-title { font-size: 1.4rem; }
   .results-card { padding: var(--space-xl) var(--space-lg); }
@@ -942,6 +961,12 @@ select.form-input {
   .progress-row { font-size: 0.78rem; }
 
   /* Input group stacks on very small */
+  .grade-switch { gap: 8px; margin-bottom: var(--space-md); }
+  .grade-chip { min-width: 40px; padding: 6px 10px; font-size: 0.92rem; }
+
+  .match-item { font-size: 0.92rem; min-height: 48px; padding: 10px 12px; }
+  .match-cols { gap: 8px; }
+
   .input-group { flex-direction: column; }
   .input-group .form-input { flex: 1 1 auto; width: 100%; }
   .btn-check { width: 100%; }
@@ -952,10 +977,172 @@ select.form-input {
   .shell { padding: var(--space-sm); }
   .subject-grid { grid-template-columns: 1fr; }
   .topic-grid { grid-template-columns: 1fr; }
-  .question-visual { font-size: 1.5rem; }
+  .question-visual { font-size: clamp(1.15rem, 9vw, 1.5rem); }
+  .question-visual.is-counting { gap: 6px 8px; }
+  .question-visual .visual-group { padding: 1px 4px; }
   .question-text { font-size: 1rem; }
   .topbar-stats .stat-chip:nth-child(3) { display: none; } /* hide streak on tiny screens */
   .answer-btn { padding: 12px; font-size: 0.88rem; }
+  .match-item { font-size: 0.85rem; min-height: 44px; padding: 8px 10px; gap: 6px; }
+  .match-veza { width: 20px; height: 20px; font-size: 0.72rem; }
+}
+
+
+/* ═══ Spajanje parova ═══════════════════════════════════════════════ */
+.match-wrap { margin-top: var(--space-sm); }
+
+.match-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+  align-items: start;
+}
+
+.match-col { display: flex; flex-direction: column; gap: var(--space-sm); }
+
+.match-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;              /* dovoljno za dječji prst */
+  padding: 12px 14px;
+  border: 2px solid rgba(26, 22, 21, 0.1);
+  border-radius: var(--r-md);
+  background: var(--bg-warm);
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  word-break: break-word;
+}
+
+.match-item:hover:not(:disabled) { border-color: var(--coral); background: var(--coral-light); }
+.match-item:disabled { cursor: default; }
+
+.match-item.selected {
+  border-color: var(--coral);
+  background: var(--coral-light);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.match-item.linked { border-color: var(--coral); background: var(--coral-light); }
+.match-item.dim { opacity: 0.55; }
+
+.match-item.ok  { border-color: var(--correct); background: var(--correct-bg); color: #1a7a42; }
+.match-item.no  { border-color: var(--wrong);   background: var(--wrong-bg);   color: var(--wrong); }
+
+.match-tekst { flex: 1 1 auto; }
+
+/* Brojčana oznaka umjesto crtanja linija — radi na svakoj širini */
+.match-veza {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--coral);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.match-item.ok .match-veza { background: var(--correct); }
+.match-item.no .match-veza { background: var(--wrong); }
+
+.match-uputa {
+  margin: var(--space-md) 0 0;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-tertiary);
+}
+
+.match-check { width: 100%; margin-top: var(--space-md); }
+.match-check:disabled { opacity: 0.5; cursor: default; }
+
+
+/* ═══ Izbornik razreda na početnom zaslonu ═════════════════════════ */
+.grade-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-lg);
+}
+
+.grade-switch-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.grade-switch-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.grade-chip {
+  min-width: 44px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 2px solid rgba(26, 22, 21, 0.1);
+  border-radius: var(--r-md);
+  background: var(--bg-warm);
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.grade-chip:hover:not(:disabled):not(.active) {
+  border-color: var(--coral);
+  background: var(--coral-light);
+}
+
+.grade-chip.active {
+  border-color: var(--coral);
+  background: var(--coral);
+  color: #fff;
+  box-shadow: var(--shadow-md);
+}
+
+.grade-chip.saving { opacity: 0.6; }
+.grade-chip:disabled { cursor: default; }
+
+/* ═══ Prazno stanje ════════════════════════════════════════════════ */
+.prazno-stanje {
+  text-align: center;
+  padding: var(--space-xl) var(--space-lg);
+  background: var(--bg-card, #fff);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.prazno-emoji { font-size: 3rem; margin-bottom: var(--space-md); }
+
+.prazno-naslov {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 var(--space-sm);
+  color: var(--text-primary);
+}
+
+.prazno-tekst { margin: 0; color: var(--text-tertiary); font-size: 0.95rem; }
+
+.prazno-tekst code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(26, 22, 21, 0.06);
+  font-size: 0.9em;
 }
 
 /* ═══ Utility ═══ */

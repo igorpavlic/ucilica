@@ -2,6 +2,7 @@ const express = require('express');
 const { ObjectId } = require('mongodb');
 const { getDb } = require('../db/mongo');
 const { auth } = require('../middleware/auth');
+const vjestine = require('../services/vjestine');
 
 const router = express.Router();
 
@@ -106,7 +107,6 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
 
 // ═══════════════════════════════════════════════════════════
 // GET /api/progress/answers?filter=correct|wrong&limit=50
@@ -212,3 +212,25 @@ router.get('/answers', auth, async (req, res) => {
     res.status(500).json({ error: 'Greška pri dohvaćanju odgovora.' });
   }
 });
+
+/**
+ * GET /api/progress/vjestine — stanje po vještinama (GIK ishodima)
+ * Najslabije prvo. Osnova za roditeljski pregled.
+ *   ?grade=2  ograniči na razred
+ */
+router.get('/vjestine', auth, async (req, res, next) => {
+  try {
+    const grade = Number.parseInt(req.query.grade, 10) || undefined;
+    const stanje = await vjestine.pregled(req.user._id, { grade });
+
+    res.json({
+      ukupno: stanje.length,
+      zaPonavljanje: stanje.filter((v) => v.dospjelo).length,
+      vjestine: stanje
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+module.exports = router;

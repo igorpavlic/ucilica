@@ -20,8 +20,25 @@
       </div>
 
       <div class="question-card" :key="currentQ">
-        <div v-if="questions[currentQ].visual" class="question-visual">
-          {{ questions[currentQ].visual }}
+        <!--
+          Vizual se razlaže na pojedinačne znakove: u flex spremniku je
+          neprekinuti tekst JEDAN element, pa se flex-wrap nikad ne primijeni
+          i niz emojija isteče izvan kartice. Svaki znak = vlastiti span.
+          Kod brojanja se grupira po 5 — dijete tako pouzdano prebrojava.
+        -->
+        <div
+          v-if="questions[currentQ].visual"
+          class="question-visual"
+          :class="{ 'is-counting': visualGroups.length > 1 }"
+        >
+          <template v-if="visualGroups.length > 1">
+            <span v-for="(grupa, gi) in visualGroups" :key="gi" class="visual-group">
+              <span v-for="(znak, zi) in grupa" :key="zi" class="visual-item">{{ znak }}</span>
+            </span>
+          </template>
+          <template v-else>
+            <span v-for="(znak, i) in visualChars" :key="i" class="visual-item">{{ znak }}</span>
+          </template>
         </div>
 
         <div class="question-text">{{ questions[currentQ].question }}</div>
@@ -44,6 +61,56 @@
           >{{ ans }}</button>
         </div>
 
+        <!-- Spajanje parova: klik lijevo pa klik desno. Bez povlačenja —
+             na dodirnicima je pouzdanije, a mlađem djetetu lakše. -->
+        <div v-if="questions[currentQ].type === 'match'" class="match-wrap">
+          <div class="match-cols">
+            <div class="match-col">
+              <button
+                v-for="l in questions[currentQ].lijevo"
+                :key="'l' + l.id"
+                class="match-item"
+                :class="{
+                  selected: odabranLijevi === l.id,
+                  linked: veze[l.id] !== undefined,
+                  ok: answered && vezaTocna(l.id),
+                  no: answered && veze[l.id] !== undefined && !vezaTocna(l.id)
+                }"
+                :disabled="answered"
+                @click="veze[l.id] !== undefined && !answered ? razvezi(l.id) : odaberiLijevi(l.id)"
+              >
+                <span class="match-tekst">{{ l.tekst }}</span>
+                <span v-if="veze[l.id] !== undefined" class="match-veza">{{ oznakaVeze(l.id) }}</span>
+              </button>
+            </div>
+
+            <div class="match-col">
+              <button
+                v-for="(d, di) in questions[currentQ].desno"
+                :key="'d' + d.id"
+                class="match-item"
+                :class="{ linked: vezanDesni(d.id), dim: odabranLijevi !== null && vezanDesni(d.id) }"
+                :disabled="answered"
+                @click="spoji(d.id)"
+              >
+                <span v-if="vezanDesni(d.id)" class="match-veza">{{ oznakaDesnog(d.id) }}</span>
+                <span class="match-tekst">{{ d.tekst }}</span>
+              </button>
+            </div>
+          </div>
+
+          <p v-if="!answered" class="match-uputa">
+            {{ odabranLijevi === null ? 'Klikni riječ lijevo, pa njezin par desno.' : 'Sada klikni par desno.' }}
+          </p>
+
+          <button
+            v-if="!answered"
+            class="btn-check match-check"
+            :disabled="!sveSpojeno"
+            @click="handleMatch"
+          >{{ sveSpojeno ? 'Provjeri' : `Spoji još ${preostaloVeza}` }}</button>
+        </div>
+
         <div v-if="questions[currentQ].type === 'input'" class="input-group">
           <input
             v-model="inputAnswer"
@@ -60,6 +127,9 @@
       <div v-if="answered" class="feedback-bar" :class="isCorrect ? 'correct' : 'wrong'">
         <span>{{ isCorrect ? '✓' : '✗' }}</span>
         <span v-if="isCorrect">{{ correctMessages[Math.floor(Math.random() * correctMessages.length)] }}</span>
+        <span v-else-if="questions[currentQ].type === 'match'">
+          Točno spojeno {{ tocnihVeza }} od {{ questions[currentQ].lijevo.length }}. {{ correctAnswerText }}
+        </span>
         <span v-else>Točan odgovor: {{ correctAnswerText }}</span>
       </div>
 
@@ -87,7 +157,7 @@
 </template>
 
 <script setup>
-import { inject, onMounted, onUnmounted } from 'vue'
+import { computed, inject, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuth } from '../composables/useAuth'
@@ -113,6 +183,9 @@ const {
   correctIdx,
   correctAnswerText,
   inputAnswer,
+  veze,
+  odabranLijevi,
+  tocnihVeza,
   correctCount
 } = storeToRefs(quizStore)
 
@@ -120,11 +193,81 @@ const {
   loadQuiz,
   checkChoice,
   checkInput,
+  checkMatch,
+  odaberiLijevi,
+  spoji,
+  razvezi,
   advanceQuestion,
   hasNextQuestion,
   submitQuiz,
   resetSession
 } = quizStore
+
+/**
+ * Razlaganje vizuala na pojedinačne znakove (grapheme clusters).
+ * Intl.Segmenter drži emoji sa spojnicama i modifikatorima na okupu
+ * (npr. 👨‍👩‍👧 je jedan znak, ne tri).
+ */
+const segmenter = typeof Intl !== 'undefined' && Intl.Segmenter
+  ? new Intl.Segmenter('hr', { granularity: 'grapheme' })
+  : null
+
+function razloziZnakove (tekst) {
+  if (!tekst) return []
+  const sirovi = segmenter
+    ? [...segmenter.segment(tekst)].map(s => s.segment)
+    : [...tekst]
+  return sirovi.filter(z => z.trim().length > 0)
+}
+
+const visualChars = computed(() => razloziZnakove(questions.value[currentQ.value]?.visual))
+
+/**
+ * Za zadatke prebrojavanja (6+ jednakih znakova) grupiraj po 5.
+ * Dijete tada ne broji jedan po jedan nego prepoznaje skupine.
+ */
+const visualGroups = computed(() => {
+  const znakovi = visualChars.value
+  if (znakovi.length < 6) return []
+  const jedinstveni = new Set(znakovi)
+  if (jedinstveni.size > 1) return []
+  const grupe = []
+  for (let i = 0; i < znakovi.length; i += 5) grupe.push(znakovi.slice(i, i + 5))
+  return grupe
+})
+
+// ── spajanje parova ──────────────────────────────────────────────
+const brojVeza = computed(() => Object.keys(veze.value).length)
+const ukupnoParova = computed(() => questions.value[currentQ.value]?.lijevo?.length || 0)
+const sveSpojeno = computed(() => ukupnoParova.value > 0 && brojVeza.value === ukupnoParova.value)
+const preostaloVeza = computed(() => ukupnoParova.value - brojVeza.value)
+
+/** Brojčana oznaka veze — dijete vidi što je s čim spojeno bez crtanja linija */
+const redosljedVeza = computed(() => {
+  const m = {}
+  Object.keys(veze.value).forEach((l, i) => { m[l] = i + 1 })
+  return m
+})
+const oznakaVeze = (lijeviId) => redosljedVeza.value[lijeviId]
+const vezanDesni = (desniId) => Object.values(veze.value).includes(desniId)
+const oznakaDesnog = (desniId) => {
+  const l = Object.keys(veze.value).find(k => veze.value[k] === desniId)
+  return l === undefined ? '' : redosljedVeza.value[l]
+}
+/** Nakon provjere: je li baš ta veza bila točna (lijevi id === desni id) */
+const vezaTocna = (lijeviId) => String(veze.value[lijeviId]) === String(lijeviId)
+
+async function handleMatch () {
+  try {
+    const result = await checkMatch()
+    if (result?.isCorrect) {
+      if (!isLoggedIn.value) addGuestScore(10)
+      triggerStars?.()
+    }
+  } catch (error) {
+    emit('error', error.message)
+  }
+}
 
 const correctMessages = [
   'Bravo! Odlično! 🌟',

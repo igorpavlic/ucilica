@@ -20,6 +20,10 @@ export const useQuizStore = defineStore('quiz', () => {
   const correctCount = ref(0)
   const quizAnswers = ref([])
   const questionStartTime = ref(Date.now())
+  // Spajanje parova: { lijeviId: desniId }
+  const veze = ref({})
+  const odabranLijevi = ref(null)
+  const tocnihVeza = ref(0)
 
   function resetSession() {
     attemptId.value = ''
@@ -37,6 +41,9 @@ export const useQuizStore = defineStore('quiz', () => {
     correctCount.value = 0
     quizAnswers.value = []
     questionStartTime.value = Date.now()
+    veze.value = {}
+    odabranLijevi.value = null
+    tocnihVeza.value = 0
   }
 
   async function loadQuiz(topicId, count = 7) {
@@ -99,6 +106,51 @@ export const useQuizStore = defineStore('quiz', () => {
     return data
   }
 
+  /** Klik na lijevi stupac — odabir ili poništavanje */
+  function odaberiLijevi (id) {
+    if (answered.value) return
+    odabranLijevi.value = odabranLijevi.value === id ? null : id
+  }
+
+  /** Klik na desni stupac — spaja s odabranim lijevim */
+  function spoji (desniId) {
+    if (answered.value || odabranLijevi.value === null) return
+    const nove = { ...veze.value }
+    // jedan desni smije biti vezan samo na jedan lijevi
+    for (const [l, d] of Object.entries(nove)) {
+      if (d === desniId) delete nove[l]
+    }
+    nove[odabranLijevi.value] = desniId
+    veze.value = nove
+    odabranLijevi.value = null
+  }
+
+  function razvezi (lijeviId) {
+    if (answered.value) return
+    const nove = { ...veze.value }
+    delete nove[lijeviId]
+    veze.value = nove
+  }
+
+  /** Predaja spajanja — tek kad su svi parovi povezani */
+  async function checkMatch () {
+    const p = questions.value[currentQ.value]
+    if (answered.value || !p) return null
+    if (Object.keys(veze.value).length !== (p.lijevo?.length || 0)) return null
+
+    const data = await api.post('/quiz/check', {
+      attemptId: attemptId.value,
+      questionId: p._id,
+      answer: veze.value
+    })
+    answered.value = true
+    isCorrect.value = data.isCorrect
+    correctAnswerText.value = data.correctAnswer
+    tocnihVeza.value = data.tocnihVeza ?? 0
+    recordAnswer(data.isCorrect, veze.value)
+    return data
+  }
+
   function advanceQuestion() {
     currentQ.value += 1
     answered.value = false
@@ -107,6 +159,9 @@ export const useQuizStore = defineStore('quiz', () => {
     correctIdx.value = null
     correctAnswerText.value = ''
     inputAnswer.value = ''
+    veze.value = {}
+    odabranLijevi.value = null
+    tocnihVeza.value = 0
     questionStartTime.value = Date.now()
   }
 
@@ -135,12 +190,19 @@ export const useQuizStore = defineStore('quiz', () => {
     correctIdx,
     correctAnswerText,
     inputAnswer,
+    veze,
+    odabranLijevi,
+    tocnihVeza,
     correctCount,
     quizAnswers,
     questionStartTime,
     loadQuiz,
     checkChoice,
     checkInput,
+    checkMatch,
+    odaberiLijevi,
+    spoji,
+    razvezi,
     advanceQuestion,
     hasNextQuestion,
     submitQuiz,

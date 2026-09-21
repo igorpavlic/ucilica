@@ -27,7 +27,7 @@
         <label class="section-label">Promijeni razred</label>
         <div class="grade-grid">
           <button
-            v-for="g in 8"
+            v-for="g in razredi"
             :key="g"
             class="grade-btn"
             :class="{ active: user.grade === g, saving: savingGrade === g }"
@@ -71,16 +71,25 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useApi } from '../composables/useApi'
 import { useAuth } from '../composables/useAuth'
 
 const emit = defineEmits(['error'])
-const { patch } = useApi()
+const { get, patch } = useApi()
 const { user, updateUser } = useAuth()
 
 const avatars = ['🧒','👦','👧','🧒🏻','👦🏽','👧🏼','🦸','🧙','🐱','🐶','🦊','🐼','🦄','🐸']
 const savingGrade = ref(null)
+// Nudimo samo razrede za koje u bazi postoji sadržaj
+const razredi = ref([1, 2, 3, 4])
+
+onMounted(async () => {
+  try {
+    const { razredi: dostupni } = await get('/subjects/razredi')
+    if (dostupni?.length) razredi.value = dostupni
+  } catch { /* ostaje zadano 1-4 */ }
+})
 
 async function changeGrade(g) {
   if (!user.value || user.value.grade === g) return
