@@ -1,3 +1,5 @@
+const { questionFamilyKey, orderWithoutAdjacentFamilies } = require('./questionFamily');
+
 const GIK_VERSION = 'Razredna nastava OŠ (GIK)';
 
 const SUBJECTS = {
@@ -26,8 +28,8 @@ const TOPIC_METADATA = {
   'ekologija': { grade: 1, subject: 'priroda', domain: 'Okoliš', outcome: 'PID OŠ B.1.2', outcomeText: 'objašnjava važnost odgovornoga odnosa prema okolišu', tags: ['ekologija', 'okoliš'] },
 
   // 2. razred
-  'imenice-rod': { grade: 2, subject: 'hrvatski', domain: 'Jezik i komunikacija', outcome: 'OŠ HJ A.2.4', outcomeText: 'uočava i primjenjuje osnovne gramatičke kategorije u jeziku', tags: ['imenice', 'rod'] },
-  'glagoli-2': { grade: 2, subject: 'hrvatski', domain: 'Jezik i komunikacija', outcome: 'OŠ HJ A.2.4', outcomeText: 'uočava i primjenjuje osnovne gramatičke kategorije u jeziku', tags: ['glagoli'] },
+  'imenice-rod': { grade: 2, subject: 'hrvatski', domain: 'Jezik i komunikacija', outcome: 'OŠ HJ A.2.5', outcomeText: 'upotrebljava i objašnjava riječi te prepoznaje česte konkretne imenice', tags: ['imenice', 'riječi'] },
+  'glagoli-2': { grade: 2, subject: 'hrvatski', domain: 'Jezik i komunikacija', outcome: 'OŠ HJ A.2.5', outcomeText: 'upotrebljava riječi u skladu s komunikacijskom situacijom i objašnjava njihovo značenje', tags: ['riječi', 'značenje'] },
   'recenice-2': { grade: 2, subject: 'hrvatski', domain: 'Pisanje', outcome: 'OŠ HJ A.2.3', outcomeText: 'piše kratke tekstove i rečenice poštujući osnovna pravopisna pravila', tags: ['rečenice', 'interpunkcija'] },
   'citanje-2': { grade: 2, subject: 'hrvatski', domain: 'Čitanje s razumijevanjem', outcome: 'OŠ HJ A.2.2', outcomeText: 'čita tekstove primjerene dobi i izdvaja važne podatke', tags: ['čitanje', 'razumijevanje'] },
   'brojevi-100': { grade: 2, subject: 'matematika', domain: 'Brojevi', outcome: 'MAT OŠ A.2.1', outcomeText: 'služi se brojevima do 100', tags: ['brojevi do 100'] },
@@ -43,14 +45,14 @@ const TOPIC_METADATA = {
   'zdravlje-sigurnost-2': { grade: 2, subject: 'priroda', domain: 'Zdravlje i sigurnost', outcome: 'PID OŠ C.2.1', outcomeText: 'raspravlja o ulozi i utjecaju pravila prava i dužnosti na zajednicu i važnosti odgovornoga ponašanja', tags: ['zdravlje', 'sigurnost'] },
 
   // 3. razred
-  'vrste-rijeci': { grade: 3, subject: 'hrvatski', domain: 'Jezik', outcome: 'OŠ HJ A.3.4', outcomeText: 'prepoznaje vrste riječi i njihovu funkciju u rečenici', tags: ['vrste riječi'] },
-  'gramatika-pravopis': { grade: 3, subject: 'hrvatski', domain: 'Jezik i pravopis', outcome: 'OŠ HJ A.3.4', outcomeText: 'primjenjuje jezična i pravopisna pravila u pisanju', tags: ['pravopis', 'gramatika'] },
+  'vrste-rijeci': { grade: 3, subject: 'hrvatski', domain: 'Jezik', outcome: 'OŠ HJ A.3.5', outcomeText: 'prepoznaje vrste riječi i njihovu funkciju u rečenici', tags: ['vrste riječi'] },
+  'gramatika-pravopis': { grade: 3, subject: 'hrvatski', domain: 'Jezik i pravopis', outcome: 'OŠ HJ A.3.5', outcomeText: 'primjenjuje jezična i pravopisna pravila u pisanju', tags: ['pravopis', 'gramatika'] },
   'knjizevni-tekst': { grade: 3, subject: 'hrvatski', domain: 'Književnost i stvaralaštvo', outcome: 'OŠ HJ B.3.1', outcomeText: 'povezuje sadržaj i temu književnoga teksta s vlastitim iskustvom', tags: ['književnost', 'razumijevanje'] },
   'jezicno-izrazavanje': { grade: 3, subject: 'hrvatski', domain: 'Govorenje i pisanje', outcome: 'OŠ HJ A.3.2', outcomeText: 'sluša tekst i prepričava sadržaj poslušanoga teksta', tags: ['izražavanje', 'prepričavanje'] },
-  'brojevi-1000': { grade: 3, subject: 'matematika', domain: 'Brojevi', outcome: 'MAT OŠ A.3.1', outcomeText: 'služi se brojevima do 1000', tags: ['brojevi do 1000'] },
-  'zbr-oduz-1000': { grade: 3, subject: 'matematika', domain: 'Računske operacije', outcome: 'MAT OŠ A.3.4', outcomeText: 'zbraja i oduzima u skupu brojeva do 1000', tags: ['zbrajanje', 'oduzimanje'] },
-  'mnoz-dijel-3': { grade: 3, subject: 'matematika', domain: 'Računske operacije', outcome: 'MAT OŠ A.3.5', outcomeText: 'množi i dijeli prirodne brojeve te rješava jednostavne problemske zadatke', tags: ['množenje', 'dijeljenje'] },
-  'geometrija-mjerenje-3': { grade: 3, subject: 'matematika', domain: 'Geometrija i mjerenje', outcome: 'MAT OŠ C.3.1', outcomeText: 'opisuje likove i tijela te mjeri duljinu masu volumen i vrijeme', tags: ['geometrija', 'mjerenje'] },
+  'brojevi-1000': { grade: 3, subject: 'matematika', domain: 'Brojevi', outcome: 'MAT OŠ A.3.1', outcomeText: 'služi se prirodnim brojevima do 10 000', tags: ['brojevi do 10 000'] },
+  'zbr-oduz-1000': { grade: 3, subject: 'matematika', domain: 'Računske operacije', outcome: 'MAT OŠ A.3.2', outcomeText: 'zbraja i oduzima u skupu brojeva do 1000', tags: ['zbrajanje', 'oduzimanje'] },
+  'mnoz-dijel-3': { grade: 3, subject: 'matematika', domain: 'Računske operacije', outcome: 'MAT OŠ A.3.4', outcomeText: 'množi i dijeli prirodne brojeve te rješava jednostavne problemske zadatke', tags: ['množenje', 'dijeljenje'] },
+  'geometrija-mjerenje-3': { grade: 3, subject: 'matematika', domain: 'Geometrija i mjerenje', outcome: 'MAT OŠ C.3.1 / D.3.1–D.3.4', outcomeText: 'opisuje likove i tijela te mjeri duljinu masu volumen i vrijeme', tags: ['geometrija', 'mjerenje'] },
   'zavicaj-karta': { grade: 3, subject: 'priroda', domain: 'Prostor i snalaženje', outcome: 'PID OŠ A.B.C.D.3.1', outcomeText: 'objašnjava rezultate vlastitih istraživanja prirode društva i različitih izvora informacija', tags: ['zavičaj', 'karta'] },
   'tlo-voda-zrak': { grade: 3, subject: 'priroda', domain: 'Prirodni sustavi', outcome: 'PID OŠ A.B.C.D.3.1', outcomeText: 'objašnjava rezultate vlastitih istraživanja prirode društva i različitih izvora informacija', tags: ['tlo', 'voda', 'zrak'] },
   'biljke-zivotinje-3': { grade: 3, subject: 'priroda', domain: 'Živi svijet', outcome: 'PID OŠ B.3.1', outcomeText: 'objašnjava povezanost živih bića i uvjeta života', tags: ['biljke', 'životinje'] },
@@ -58,16 +60,16 @@ const TOPIC_METADATA = {
   'kulturna-bastina': { grade: 3, subject: 'priroda', domain: 'Kultura i identitet', outcome: 'PID OŠ C.3.2', outcomeText: 'prepoznaje obilježja kulturne i povijesne baštine zavičaja', tags: ['baština', 'kultura'] },
 
   // 4. razred
-  'vrste-rijeci-4': { grade: 4, subject: 'hrvatski', domain: 'Jezik', outcome: 'OŠ HJ A.4.4', outcomeText: 'primjenjuje gramatička znanja u govorenju i pisanju', tags: ['vrste riječi'] },
+  'vrste-rijeci-4': { grade: 4, subject: 'hrvatski', domain: 'Jezik', outcome: 'OŠ HJ A.4.5', outcomeText: 'primjenjuje gramatička znanja u govorenju i pisanju', tags: ['vrste riječi'] },
   'pravopis-4': { grade: 4, subject: 'hrvatski', domain: 'Pravopis', outcome: 'OŠ HJ A.4.4', outcomeText: 'primjenjuje pravopisna pravila u pisanju kraćih tekstova', tags: ['pravopis'] },
   'knjizevnost-4': { grade: 4, subject: 'hrvatski', domain: 'Književnost', outcome: 'OŠ HJ B.4.1', outcomeText: 'obrazlaže doživljaj književnoga teksta i uočava književne elemente', tags: ['književnost', 'čitanje'] },
   'medijska-kultura': { grade: 4, subject: 'hrvatski', domain: 'Medijska kultura', outcome: 'OŠ HJ C.4.1', outcomeText: 'razlikuje medijske sadržaje primjerene dobi i odgovorno ih koristi', tags: ['mediji'] },
   'brojevi-milijun': { grade: 4, subject: 'matematika', domain: 'Brojevi', outcome: 'MAT OŠ A.4.1', outcomeText: 'služi se brojevima do milijun', tags: ['brojevi do milijun'] },
   'pisano-zbr-oduz': { grade: 4, subject: 'matematika', domain: 'Računske operacije', outcome: 'MAT OŠ A.4.4', outcomeText: 'primjenjuje pisano zbrajanje i oduzimanje', tags: ['pisano zbrajanje', 'pisano oduzimanje'] },
   'pisano-mnoz-dijel': { grade: 4, subject: 'matematika', domain: 'Računske operacije', outcome: 'MAT OŠ A.4.5', outcomeText: 'primjenjuje pisano množenje i dijeljenje te rješava složenije zadatke', tags: ['pisano množenje', 'pisano dijeljenje'] },
-  'geometrija-kutovi': { grade: 4, subject: 'matematika', domain: 'Geometrija', outcome: 'MAT OŠ C.4.1', outcomeText: 'opisuje i konstruira geometrijske likove te prepoznaje kutove', tags: ['kutovi', 'geometrija'] },
-  'opseg-povrsina': { grade: 4, subject: 'matematika', domain: 'Mjerenje', outcome: 'MAT OŠ D.4.1', outcomeText: 'računa opseg i površinu jednostavnih likova', tags: ['opseg', 'površina'] },
-  'kvader-kocka': { grade: 4, subject: 'matematika', domain: 'Prostor', outcome: 'MAT OŠ C.4.2', outcomeText: 'opisuje kocku i kvadar te njihove elemente', tags: ['kocka', 'kvadar'] },
+  'geometrija-kutovi': { grade: 4, subject: 'matematika', domain: 'Geometrija', outcome: 'MAT OŠ C.4.1–C.4.2', outcomeText: 'opisuje i konstruira geometrijske likove te prepoznaje kutove', tags: ['kutovi', 'geometrija'] },
+  'opseg-povrsina': { grade: 4, subject: 'matematika', domain: 'Mjerenje', outcome: 'MAT OŠ D.4.2', outcomeText: 'uspoređuje površine likova i mjeri ih jediničnim kvadratima', tags: ['površina', 'jedinični kvadrati'] },
+  'kvader-kocka': { grade: 4, subject: 'matematika', domain: 'Prostor', outcome: 'MAT OŠ C.4.5', outcomeText: 'povezuje geometrijske pojmove pri opisivanju geometrijskih tijela', tags: ['kocka', 'kvadar', 'plohe', 'bridovi', 'vrhovi'] },
   'uvjeti-zivota': { grade: 4, subject: 'priroda', domain: 'Priroda', outcome: 'PID OŠ B.4.1', outcomeText: 'objašnjava povezanost živih bića s uvjetima života', tags: ['uvjeti života'] },
   'krajevi-hr': { grade: 4, subject: 'priroda', domain: 'Prostor Republike Hrvatske', outcome: 'PID OŠ A.4.2', outcomeText: 'snalazi se na karti Republike Hrvatske i opisuje njezine krajeve', tags: ['Hrvatska', 'karta'] },
   'ljudsko-tijelo': { grade: 4, subject: 'priroda', domain: 'Čovjek i zdravlje', outcome: 'PID OŠ B.4.2', outcomeText: 'objašnjava građu i ulogu dijelova ljudskoga tijela te važnost zdravih navika', tags: ['ljudsko tijelo', 'zdravlje'] },
@@ -144,7 +146,11 @@ function normalizeQuotas(count, quotas) {
   return scaled;
 }
 
-function pickBalancedQuestions(questions, count, quotas) {
+function pickBalancedQuestions(questions, count, quotas, options = {}) {
+  const avoidFamilies = options.avoidFamilies instanceof Set
+    ? options.avoidFamilies
+    : new Set(options.avoidFamilies || []);
+
   const buckets = {
     easy: questions.filter((q) => inferDifficultyBand(q.difficulty || 1) === 'easy'),
     medium: questions.filter((q) => inferDifficultyBand(q.difficulty || 1) === 'medium'),
@@ -153,17 +159,57 @@ function pickBalancedQuestions(questions, count, quotas) {
 
   const plan = normalizeQuotas(count, quotas);
   const selected = [];
+  const selectedIds = new Set();
+  const usedFamilies = new Set();
+
+  const takeFrom = (candidates, wanted, mode) => {
+    let added = 0;
+    for (const q of candidates) {
+      if (added >= wanted || selected.length >= count) break;
+      const id = String(q._id || `${q.question}|${q.correctAnswer || q.correctIndex}`);
+      if (selectedIds.has(id)) continue;
+      const family = questionFamilyKey(q);
+
+      // 1. prolaz: nova obitelj koja nije bila ni u nedavnim kvizovima
+      if (mode === 'fresh-family' && (usedFamilies.has(family) || avoidFamilies.has(family))) continue;
+      // 2. prolaz: nova obitelj u ovoj rundi, čak i ako je nedavno viđena
+      if (mode === 'new-family' && usedFamilies.has(family)) continue;
+
+      selected.push(q);
+      selectedIds.add(id);
+      usedFamilies.add(family);
+      added++;
+    }
+    return added;
+  };
+
+  // Prvo poštuj željenu težinu, ali bez ponavljanja obrasca pitanja.
+  const deficits = {};
   for (const band of ['easy', 'medium', 'hard']) {
-    selected.push(...buckets[band].slice(0, plan[band] || 0));
+    const wanted = plan[band] || 0;
+    let got = takeFrom(buckets[band], wanted, 'fresh-family');
+    if (got < wanted) got += takeFrom(buckets[band], wanted - got, 'new-family');
+    deficits[band] = Math.max(0, wanted - got);
   }
 
+  // Ako neka razina nema dovoljno različitih obitelji, popuni iz drugih razina,
+  // ali i dalje najprije bez ponavljanja obrasca.
   if (selected.length < count) {
-    const selectedIds = new Set(selected.map((q) => String(q._id)));
-    const leftovers = questions.filter((q) => !selectedIds.has(String(q._id)));
-    selected.push(...leftovers.slice(0, count - selected.length));
+    takeFrom(questions, count - selected.length, 'fresh-family');
+  }
+  if (selected.length < count) {
+    takeFrom(questions, count - selected.length, 'new-family');
   }
 
-  return selected.slice(0, count);
+  // Tek krajnji fallback dopušta istu obitelj više puta. To je potrebno kod
+  // tema koje stvarno imaju vrlo malo vrsta zadataka (npr. usko uvježbavanje).
+  if (selected.length < count) {
+    takeFrom(questions, count - selected.length, 'any');
+  }
+
+  // Čak i u fallbacku isti obrazac ne smije doći dvaput zaredom ako postoji
+  // ikakva mogućnost da se razdvoji drugim pitanjem.
+  return orderWithoutAdjacentFamilies(selected.slice(0, count));
 }
 
 function gradeGenerationTarget(grade) {

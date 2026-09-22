@@ -41,17 +41,17 @@ const resultEmoji = computed(() => {
 })
 
 const resultTitle = computed(() => {
-  if (pct.value === 1) return 'Savršeno!'
-  if (pct.value >= 0.7) return 'Odlično!'
-  if (pct.value >= 0.4) return 'Dobro!'
-  return 'Vježbaj dalje!'
+  if (pct.value === 1) return 'Sve točno!'
+  if (pct.value >= 0.7) return 'Dobro napreduješ!'
+  if (pct.value >= 0.4) return 'Još malo vježbe!'
+  return 'Pokušaj ponovno!'
 })
 
 const resultMessage = computed(() => {
-  if (pct.value === 1) return 'Sve točno! Ti si pravi šampion! 🎉'
-  if (pct.value >= 0.7) return 'Super rezultat! Samo nastavi tako! 🌈'
-  if (pct.value >= 0.4) return 'Dobar pokušaj! Pokušaj ponovo! 💪'
-  return 'Ne brini, vježbom se uči! 📖'
+  if (pct.value === 1) return 'Riješio/la si sve zadatke točno. 🎉'
+  if (pct.value >= 0.7) return 'Većinu zadataka rješavaš točno. Nastavi vježbati ono što je bilo teško. 🌈'
+  if (pct.value >= 0.4) return 'Dio zadataka već znaš. Ponovi netočne pa pokušaj ponovno. 💪'
+  return 'Pogledaj točne odgovore, ponovi gradivo i pokušaj ponovno. 📖'
 })
 
 onMounted(() => {

@@ -1,3 +1,4 @@
+const {wrapGenerator}=require("../services/pedagogyReview");
 // gen-matematika.js — R1 Math generators (ENGINE-powered)
 const{N,IF,IM,sh,cfc,rep,fix,EL,CIRCLE}=require("./gen-hrvatski");
 const{unos,oznake}=require("./jasnoca");
@@ -106,4 +107,4 @@ q.push({type:"choice",difficulty:2,question:"Čime mjerimo vrijeme?",answers:["r
 [["slon ili mačka","slon"],["autobus ili bicikl","autobus"],["kuća ili kutija","kuća"]].forEach(([pit,odg])=>{q.push({type:"choice",difficulty:1,question:`Što je VEĆE — ${pit}?`,answers:pit.split(" ili "),correctIndex:pit.split(" ili ").indexOf(odg)})});
 return fix(q).slice(0,210)}
 
-module.exports={genBrojevi,genZbrajanje,genOduzimanje,genUsporedbe,genGeometrija,genNizovi};
+module.exports = { genBrojevi:wrapGenerator(genBrojevi), genZbrajanje:wrapGenerator(genZbrajanje), genOduzimanje:wrapGenerator(genOduzimanje), genUsporedbe:wrapGenerator(genUsporedbe), genGeometrija:wrapGenerator(genGeometrija), genNizovi:wrapGenerator(genNizovi) };

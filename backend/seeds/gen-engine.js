@@ -8,9 +8,8 @@ const pick = a => a[Math.floor(Math.random()*a.length)];
 const pickN = (a,n) => sh([...a]).slice(0,n);
 const wf = (pool,c,n=3) => sh(pool.filter(x=>x!==c)).slice(0,n);
 const randInt = (min,max) => Math.floor(Math.random()*(max-min+1))+min;
-// sh() iz gen-hrvatski.js je NAMJERNO determinističan (stabilan redoslijed
-// distraktora). Kad treba stvarna nasumičnost — npr. različiti podskupovi
-// parova — koristi ovo.
+// sh() iz gen-hrvatski.js koristi Fisher–Yates. Ovaj lokalni helper ostaje
+// za mjesta na kojima želimo eksplicitno nasumično odabrati podskup parova.
 const shR = (a) => { const x=[...a]; for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]];} return x; };
 const pickNR = (a,n) => shR(a).slice(0,n);
 const PLACES=["u parku","u školi","u dvorištu","na livadi","u vrtu","na plaži","u šumi","na izletu","u razredu","na igralištu","u kuhinji","u sobi","na trgu","u knjižnici","na farmi"];
@@ -55,7 +54,7 @@ function storyProb(op, ranges, count = 30) {
     { jestivo: null,  f: (c) => `${c.ime} pročita ${HR.brojIme(c.a, 'stranica', 'A')}, a sutra još ${HR.brojIme(c.b, 'stranica', 'A')}. Koliko ukupno?` },
     { jestivo: null,  f: (c) => `${V(pick(PLACES))} ${HR.biti(c.a)} ${HR.brojIme(c.a, 'dijete')}. Dođe još ${HR.brojIme(c.b, 'dijete')}. Koliko ih je sada?` },
     { jestivo: null,  f: (c) => `Na grani ${HR.glagolBroj(c.a,'sjedi','sjede')} ${HR.brojIme(c.a, 'ptica')}. Doleti još ${HR.brojIme(c.b, 'ptica')}. Koliko ih je na grani?` },
-    { jestivo: null,  f: (c) => `${c.ime} ima ${HR.brojIme(c.a, 'kuna')}. Dobije još ${HR.brojIme(c.b, 'kuna', 'A')}. Koliko kuna sada ima?` },
+    { jestivo: null,  f: (c) => `${c.ime} ima ${HR.brojIme(c.a, 'euro')}. Dobije još ${HR.brojIme(c.b, 'euro', 'A')}. Koliko eura sada ima?` },
   ];
 
   const tplSub = [
@@ -65,7 +64,7 @@ function storyProb(op, ranges, count = 30) {
     { jestivo: false, f: (c) => `${c.ime} skupi ${c.A(c.a)}, ali izgubi ${c.A(c.b)}. Koliko ${c.zam} ostane?` },
     { jestivo: false, f: (c) => `${V(pick(PLACES))} ${c.je(c.a)} ${c.N(c.a)}. Netko odnese ${c.A(c.b)}. Koliko ih ostane?` },
     { jestivo: null,  f: (c) => `${V(pick(PLACES))} ${HR.biti(c.a)} ${HR.brojIme(c.a, 'dijete')}. Ode ${HR.brojIme(c.b, 'dijete')}. Koliko ih ostane?` },
-    { jestivo: null,  f: (c) => `${c.ime} ima ${HR.brojIme(c.a, 'kuna')}. Potroši ${HR.brojIme(c.b, 'kuna', 'A')}. Koliko ${c.zam} kuna ostane?` },
+    { jestivo: null,  f: (c) => `${c.ime} ima ${HR.brojIme(c.a, 'euro')}. Potroši ${HR.brojIme(c.b, 'euro', 'A')}. Koliko ${c.zam} eura ostane?` },
     { jestivo: null,  f: (c) => `Na grani ${HR.glagolBroj(c.a,'sjedi','sjede')} ${HR.brojIme(c.a, 'ptica')}. Odleti ${HR.brojIme(c.b, 'ptica')}. Koliko ih ostane?` },
     { jestivo: null,  f: (c) => `U autobusu ${HR.biti(c.a)} ${HR.brojIme(c.a, 'putnik')}. Izađe ${HR.brojIme(c.b, 'putnik')}. Koliko ih ostane?` },
     { jestivo: null,  f: (c) => `U vrtu ${HR.glagolBroj(c.a,'raste','rastu')} ${HR.brojIme(c.a, 'cvijet')}. Uvene ${HR.brojIme(c.b, 'cvijet')}. Koliko ih još raste?` },

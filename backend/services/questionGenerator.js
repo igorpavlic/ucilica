@@ -10,6 +10,7 @@ const { getDb } = require('../db/mongo');
 const EMOJI_ONLY = /^[\p{Emoji_Presentation}\p{Extended_Pictographic}\u{200D}\u{FE0F}\u{20E3}]+$/u;
 const vjestine = require('./vjestine');
 const { buildQuestionMetadata, decideDifficultyTarget, pickBalancedQuestions } = require('./gikEngine');
+const { questionFamilyKey } = require('./questionFamily');
 
 // Generatori iz seeds/
 // Razred 1
@@ -237,6 +238,18 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
   const seenIds = await getSeenQuestionIds(userId, topicId, 10);
   const seenOids = seenIds.map(id => new ObjectId(id));
 
+  // ID zaštita sprječava doslovno isto pitanje. Dodatno pratimo i obitelj
+  // pitanja jer različiti brojevi/riječi u istome predlošku nisu stvarno nova
+  // vrsta zadatka (npr. 7x "Koja riječ imenuje...?").
+  const recentFamilies = new Set();
+  if (seenOids.length > 0) {
+    const seenQuestions = await db.collection('questions')
+      .find({ _id: { $in: seenOids } })
+      .project({ type: 1, question: 1 })
+      .toArray();
+    for (const q of seenQuestions) recentFamilies.add(questionFamilyKey(q));
+  }
+
   const matchFresh = {
     topic_id: topicId,
     isActive: true,
@@ -282,7 +295,7 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
   // 5. Težina prema dosadašnjoj uspješnosti na ovoj temi
   const stats = await getTopicStats(userId, topicId, 5);
   const { quotas } = decideDifficultyTarget(stats);
-  const questions = pickBalancedQuestions(pool, count, quotas);
+  const questions = pickBalancedQuestions(pool, count, quotas, { avoidFamilies: recentFamilies });
 
   // 4. Još uvijek nedovoljno? Sva pitanja su viđena u zadnjih 10 rundi.
   //    Ne vraćamo stara — korisnik mora odigrati druge teme pa se vratiti.

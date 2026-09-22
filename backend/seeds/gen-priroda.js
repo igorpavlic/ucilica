@@ -1,3 +1,4 @@
+const {wrapGenerator}=require("../services/pedagogyReview");
 // gen-priroda.js — Nature & Society question generators
 const { N, IF, IM, sh, cfc, rep, fix, EL } = require("./gen-hrvatski");
 const { spajanje } = require("./gen-engine");
@@ -192,7 +193,7 @@ const GLASANJE = [["pas","laje"],["mačka","mijauče"],["krava","muče"],["ovca"
 const STANISTE = [["riba","voda"],["ptica","gnijezdo"],["pčela","košnica"],["pas","kućica"],
   ["krtica","zemlja"],["vjeverica","šuma"],["krava","staja"],["medvjed","brlog"]];
 
-module.exports = { genDoba, genZivotinje, genTijelo, genObitelj, genSigurnost, genEkologija };
+module.exports = { genDoba:wrapGenerator(genDoba), genZivotinje:wrapGenerator(genZivotinje), genTijelo:wrapGenerator(genTijelo), genObitelj:wrapGenerator(genObitelj), genSigurnost:wrapGenerator(genSigurnost), genEkologija:wrapGenerator(genEkologija) };
 
 // ═══════════════════════════════════════════════════════
 // PID B.1.3 + C.1.2 + D.1.1 — Sigurnost, promet, energija, prostor

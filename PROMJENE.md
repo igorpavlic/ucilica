@@ -491,3 +491,33 @@ Redoslijed po omjeru koristi i truda:
 4. **Kalibrirati FSRS pragove na stvarnim podacima.** Sadašnji pragovi brzine
    (3 s + 2 s po razini težine) su razumna početna procjena, ne mjerenje.
    Kad se skupi dovoljno rundi, vrijedi ih provjeriti.
+
+## 2026-09-22 — druga analiza: ponavljanje istog obrasca pitanja
+
+Otkriven je sistemski problem koji prethodni audit nije dovoljno pokrio: baza je sadržavala mnogo pitanja koja su tehnički različita, ali pedagoški ista jer se mijenja samo broj, riječ ili slika. Primjer iz 2. razreda imao je 70 čestica s identičnim pitanjem "Koja riječ imenuje biće, predmet ili pojavu?".
+
+Promjene:
+- uveden `services/questionFamily.js` koji prepoznaje obitelj/predložak pitanja neovisno o umetnutim brojevima, riječima u navodnicima i slikovnim znakovima;
+- selektor kviza sada prvo bira različite obitelji pitanja, a istu obitelj dopušta tek kao krajnji fallback;
+- obitelji viđene u nedavnim kvizovima dobivaju niži prioritet;
+- ista obitelj ne dolazi uzastopno ako ju je moguće razdvojiti drugim tipom zadatka;
+- generator Imenica za 2. razred potpuno je prerađen u više načina rada: prepoznavanje, razvrstavanje, rad u rečenici, kontekst, skupovi riječi, dovršavanje i povezivanje;
+- prošireni su generatori s premalo različitih obrazaca: R1 Riječi, R3 Vrste riječi, R3 Gramatika i pravopis, R3 Gospodarske djelatnosti, R4 Vrste riječi, R4 Pravopis, R4 Površina, R4 Uvjeti života te R4 Biljke i životinje;
+- ispravljena je greška u R2 Brojevi do 100: "Koji dan u tjednu dolazi nakon dana 9?" sada je ispravno "Koji broj dolazi nakon broja 9?";
+- ispravljen je copy/paste tekst u R4 Uvjeti života: opis Sunca/Vode/Zraka/Tla više se ne pita kao "Koja je skupina životinja...?".
+
+Nova automatska provjera: `backend/test/provjeri-raznolikost.js`.
+Rezultat: 59 generatora; svaki standardni kviz od 7 pitanja može koristiti 7 različitih obrazaca pitanja.
+
+## 2026-09-22 — sadržajni audit i treća revizija pitanja
+
+- Uklonjene su nepouzdane vizualne jednadžbe tipa „Koliko je ukupno?” kod kojih je broj nacrtanih simbola mogao odstupati od spremljenog odgovora.
+- U 2. razredu uklonjeni su zadaci o osmerokutu/peterokutu/šesterokutu i simetriji slova iz fonda geometrije; zamijenjeni su zadacima o trokutu, kvadratu, pravokutniku, dužini te kocki/kvadru/piramidi.
+- Novčani zadaci sada kod plaćanja izričito navode stvarnu kovanicu ili novčanicu (npr. „plati novčanicom od 10 €”), umjesto neodređenog ukupnog iznosa poput „plati 7 €”.
+- Binarna pitanja „zdrava/nezdrava hrana” zamijenjena su zadacima o raznolikoj prehrani, vodi, higijeni, odmoru i sigurnosti.
+- Uklonjene ili preoblikovane su dvosmislene tvrdnje o staništu i prehrani životinja.
+- Ispravljeni su neprirodni i gramatički pogrešni predlošci u geometriji, površini, vodi/tlu i tekstualnim zadacima.
+- Veliki brojevi u 4. razredu više se ne stavljaju u nevjerodostojne kontekste (deseci tisuća djece, bombona, olovaka i sl.).
+- Dodan je review sloj `backend/services/pedagogyReview.js` koji filtrira poznate loše obrasce i pretvara višak kloniranih predložaka u različite oblike zadataka.
+- Završni sadržajni audit generiranog fonda: 3.889 pitanja, 3.889 označeno DOBRO, 0 za preformuliranje i 0 za uklanjanje prema pravilima audita.
+- Test raznolikosti: svih 59 generatora može složiti standardni kviz od 7 pitanja sa 7 različitih obitelji pitanja.

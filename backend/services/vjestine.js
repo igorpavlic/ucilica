@@ -26,29 +26,24 @@ const raspored = fsrs(generatorParameters({ enable_fuzz: true }));
 const zbirka = () => getDb().collection('skill_states');
 
 /**
- * Ocjena odgovora → FSRS ocjena.
+ * Ocjena pojedinog odgovora za FSRS.
  *
- * FSRS očekuje procjenu koliko je prisjećanje bilo teško:
- *   Again — nije znalo
- *   Hard  — znalo, ali sporo / uz oklijevanje
- *   Good  — znalo normalno
- *   Easy  — znalo odmah
- *
- * Prag brzine raste s težinom pitanja: za teže pitanje 10 s nije sporo.
+ * Za učenike 1.–4. razreda brzina čitanja i tipkanja ne smije biti skriveni
+ * kriterij uspješnosti. Zato vrijeme odgovora ne mijenja ocjenu vještine:
+ * točan odgovor je Good, a netočan Again. Vrijeme se i dalje može spremati
+ * kao tehnički podatak, ali ne utječe na raspored ponavljanja.
  */
-function ocjena({ tocno, vrijemeMs, difficulty = 1 }) {
-  if (!tocno) return Rating.Again;
-
-  const prag = 3000 + (difficulty - 1) * 2000; // d1 → 3 s, d5 → 11 s
-  if (!Number.isFinite(vrijemeMs) || vrijemeMs <= 0) return Rating.Good;
-  if (vrijemeMs < prag * 0.5) return Rating.Easy;
-  if (vrijemeMs > prag * 2) return Rating.Hard;
-  return Rating.Good;
+function ocjena({ tocno }) {
+  return tocno ? Rating.Good : Rating.Again;
 }
 
 /**
- * Jedna ocjena po vještini, iz svih odgovora te vještine u kvizu.
- * Promašaj je jači signal od pogotka — ako je ijedan bio netočan, ide Again.
+ * Jedna FSRS ocjena po vještini iz svih zadataka te vještine u kvizu.
+ * - sve točno      → Good
+ * - dio točno      → Hard (potrebno skorije ponavljanje, ali znanje nije nula)
+ * - ništa točno    → Again
+ *
+ * Time jedan promašaj više ne poništava nekoliko točnih odgovora.
  */
 function objediniPoVjestini(stavke) {
   const poVjestini = new Map();
@@ -65,9 +60,9 @@ function objediniPoVjestini(stavke) {
   }
 
   for (const v of poVjestini.values()) {
-    v.ocjena = v.ocjene.includes(Rating.Again)
-      ? Rating.Again
-      : Math.min(...v.ocjene); // Hard < Good < Easy → najstroža od preostalih
+    if (v.tocnih === 0) v.ocjena = Rating.Again;
+    else if (v.tocnih === v.ukupno) v.ocjena = Rating.Good;
+    else v.ocjena = Rating.Hard;
   }
   return [...poVjestini.values()];
 }

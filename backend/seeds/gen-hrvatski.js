@@ -1,3 +1,4 @@
+const {wrapGenerator}=require("../services/pedagogyReview");
 // generators.js — Question generators for Učilica V4
 // Each function returns 200+ questions for its topic
 
@@ -5,7 +6,7 @@ const { unos, oznake, FORMAT, dopuniFormat } = require("./jasnoca");
 
 const CIRCLE = "○";
 
-function sh(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = (i * 7 + 3) % (i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function sh(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function cfc(correct, min, max) { min = min ?? 0; max = max ?? 20; const w = new Set(); let o = 1; while (w.size < 3) { [correct + o, correct - o, correct + o + 1, correct - o - 1].forEach(c => { if (c !== correct && c >= min && c <= max) w.add(c); }); o++; } const all = sh([correct, ...[...w].slice(0, 3)]); return { answers: all.map(String), correctIndex: all.indexOf(correct) }; }
 const rep = (e, n) => e.repeat(n);
 const EM = { A: "🍎", G: "🍏", S: "⭐", F: "🐟", W: "🌼", B: "⚽", H: "❤️", K: "🧱", C: "🐥", T: "🌳" };
@@ -24,7 +25,8 @@ const IM = () => ITEMS_M[_mi++ % ITEMS_M.length];
  * fix() — završna obrada svakog generiranog pitanja:
  *   1. razriješi _c → correctIndex
  *   2. ukloni duplicirane ponuđene odgovore (dijete je vidjelo isto slovo dvaput)
- *   3. odbaci pitanja koja nakon čišćenja nemaju barem 2 izbora
+ *   3. nasumično promiješa sve ponuđene odgovore i ponovno izračuna correctIndex
+ *   4. odbaci pitanja koja nakon čišćenja nemaju barem 2 izbora
  */
 /** 4 različita slova: točno + 3 distraktora iz abecede */
 function distraktoriSlova(abc, tocanIdx) {
@@ -55,8 +57,8 @@ function fix(arr) {
 
       if (jedinstveni.length < 2) continue; // neupotrebljivo pitanje
 
-      q.answers = jedinstveni;
-      q.correctIndex = jedinstveni.findIndex(a => String(a) === String(tocan));
+      q.answers = sh(jedinstveni);
+      q.correctIndex = q.answers.findIndex(a => String(a) === String(tocan));
       if (q.correctIndex === -1) continue; // točan odgovor ispao — odbaci
       delete q._c;
     } else if (q._c !== undefined) {
@@ -146,6 +148,10 @@ function genRijeci() {
   [[["ma","ma"],"mama"],[["ta","ta"],"tata"],[["ri","ba"],"riba"],[["ško","la"],"škola"],[["lje","to"],"ljeto"],[["zi","ma"],"zima"],[["ku","ća"],"kuća"],[["lo","pti","ca"],"loptica"],[["ja","bu","ka"],"jabuka"],[["knji","ga"],"knjiga"],[["olov","ka"],"olovka"],[["pti","ca"],"ptica"],[["sun","ce"],"sunce"],[["ob","lak"],"oblak"],[["cvi","jet"],"cvijet"],[["pro","lje","će"],"proljeće"],[["bo","ji","ca"],"bojica"],[["je","sen"],"jesen"],[["u","li","ca"],"ulica"],[["ba","na","na"],"banana"]].forEach(([p,f]) => { const wr = sh(ew.map(([_,w])=>w).filter(x=>x!==f)).slice(0,3); q.push({ type:"choice", difficulty:3, question:`Koja riječ nastaje od slogova "${p.join("-")}"?`, answers:sh([f,...wr]), correctIndex:-1, _c:f }); });
   [["pas",3],["dom",3],["mama",4],["riba",4],["škola",5],["sunce",5],["jabuka",6],["loptica",7],["kuća",4],["drvo",4],["auto",4],["more",4],["ptica",5],["oblak",5],["cvijet",6]].forEach(([w,c]) => { const r = cfc(c,2,9); q.push({ type:"choice", difficulty:3, question:`Koliko glasova ima riječ "${w}"?`, answers:r.answers, correctIndex:r.correctIndex }); });
   [["mama","mačka","kuća"],["tata","torba","riba"],["sunce","sat","drvo"],["pas","ptica","auto"],["lopta","leptir","škola"],["krava","knjiga","riba"],["ruka","ruža","jabuka"],["brod","banana","cvijet"],["dom","drvo","sat"],["voda","vlak","kuća"]].forEach(([w1,w2,wr]) => { const a = sh([w2,wr,sh(["čokolada","igla","šuma","zvijezda"])[0]]); q.push({ type:"choice", difficulty:2, question:`Koja riječ počinje istim slovom kao riječ "${w1}"?`, answers:a, correctIndex:-1, _c:w2 }); });
+  // Dodatni različiti načini rada: ne samo ista uputa s drugom riječi.
+  [["m_čka","a","mačka"],["p_s","a","pas"],["r_ba","i","riba"],["k_ća","u","kuća"]].forEach(([uzorak,slovo,rijec]) => q.push({type:"choice",difficulty:2,question:`Koje slovo nedostaje da nastane riječ "${rijec}"? ${uzorak}`,answers:sh([slovo,...sh(["a","e","i","o","u"].filter(x=>x!==slovo)).slice(0,3)]),correctIndex:-1,_c:slovo}));
+  [["pas","životinja"],["olovka","predmet"],["jabuka","voće"],["kuća","mjesto za stanovanje"]].forEach(([w,o]) => q.push({type:"choice",difficulty:2,question:`Što najbolje opisuje riječ "${w}"?`,answers:sh([o,...sh(["životinja","predmet","voće","mjesto za stanovanje"].filter(x=>x!==o)).slice(0,3)]),correctIndex:-1,_c:o}));
+  q.push({type:"choice",difficulty:2,question:"Koja riječ ima najviše slova?",answers:["pas","riba","olovka","dom"],correctIndex:2});
   return fix(q).slice(0, 210);
 }
 
@@ -268,4 +274,4 @@ function genRecenice() {
   return fix(q).slice(0, 210);
 }
 
-module.exports = { genSlova, genGlasovi, genRijeci, genRecenice, N, IF, IM, sh, cfc, rep, fix, EL, CIRCLE, unos, oznake };
+module.exports = { genSlova:wrapGenerator(genSlova), genGlasovi:wrapGenerator(genGlasovi), genRijeci:wrapGenerator(genRijeci), genRecenice:wrapGenerator(genRecenice), N, IF, IM, sh, cfc, rep, fix, EL, CIRCLE, unos, oznake };

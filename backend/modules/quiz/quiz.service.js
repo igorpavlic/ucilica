@@ -9,14 +9,16 @@ function createHttpError(status, message) {
   return error;
 }
 
-function mapSafeQuestion(question) {
+function mapSafeQuestion(question, answerOrder = null) {
   const osnovno = {
     _id: question._id,
     type: question.type,
     question: question.question,
     visual: question.visual || '',
     hint: question.hint || '',
-    answers: question.answers || [],
+    answers: question.type === 'choice' && Array.isArray(answerOrder)
+      ? answerOrder.map((index) => question.answers[index])
+      : (question.answers || []),
     placeholder: question.placeholder || 'Upiši odgovor...',
     difficulty: question.difficulty || 1
   };
@@ -42,7 +44,12 @@ function promijesaj(niz) {
   return a;
 }
 
-function evaluateQuestion(question, rawAnswer) {
+function buildAnswerOrder(question) {
+  if (question.type !== 'choice' || !Array.isArray(question.answers)) return null;
+  return promijesaj(question.answers.map((_, index) => index));
+}
+
+function evaluateQuestion(question, rawAnswer, answerOrder = null) {
   // Spajanje parova: odgovor je { lijeviId: desniId, ... }.
   // Točno je kad je svaki lijevi spojen sa svojim izvornim parom.
   if (question.type === 'match') {
@@ -72,11 +79,18 @@ function evaluateQuestion(question, rawAnswer) {
 
   if (question.type === 'choice') {
     const selectedIndex = Number.parseInt(rawAnswer, 10);
+    const hasOrder = Array.isArray(answerOrder) && answerOrder.length === question.answers?.length;
+    const originalIndex = Number.isNaN(selectedIndex)
+      ? null
+      : (hasOrder ? answerOrder[selectedIndex] : selectedIndex);
+    const displayedCorrectIndex = hasOrder
+      ? answerOrder.indexOf(question.correctIndex)
+      : question.correctIndex;
     return {
       normalizedAnswer: Number.isNaN(selectedIndex) ? null : selectedIndex,
-      isCorrect: selectedIndex === question.correctIndex,
+      isCorrect: originalIndex === question.correctIndex,
       correctAnswer: question.answers?.[question.correctIndex] || '',
-      correctIndex: question.correctIndex
+      correctIndex: displayedCorrectIndex
     };
   }
 
@@ -138,12 +152,20 @@ function createQuizService() {
     }
 
     const questionIds = questions.map((question) => question._id);
+    // Raspored ponuđenih odgovora je slučajan za svaku kviz-sesiju i čuva se
+    // na serveru kako bi provjera odgovora ostala točna.
+    const answerOrders = {};
+    for (const question of questions) {
+      const order = buildAnswerOrder(question);
+      if (order) answerOrders[question._id.toString()] = order;
+    }
     const attempt = {
       user_id: userId || null,
       topic_id: topic._id,
       subject_id: topic.subject_id,
       grade: topic.grade || 1,
       question_ids: questionIds,
+      answer_orders: answerOrders,
       createdAt: new Date(),
       completedAt: null
     };
@@ -159,7 +181,7 @@ function createQuizService() {
         icon: topic.icon,
         subject
       },
-      questions: questions.map(mapSafeQuestion),
+      questions: questions.map((question) => mapSafeQuestion(question, answerOrders[question._id.toString()])),
       totalAvailable,
       exhausted: false
     };
@@ -176,7 +198,7 @@ function createQuizService() {
     const question = await repo.findQuestionById(questionId);
     if (!question) throw createHttpError(404, 'Pitanje nije pronađeno.');
 
-    return evaluateQuestion(question, answer);
+    return evaluateQuestion(question, answer, attempt.answer_orders?.[questionId.toString()] || null);
   }
 
   async function submitQuiz({ userId, topicId, attemptId, answers }) {
@@ -218,7 +240,7 @@ function createQuizService() {
         throw createHttpError(400, 'Pitanje ne pripada odabranoj temi.');
       }
 
-      const evaluation = evaluateQuestion(question, answer.userAnswer);
+      const evaluation = evaluateQuestion(question, answer.userAnswer, attempt.answer_orders?.[question._id.toString()] || null);
       if (evaluation.isCorrect) correctCount += 1;
 
       const vrijemeMs = Number.parseInt(answer.timeTaken, 10) || 0;

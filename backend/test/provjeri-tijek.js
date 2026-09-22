@@ -115,16 +115,22 @@ const tvrdi = (uvjet, opis, detalj = '') => {
   tvrdi(procurilo.length === 0, 'pitanja klijentu ne nose točan odgovor',
     procurilo.length ? JSON.stringify(Object.keys(procurilo[0])) : '');
 
+  // Ponuđeni odgovori imaju raspored vezan uz sesiju, a izvorni correctIndex ne izlazi klijentu.
+  const spremljeniAttempt = kolekcije.quiz_attempts.find((a) => String(a._id) === String(sesija.attemptId));
+  tvrdi(!!spremljeniAttempt?.answer_orders, 'sesija sprema permutaciju ponuđenih odgovora');
+
   // 3) točan odgovor
   const prvo = sesija.questions[0];
   const uBazi = kolekcije.questions.find((q) => String(q._id) === String(prvo._id));
-  const tocan = uBazi.type === 'choice' ? uBazi.correctIndex : uBazi.correctAnswer;
+  const tocan = uBazi.type === 'choice'
+    ? prvo.answers.indexOf(uBazi.answers[uBazi.correctIndex])
+    : uBazi.correctAnswer;
   const rez1 = await service.checkAnswer({ attemptId: sesija.attemptId, questionId: prvo._id, answer: tocan });
   tvrdi(rez1.isCorrect === true, 'checkAnswer prepoznaje točan odgovor', JSON.stringify(rez1));
 
   // 4) netočan odgovor
   const netocan = uBazi.type === 'choice'
-    ? (uBazi.correctIndex + 1) % uBazi.answers.length
+    ? (tocan + 1) % uBazi.answers.length
     : `${uBazi.correctAnswer}xx`;
   const rez2 = await service.checkAnswer({ attemptId: sesija.attemptId, questionId: prvo._id, answer: netocan });
   tvrdi(rez2.isCorrect === false, 'checkAnswer prepoznaje netočan odgovor');
@@ -154,7 +160,7 @@ const tvrdi = (uvjet, opis, detalj = '') => {
     const b = kolekcije.questions.find((x) => String(x._id) === String(q._id));
     return {
       questionId: q._id,
-      userAnswer: b.type === 'choice' ? b.correctIndex : b.correctAnswer,
+      userAnswer: b.type === 'choice' ? q.answers.indexOf(b.answers[b.correctIndex]) : b.correctAnswer,
       timeTaken: 1200,
     };
   });
@@ -198,20 +204,20 @@ const tvrdi = (uvjet, opis, detalj = '') => {
   const V = require('../services/vjestine');
   tvrdi(V.ocjena({ tocno: false, vrijemeMs: 500, difficulty: 1 }) === V.Rating.Again,
     'netočan odgovor → Again');
-  tvrdi(V.ocjena({ tocno: true, vrijemeMs: 800, difficulty: 1 }) === V.Rating.Easy,
-    'brz točan odgovor → Easy');
-  tvrdi(V.ocjena({ tocno: true, vrijemeMs: 20000, difficulty: 1 }) === V.Rating.Hard,
-    'spor točan odgovor → Hard');
+  tvrdi(V.ocjena({ tocno: true, vrijemeMs: 800, difficulty: 1 }) === V.Rating.Good,
+    'brz točan odgovor → Good (brzina se ne vrednuje)');
+  tvrdi(V.ocjena({ tocno: true, vrijemeMs: 20000, difficulty: 1 }) === V.Rating.Good,
+    'spor točan odgovor → Good (brzina se ne vrednuje)');
   tvrdi(V.ocjena({ tocno: true, vrijemeMs: 20000, difficulty: 5 }) === V.Rating.Good,
-    'isto vrijeme na teškom pitanju nije sporo → Good');
+    'točan odgovor → Good neovisno o težini i brzini');
 
   // 12) promašaj u skupini ruši ocjenu cijele vještine
   const objed = V.objediniPoVjestini([
     { skill: 'X', tocno: true, vrijemeMs: 900, difficulty: 1 },
     { skill: 'X', tocno: false, vrijemeMs: 900, difficulty: 1 },
   ]);
-  tvrdi(objed.length === 1 && objed[0].ocjena === V.Rating.Again,
-    'jedan promašaj obara ocjenu vještine na Again');
+  tvrdi(objed.length === 1 && objed[0].ocjena === V.Rating.Hard,
+    'mješovita uspješnost na istoj vještini → Hard, ne potpuno Again');
 
   // 13) spajanje parova — cijeli put kroz servis
   console.log('');
