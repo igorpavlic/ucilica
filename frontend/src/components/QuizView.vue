@@ -41,7 +41,22 @@
           </template>
         </div>
 
-        <div class="question-text">{{ questions[currentQ].question }}</div>
+        <div class="question-row">
+          <div class="question-text">{{ questions[currentQ].question }}</div>
+          <!--
+            Gumb za slušanje. Prikazuje se samo ako preglednik ima hrvatski
+            glas — radije ništa nego zadatak pročitan engleskim glasom.
+          -->
+          <button
+            v-if="govorDostupan"
+            class="btn-slusaj"
+            :class="{ govori: govoriSe }"
+            type="button"
+            :aria-label="govoriSe ? 'Zaustavi čitanje' : 'Pročitaj pitanje naglas'"
+            :title="govoriSe ? 'Zaustavi čitanje' : 'Pročitaj pitanje naglas'"
+            @click="procitajPitanje"
+          >{{ govoriSe ? '⏹' : '🔊' }}</button>
+        </div>
 
         <div v-if="questions[currentQ].hint" class="question-hint">
           {{ questions[currentQ].hint }}
@@ -162,6 +177,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuth } from '../composables/useAuth'
 import { useQuizStore } from '../stores/quiz'
+import { useGovor } from '../composables/useGovor'
 
 const props = defineProps({ topicId: String })
 const emit = defineEmits(['error'])
@@ -188,6 +204,22 @@ const {
   tocnihVeza,
   correctCount
 } = storeToRefs(quizStore)
+
+// Čitanje pitanja naglas — za 1. razred, gdje dijete još ne čita tečno.
+const { dostupno: govorDostupan, govoriSe, reci, prekini } = useGovor()
+
+function procitajPitanje () {
+  if (govoriSe.value) { prekini(); return }
+  const q = questions.value?.[currentQ.value]
+  if (!q) return
+  // Uz tekst pitanja čitaju se i ponuđeni odgovori — inače dijete čuje
+  // zadatak, ali ne i iz čega bira.
+  const dijelovi = [q.question]
+  if (q.type === 'choice' && Array.isArray(q.answers)) {
+    dijelovi.push(q.answers.map((a, i) => `${i + 1}. ${a}`).join('. '))
+  }
+  reci(dijelovi.join('. '))
+}
 
 const {
   loadQuiz,

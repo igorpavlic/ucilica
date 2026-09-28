@@ -521,3 +521,97 @@ Rezultat: 59 generatora; svaki standardni kviz od 7 pitanja može koristiti 7 ra
 - Dodan je review sloj `backend/services/pedagogyReview.js` koji filtrira poznate loše obrasce i pretvara višak kloniranih predložaka u različite oblike zadataka.
 - Završni sadržajni audit generiranog fonda: 3.889 pitanja, 3.889 označeno DOBRO, 0 za preformuliranje i 0 za uklanjanje prema pravilima audita.
 - Test raznolikosti: svih 59 generatora može složiti standardni kviz od 7 pitanja sa 7 različitih obitelji pitanja.
+
+---
+
+## Otvoreni kod i korisničko iskustvo (24. 9. 2026.)
+
+Puna analiza je u `ANALIZA-OPEN-SOURCE.md`. Ovdje samo što je ugrađeno.
+
+### Regresije koje su provjere uhvatile
+
+Novi `services/pedagogyReview.js` unio je tri greške koje je testni paket
+odmah prijavio:
+
+```
+✗ 5 skupine po 3 predmeta        →  ✓ 5 skupina po 3 predmeta
+✗ 18871 paketa                   →  ✓ 18871 paket
+✗ Broj 8 možemo rastaviti na:    →  ✓ Na koja dva broja možemo rastaviti broj 8?
+✗ ponuda ["<", ">"] bez imena    →  ✓ ["< manje", "> veće"]
+```
+
+U rječnik su dodane imenice `predmet` i `komad`, koje su zadatci rabili, a
+rječnik ih nije imao.
+
+### seeds/slogovi.js — broj slogova se računa
+
+Brojevi slogova stajali su u ručnim tablicama, pa je zadatak postojao samo
+za unaprijed upisane riječi. Sada ih računa pravilo (samoglasnici +
+slogotvorno *r*), bez ijedne ovisnosti.
+
+Knjižnice za prijelom riječi (`hyphen`, `hyphenopoly`) imaju hrvatske
+uzorke i isprobane su — ali daju mjesta za prijelom retka, ne slogove:
+`oko` → `oko`, `auto` → `auto`, `ulica` → `uli-ca`. Za brojanje su krive.
+
+Usput su nađene **dvije greške u postojećim tablicama**: `auto` je pisalo
+2 sloga (a-u-to je 3), `automobil` 4 (a-u-to-mo-bil je 5). Hrvatski nema
+dvoglasa.
+
+### Čitanje pitanja naglas
+
+`frontend/src/composables/useGovor.js` — dijete u 1. razredu često još ne
+čita tečno, pa zadatak iz matematike mjeri brzinu čitanja umjesto
+matematike. Gumb 🔊 čita pitanje i ponuđene odgovore.
+
+Cijena: **nula bajtova**, ugrađeno u preglednik. Android i ChromeOS imaju
+hrvatski glas koji radi i bez mreže. Gdje hrvatskoga glasa nema, gumb se
+ne prikazuje — radije ništa nego engleski glas.
+
+Izgovor je pripremljen: `3 + 4 = ?` čita se „tri plus četiri jednako".
+
+### services/tezina.js — mjerena težina pitanja (Elo)
+
+FSRS zna KADA ponoviti, ali ne i KOLIKO je pitanje teško. Kod generiranih
+pitanja iz istoga predloška izlaze zadatci vrlo različite težine, a
+`difficulty` koji im generator upiše je pretpostavka, ne mjerenje.
+
+Ocjena djeteta i ocjena pitanja pomiču se nakon svakog odgovora, kao kod
+šahista. Brzina ulazi u ocjenu: točan odgovor vrijedi 0,6–1,0 ovisno o
+oklijevanju, netočan 0,0–0,2.
+
+Postupak: Klinkenberg, Straatemeier & van der Maas (2011), *Computers &
+Education* 57(2) — motor iza nizozemskoga Math Gardena.
+
+Nove kolekcije: `item_ratings` (po pitanju), `user_ratings` (po djetetu i
+predmetu). Ne ruši predaju kviza ako zapne.
+
+### Konfeti na kraju runde
+
+`canvas-confetti` (ISC, bez ovisnosti, ~7 KB gzip). Jače kad je sve točno.
+Poštuje `prefers-reduced-motion`.
+
+Uklonjena je i rodna kosa crta iz poruke o rezultatu: „Riješio/la si sve
+zadatke točno" → „Svi su zadatci točni".
+
+### Frontend se prvi put uspješno buildao
+
+`frontend/package-lock.json` imao je dva unosa (`pinia`, `vue-demi`) koji
+su pokazivali na interni registar `packages.applied-caas-gateway1.internal.api.openai.org`
+i putanju `/artifactory/api/npm/npm-public/`. S takvim lockfileom `npm ci`
+ne prolazi nigdje izvan toga okruženja. Preusmjereni su na
+`registry.npmjs.org`, nakon čega build prolazi:
+
+```
+dist/assets/index-*.css   26,73 kB │ gzip:  5,47 kB
+dist/assets/index-*.js   142,41 kB │ gzip: 53,38 kB
+```
+
+### Provjereno
+
+```
+npm test               → 24/24 ✓   (stabilno kroz 8 pokretanja)
+npm run test:tijek     → 61/61 ✓   (13 novih tvrdnji o Elo ocjeni)
+npm run test:pedagogija → ✓
+provjeri-raznolikost   → ✓
+npm run build (frontend) → ✓
+```

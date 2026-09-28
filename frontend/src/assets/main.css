@@ -1150,3 +1150,54 @@ select.form-input {
 .mt-md { margin-top: var(--space-md); }
 .mt-lg { margin-top: var(--space-lg); }
 .gap-sm { gap: var(--space-sm); }
+
+/* ── Gumb za slušanje pitanja ──────────────────────────────────────
+   Dijete u 1. razredu često još ne čita tečno. Cilj gumba je 44×44 px
+   najmanje (WCAG 2.5.5); ovdje 48 px jer djeca imaju lošiju preciznost
+   pokazivanja od odraslih (NN/g: ciljevi za djecu trebaju biti veći). */
+.question-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+}
+
+.question-row .question-text { flex: 0 1 auto; }
+
+.btn-slusaj {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  margin-top: 2px;
+  border: 2px solid rgba(26, 22, 21, 0.08);
+  border-radius: 50%;
+  background: var(--bg-warm);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 150ms ease, background 150ms ease;
+}
+
+.btn-slusaj:hover { border-color: var(--coral); transform: scale(1.06); }
+.btn-slusaj:active { transform: scale(0.96); }
+
+.btn-slusaj.govori {
+  border-color: var(--coral);
+  background: var(--coral);
+  animation: slusaj-puls 1.1s ease-in-out infinite;
+}
+
+@keyframes slusaj-puls {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 122, 89, 0.45); }
+  50%      { box-shadow: 0 0 0 10px rgba(255, 122, 89, 0); }
+}
+
+/* Tko je isključio animacije, ne dobiva puls */
+@media (prefers-reduced-motion: reduce) {
+  .btn-slusaj, .btn-slusaj.govori { animation: none; transition: none; }
+}
+
+@media (max-width: 480px) {
+  .question-row { gap: 8px; }
+  .btn-slusaj { width: 44px; height: 44px; font-size: 1.2rem; }
+}

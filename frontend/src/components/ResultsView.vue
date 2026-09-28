@@ -24,6 +24,7 @@
 <script setup>
 import { computed, inject, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import confetti from 'canvas-confetti'
 
 const router = useRouter()
 const route = useRoute()
@@ -48,14 +49,45 @@ const resultTitle = computed(() => {
 })
 
 const resultMessage = computed(() => {
-  if (pct.value === 1) return 'Riješio/la si sve zadatke točno. 🎉'
+  if (pct.value === 1) return 'Svi su zadatci točni. 🎉'
   if (pct.value >= 0.7) return 'Većinu zadataka rješavaš točno. Nastavi vježbati ono što je bilo teško. 🌈'
   if (pct.value >= 0.4) return 'Dio zadataka već znaš. Ponovi netočne pa pokušaj ponovno. 💪'
   return 'Pogledaj točne odgovore, ponovi gradivo i pokušaj ponovno. 📖'
 })
 
+/**
+ * Slavlje na kraju runde.
+ *
+ * canvas-confetti (ISC, bez ovisnosti, ~7 KB gzip) crta po <canvas>-u i sam
+ * se počisti. Jačina ovisi o rezultatu — sve točno dobiva više od 70 %,
+ * inače nagrada gubi značenje.
+ *
+ * Tko je u sustavu isključio animacije (prefers-reduced-motion) ne dobiva
+ * ništa: zvjezdice i konfeti nekoj djeci smetaju, a i to je pristupačnost.
+ */
+function slavi () {
+  const mirno = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  if (mirno) return
+
+  const jako = pct.value === 1
+  confetti({
+    particleCount: jako ? 140 : 70,
+    spread: jako ? 100 : 65,
+    startVelocity: jako ? 45 : 32,
+    origin: { y: 0.65 },
+    disableForReducedMotion: true
+  })
+  if (jako) {
+    // drugi val iz kutova samo kad je sve točno
+    setTimeout(() => {
+      confetti({ particleCount: 60, angle: 60, spread: 60, origin: { x: 0, y: 0.7 }, disableForReducedMotion: true })
+      confetti({ particleCount: 60, angle: 120, spread: 60, origin: { x: 1, y: 0.7 }, disableForReducedMotion: true })
+    }, 220)
+  }
+}
+
 onMounted(() => {
-  if (pct.value >= 0.7) triggerStars()
+  if (pct.value >= 0.7) { triggerStars(); slavi() }
 })
 
 function retry() {

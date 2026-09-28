@@ -3,6 +3,17 @@ const {wrapGenerator}=require("../services/pedagogyReview");
 // Each function returns 200+ questions for its topic
 
 const { unos, oznake, FORMAT, dopuniFormat } = require("./jasnoca");
+const { brojSlogova, rastavi } = require("./slogovi");
+const { IMENICE } = require("./hr-imenice");
+
+// Riječi za zadatke o slogovima: jezgra + sve imenice iz rječnika koje
+// dijete 1. razreda može pročitati. Rječnik raste → raste i ovaj popis.
+const RIJECI_SLOGOVI = [...new Set([
+  'ja', 'da', 'ne', 'mama', 'tata', 'riba', 'škola', 'ljeto', 'jabuka',
+  'loptica', 'auto', 'ulica', 'olovka', 'planina', 'televizor', 'automobil',
+  'računalo', 'čokolada', 'stolica', 'cvjetić',
+  ...Object.values(IMENICE).map((im) => im.o[0]).filter((w) => w.length <= 9),
+])];
 
 const CIRCLE = "○";
 
@@ -121,7 +132,10 @@ function genGlasovi() {
   [["kuća",2],["pas",1],["riba",2],["auto",2],["mama",2],["tata",2],["škola",2],["sunce",2],["drvo",1],["oblak",2],["jabuka",3],["lopta",2],["olovo",3],["igla",2],["ulica",3],["olovka",3],["večera",3],["banana",3],["ananas",3],["more",2],["rijeka",3],["planina",3],["zemlja",2],["ptica",2],["leptir",2],["cvijet",2],["petica",3],["metar",2],["kamen",2],["prozor",2]].forEach(([w,c]) => { const r = cfc(c,0,5); q.push({ type:"choice", difficulty:2, question:`Koliko samoglasnika ima riječ "${w}"?`, answers:r.answers, correctIndex:r.correctIndex }); });
   [["kuća",2],["pas",2],["riba",2],["škola",3],["mama",2],["drvo",3],["oblak",3],["lopta",3],["sunce",3],["cvijet",4],["ptica",3],["knjiga",4],["stolica",4],["planina",3],["medvjed",5]].forEach(([w,c]) => { const r = cfc(c,0,7); q.push({ type:"choice", difficulty:3, question:`Koliko suglasnika ima riječ "${w}"?`, answers:r.answers, correctIndex:r.correctIndex }); });
   [["rak","a"],["led","e"],["list","i"],["dom","o"],["put","u"],["sat","a"],["med","e"],["dim","i"],["sok","o"],["luk","u"],["brat","a"],["ples","e"],["mir","i"],["nos","o"],["duh","u"]].forEach(([w,v]) => q.push({ type:"choice", difficulty:2, question:`Koji se samoglasnik nalazi u riječi "${w}"?`, answers:["a","e","i","o","u"], correctIndex:vow.indexOf(v) }));
-  [["ja",1],["da",1],["ne",1],["mama",2],["tata",2],["riba",2],["škola",2],["ljeto",2],["jabuka",3],["loptica",3],["auto",2],["ulica",3],["olovka",3],["planina",3],["televizor",4],["automobil",4],["računalo",4],["čokolada",4],["stolica",3],["cvjetić",2]].forEach(([w,c]) => { const r = cfc(c,1,6); q.push({ type:"choice", difficulty:3, question:`Koliko slogova ima riječ "${w}"?`, answers:r.answers, correctIndex:r.correctIndex }); });
+  // Broj slogova se računa (seeds/slogovi.js), ne prepisuje iz tablice.
+  // Dvije vrijednosti u staroj tablici bile su krive: "auto" je a-u-to (3),
+  // "automobil" a-u-to-mo-bil (5) — hrvatski nema dvoglasa.
+  RIJECI_SLOGOVI.forEach((w) => { const c = brojSlogova(w); const r = cfc(c,1,6); q.push({ type:"choice", difficulty:3, question:`Koliko slogova ima riječ "${w}"?`, answers:r.answers, correctIndex:r.correctIndex }); });
   // koji glas NE PRIPADA grupi (samoglasnik među suglasnicima) diff 2
   for (let i=0;i<15;i++) { const v=vow[(i*2)%5]; const cs=sh(con).slice(0,3); const all=sh([v,...cs]).map(x=>x.toUpperCase()); q.push({ type:"choice", difficulty:2, question:"Koji glas NE pripada ostalima?", answers:all, correctIndex:-1, _c:v.toUpperCase(), hint:"Jedan je samoglasnik, ostali suglasnici." }); }
   // suglasnik među samoglasnicima diff 2

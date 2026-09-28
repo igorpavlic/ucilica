@@ -4,6 +4,7 @@
  */
 require("dotenv").config({path:require("path").join(__dirname,"../.env")});
 const{oznake}=require("./jasnoca");
+const{brojSlogova}=require("./slogovi");
 const ZNAKOVI_USP=oznake(["<",">","="]);
 const ZNAKOVI3=oznake([".","?","!"]);
 const{MongoClient}=require("mongodb");
@@ -148,7 +149,8 @@ const sin=[["kuća","dom"],["lijepo","krasno"],["veselo","radosno"],["brzo","hit
 sin.forEach(([w,s])=>{q.push({type:"choice",difficulty:3,question:`Slično "${w}"?`,answers:sh([s,...wf(sin.flat(),s)]),correctIndex:-1,_c:s})});
 const uu=[["kuća","kućica","kućetina"],["pas","psić","psina"],["knjiga","knjižica","knjižurina"],["riba","ribica","ribetina"],["nos","nosić","nosina"],["mačka","mačkica","mačketina"],["stol","stolić","stolčina"],["cvijet","cvjetić","cvjetina"],["zub","zubić","zubetina"],["ruka","ručica","ručetina"],["noga","nožica","nožetina"],["ptica","ptičica","ptičetina"],["grad","gradić","gradina"],["brat","bratić","bratina"]];
 uu.forEach(([w,um,uv])=>{q.push({type:"input",difficulty:2,question:`Kako glasi umanjenica riječi "${w}"? Napiši jednu riječ.`,konstrukt:"rijec",correctAnswer:um});q.push({type:"input",difficulty:3,question:`Kako glasi uvećanica riječi "${w}"? Napiši jednu riječ.`,konstrukt:"rijec",correctAnswer:uv});q.push({type:"choice",difficulty:2,question:`Umanjenica od "${w}"?`,answers:sh([um,...wf(uu.map(x=>x[1]),um)]),correctIndex:-1,_c:um})});
-[["škola",2],["računalo",4],["dom",1],["prijatelj",3],["knjiga",2],["automobil",4],["ja",1],["učiteljica",5],["matematika",5],["pas",1],["mama",2],["telefon",3],["loptica",3],["bilježnica",4],["zvijezda",3],["čokolada",4],["rak",1],["banana",3],["sunce",2],["olovka",3]].forEach(([w,c])=>{const r=cfc(c,1,6);q.push({type:"choice",difficulty:2,question:`Slogovi "${w}"?`,answers:r.answers,correctIndex:r.correctIndex});q.push({type:"input",difficulty:3,question:`Koliko slogova ima riječ "${w}"?`,correctAnswer:String(c)})});
+// Broj slogova računa seeds/slogovi.js — "automobil" je 5 slogova, ne 4.
+["škola","računalo","dom","prijatelj","knjiga","automobil","ja","učiteljica","matematika","pas","mama","telefon","loptica","bilježnica","zvijezda","čokolada","rak","banana","sunce","olovka"].forEach((w)=>{const c=brojSlogova(w);const r=cfc(c,1,6);q.push({type:"choice",difficulty:2,question:`Slogovi "${w}"?`,answers:r.answers,correctIndex:r.correctIndex});q.push({type:"input",difficulty:3,question:`Koliko slogova ima riječ "${w}"?`,correctAnswer:String(c)})});
 [["pas,mačka,riba,stol","stol"],["jabuka,kruška,banana,stolica","stolica"],["crvena,plava,zelena,mama","mama"],["mama,tata,baka,auto","auto"],["olovka,knjiga,bilježnica,sunce","sunce"],["košulja,hlače,cipele,knjiga","knjiga"],["jagoda,malina,kupina,stolica","stolica"],["ruka,noga,uho,lopta","lopta"],["utorak,srijeda,petak,jabuka","jabuka"],["krava,ovca,koza,stolica","stolica"]].forEach(([g,o])=>{const a=g.split(",");q.push({type:"choice",difficulty:3,question:`Što NE pripada: ${a.join(", ")}?`,answers:a,correctIndex:a.indexOf(o)})});
 return fix(q).slice(0,210)}
 

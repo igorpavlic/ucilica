@@ -67,9 +67,28 @@ function quizRepository() {
       );
     },
 
+    /**
+     * Elo ocjena djeteta po predmetu. Dijete može dobro zbrajati, a slabo
+     * poznavati prirodu — jedna ocjena za sve ne bi ništa značila.
+     */
+    async findRating(userId, subjectId) {
+      const z = await collection('user_ratings').findOne({ user_id: userId, subject_id: subjectId });
+      return { rating: z?.rating ?? 1500, odgovora: z?.odgovora ?? 0 };
+    },
+
+    saveRating(userId, subjectId, { rating, odgovora }) {
+      return collection('user_ratings').updateOne(
+        { user_id: userId, subject_id: subjectId },
+        { $set: { user_id: userId, subject_id: subjectId, rating, odgovora, updatedAt: new Date() } },
+        { upsert: true }
+      );
+    },
+
     async createAttemptIndexes() {
       await collection('quiz_attempts').createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 6 });
       await collection('quiz_attempts').createIndex({ user_id: 1, createdAt: -1 });
+      await collection('user_ratings').createIndex({ user_id: 1, subject_id: 1 }, { unique: true });
+      await collection('item_ratings').createIndex({ question_id: 1 }, { unique: true });
     },
 
     toObjectId(value) {

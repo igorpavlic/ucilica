@@ -1,6 +1,7 @@
 const { getQuizQuestions, generateAndStore } = require('../../services/questionGenerator');
 const { quizRepository } = require('./quiz.repository');
 const vjestine = require('../../services/vjestine');
+const tezina = require('../../services/tezina');
 const { tocan, ocisti } = require('../../seeds/jasnoca');
 
 function createHttpError(status, message) {
@@ -229,6 +230,7 @@ function createQuizService() {
 
     const evaluatedAnswers = [];
     const stavkeVjestina = []; // ulaz za FSRS — jedna stavka po odgovoru
+    const stavkeTezine = [];   // ulaz za Elo — mjeri stvarnu težinu pitanja
     let correctCount = 0;
 
     for (const answer of answers) {
@@ -250,6 +252,13 @@ function createQuizService() {
         wasCorrect: evaluation.isCorrect,
         userAnswer: evaluation.normalizedAnswer,
         timeTaken: vrijemeMs
+      });
+
+      stavkeTezine.push({
+        questionId: question._id,
+        tocno: evaluation.isCorrect,
+        vrijemeMs,
+        difficulty: question.difficulty || 1
       });
 
       if (question.gik?.outcome) {
@@ -291,9 +300,23 @@ function createQuizService() {
       console.error('⚠️  Zapis vještina nije uspio:', err.message);
     }
 
+    // Elo: težina pitanja mjeri se iz stvarnih odgovora, ne iz procjene
+    // generatora. FSRS zna KADA ponoviti, Elo zna KOLIKO je pitanje teško.
+    // Kao i gore, ne smije srušiti predaju kviza.
+    let tezinaIshod = null;
+    try {
+      const staro = await repo.findRating(userId, topic.subject_id);
+      const novo = await tezina.zabiljezi(userId, stavkeTezine, staro.rating, staro.odgovora);
+      await repo.saveRating(userId, topic.subject_id, novo);
+      tezinaIshod = { rating: novo.rating, promjena: novo.rating - staro.rating };
+    } catch (err) {
+      console.error('⚠️  Mjerenje težine nije uspjelo:', err.message);
+    }
+
     const updatedUser = await repo.findSafeUserById(userId);
 
     return {
+      ...(tezinaIshod ? { tezina: tezinaIshod } : {}),
       progress: {
         totalQuestions,
         correctAnswers: correctCount,

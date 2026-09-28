@@ -241,7 +241,7 @@ const tvrdnja = (q) =>
   Array.isArray(q.answers) && q.answers.length === 2 && /Točno|Netočno/.test(q.answers.join('|'));
 
 const IZRAZ = /^[\d\s+\-−×÷:=?<>○□△.,()kncmdmg]+$/i;
-const UPUTA = /^(Napiši|Upiši|Odaberi|Poveži|Spoji|Dopuni|Ispravi|Izračunaj|Prebroji|Označi|Pronađi|Pročitaj|Poredaj|Nastavi)/;
+const UPUTA = /^(Napiši|Upiši|Odaberi|Poveži|Spoji|Dopuni|Dovrši|Nadopuni|Ispravi|Izračunaj|Prebroji|Označi|Pronađi|Pročitaj|Poredaj|Nastavi)/;
 
 // Citat na kraju ("Kakva je ovo rečenica: „Pada kiša."") ne kvari uputu.
 const bezZavrsnogCitata = (s) =>
@@ -318,9 +318,14 @@ test('Gol znak kao ponuđeni odgovor (bez imena znaka)',
 // točnomu odgovoru." Iznimka su zadaci kojima je baš pravopis predmet —
 // njih prepoznajemo po tome što imaju najviše dvije ponude, pa je razlika
 // jedna i istaknuta.
+// Iznimka: kad pitanje samo kaže da se gleda veličina slova ili pravopis
+// ("Koje je od ovih slova malo slovo?"), sličnost ponuda JEST zadatak.
+const OPRAVDANA_SLICNOST = /malo slovo|veliko slovo|velikim slovom|malim slovom|pravilno piše|ispravan zapis|pravilan zapis|dvoslov|kojim se slovom/i;
+
 test('Više od dvije ponude koje se razlikuju samo točkom ili velikim slovom',
   sva.filter((q) => {
     if (q.type !== 'choice' || !Array.isArray(q.answers) || q.answers.length <= 2) return false;
+    if (OPRAVDANA_SLICNOST.test(String(q.question || ''))) return false;
     const golo = q.answers.map((a) => String(a).toLowerCase().replace(/[.!?]+$/, '').trim());
     return new Set(golo).size < golo.length;
   }),
@@ -332,6 +337,39 @@ test('Više od dvije ponude koje se razlikuju samo točkom ili velikim slovom',
 test('Upitnik umjesto crte za prazno mjesto',
   sva.filter((q) => /[,=+×÷−-]\s*\?(?!$)|\?\s*[,=]/.test(String(q.question || ''))),
   (q) => `[R${q._razred}/${q._gen}] ${JSON.stringify(String(q.question).slice(0, 60))}`);
+
+// ── 20. brojanje slogova ───────────────────────────────────────────
+// Brojevi slogova više ne stoje u tablici nego ih računa seeds/slogovi.js.
+// Ovo je kontrolni uzorak iz udžbenika: ako se pravilo pokvari, pada ovdje.
+const SL = require('../seeds/slogovi');
+const UZORAK_SLOGOVA = [
+  ['ja', 1], ['pas', 1], ['mama', 2], ['škola', 2], ['jabuka', 3], ['olovka', 3],
+  ['računalo', 4], ['učiteljica', 5], ['matematika', 5], ['bilježnica', 4],
+  // slogotvorno "r" — nema samoglasnika, a slog postoji
+  ['prst', 1], ['vrt', 1], ['krv', 1], ['smrt', 1], ['srce', 2], ['crven', 2], ['Hrvatska', 3],
+  // "r" uz samoglasnik nije slogotvorno
+  ['trava', 2], ['ruka', 2], ['vrijeme', 3],
+  // hrvatski nema dvoglasa: svaki samoglasnik je svoj slog
+  ['auto', 3], ['automobil', 5], ['radio', 3], ['oko', 2], ['ulica', 3],
+];
+test('Brojanje slogova',
+  UZORAK_SLOGOVA
+    .filter(([w, n]) => SL.brojSlogova(w) !== n)
+    .map(([w, n]) => ({ _gen: 'slogovi', _razred: '—', question: `"${w}": očekivano ${n}, dobiveno ${SL.brojSlogova(w)}` })),
+  (q) => q.question);
+
+// Svaki dio rastavljene riječi mora imati točno jedan slog, a spojeni
+// dijelovi moraju dati izvornu riječ.
+const losRastav = [];
+for (const [w] of UZORAK_SLOGOVA) {
+  const d = SL.rastavi(w);
+  const spojeno = d.join('');
+  const ocekivano = w.toLowerCase();
+  if (spojeno !== ocekivano) losRastav.push(`"${w}" → ${d.join('-')} ne daje natrag riječ`);
+  else if (d.length !== SL.brojSlogova(w)) losRastav.push(`"${w}" → ${d.join('-')} ima ${d.length} dijelova, a ${SL.brojSlogova(w)} slogova`);
+}
+test('Rastavljanje na slogove',
+  losRastav.map((t) => ({ _gen: 'slogovi', _razred: '—', question: t })), (q) => q.question);
 
 // ── ispis ──────────────────────────────────────────────────────────
 console.log(`\nProvjereno pitanja: ${sva.length}\n`);

@@ -1,4 +1,13 @@
 const { questionFamilyKey } = require('./questionFamily');
+const HR = require('../seeds/hr-gramatika');
+const { oznake } = require('../seeds/jasnoca');
+
+// "5 skupine" nije hrvatski. Broj uz imenicu traži paukal ili genitiv množine,
+// a to zna hr-gramatika: 1 skupina, 2 skupine, 5 skupina.
+const [ZNAK_MANJE, ZNAK_VECE, ZNAK_JEDNAKO] = oznake(['<', '>', '=']);
+
+const skupina = (n) => HR.brojIme(n, 'skupina');
+const predmeta = (n) => HR.brojIme(n, 'predmet');
 
 function numChoices(correct, min=0, max=100) {
   const c=Number(correct); const vals=[c,c+1,c-1,c+2,c-2,c+10,c-10].filter((v,i,a)=>Number.isInteger(v)&&v>=min&&v<=max&&a.indexOf(v)===i);
@@ -87,7 +96,7 @@ function transformMath(q, i, generatorName){
     const a=+m[1],b=+m[2],r=a*b,mode=i%8;
     if(mode===0)return input(`Izračunaj umnožak brojeva ${a} i ${b}.`,r,q.difficulty);
     if(mode===1)return input(`Dopuni: ${a} × ${b} = ___.`,r,q.difficulty);
-    if(mode===2)return input(`Ako imamo ${a} skupine po ${b} predmeta, koliko je predmeta ukupno?`,r,q.difficulty);
+    if(mode===2)return input(`Ako imamo ${skupina(a)} po ${predmeta(b)}, koliko je predmeta ukupno?`,r,q.difficulty);
     if(mode===3)return choice(`Koje ponovljeno zbrajanje odgovara računu ${a} × ${b}?`,Array(a).fill(b).join(' + '),[Array(Math.max(1,a-1)).fill(b).join(' + '),Array(a).fill(Math.max(0,b-1)).join(' + '),`${a} + ${b}`],q.difficulty+1);
     if(mode===4)return input(`Koji broj nedostaje: ${a} × ___ = ${r}?`,b,q.difficulty+1);
     if(mode===5)return choice(`Koji izraz ima vrijednost ${r}?`,`${a} × ${b}`,[`${a} × ${b+1}`,`${a+1} × ${b}`,`${a} + ${b}`],q.difficulty+1);
@@ -98,11 +107,11 @@ function transformMath(q, i, generatorName){
     const t=+m[1],d=+m[2],r=t/d,mode=i%8;
     if(mode===0)return input(`Izračunaj količnik brojeva ${t} i ${d}.`,r,q.difficulty);
     if(mode===1)return input(`Dopuni: ${t} ÷ ${d} = ___.`,r,q.difficulty);
-    if(mode===2)return input(`${t} predmeta rasporedi jednako u ${d} skupine. Koliko je predmeta u svakoj skupini?`,r,q.difficulty);
+    if(mode===2)return input(`${predmeta(t)} rasporedi jednako u ${skupina(d)}. Koliko je predmeta u svakoj skupini?`,r,q.difficulty);
     if(mode===3)return input(`${t} kartica podijeli među ${d} učenika tako da svi dobiju jednako. Koliko dobije svaki učenik?`,r,q.difficulty+1);
     if(mode===4)return input(`Koji broj nedostaje: ${d} × ___ = ${t}?`,r,q.difficulty+1);
     if(mode===5)return choice(`Koji račun provjerava da je ${t} ÷ ${d} = ${r}?`,`${r} × ${d} = ${t}`,[`${r} + ${d} = ${t}`,`${t} × ${d} = ${r}`,`${r} - ${d} = ${t}`],q.difficulty+1);
-    if(mode===6)return choice(`Ako ${t} predmeta podijelimo u skupine po ${r}, koliko ćemo skupina dobiti?`,String(d),[String(d+1),String(Math.max(1,d-1)),String(r)],q.difficulty+1);
+    if(mode===6)return choice(`Ako ${predmeta(t)} podijelimo u skupine po ${r}, koliko ćemo skupina dobiti?`,String(d),[String(d+1),String(Math.max(1,d-1)),String(r)],q.difficulty+1);
     return input(`Koliko puta broj ${d} stane u broj ${t}?`,r,q.difficulty);
   }
   return null;
@@ -112,7 +121,7 @@ function transformComparison(q,i){
   let m=q.question.match(/Koji znak dolazi umjesto kružića:\s*(\d+)\s+○\s+(\d+)\?/); if(!m)return null;
   const a=+m[1],b=+m[2]; const rel=a<b?'<':a>b?'>':'='; const mode=i%6;
   if(mode===0)return a===b?choice(`Jesu li brojevi ${a} i ${b} jednaki?`,'Da',['Ne'],2):choice(`Koji je broj veći: ${a} ili ${b}?`,String(Math.max(a,b)),[String(Math.min(a,b))],2);
-  if(mode===1)return a===b?choice(`Koji znak usporedbe odgovara brojevima ${a} i ${b}?`,'=',['<','>'],2):choice(`Koji je broj manji: ${a} ili ${b}?`,String(Math.min(a,b)),[String(Math.max(a,b))],2);
+  if(mode===1)return a===b?choice(`Koji znak usporedbe odgovara brojevima ${a} i ${b}?`,ZNAK_JEDNAKO,[ZNAK_MANJE,ZNAK_VECE],2):choice(`Koji je broj manji: ${a} ili ${b}?`,String(Math.min(a,b)),[String(Math.max(a,b))],2);
   if(mode===2)return choice(`Odaberi točnu usporedbu brojeva ${a} i ${b}.`,`${a} ${rel} ${b}`,[`${a} ${rel==='<'?'>':'<'} ${b}`,`${a} = ${b}`],2);
   if(mode===3)return input(`Upiši veći od brojeva ${a} i ${b}.`,Math.max(a,b),2);
   if(mode===4)return input(`Upiši manji od brojeva ${a} i ${b}.`,Math.min(a,b),2);
@@ -270,8 +279,8 @@ function curateKnownBank(generatorName, qs){
       choice('Dovrši rečenicu: „Na grani sjede tri ___.”','ptice',['ptica','ptičica','ptičji'],2),
       choice('Koja je rečenica potpuna?','Ana čita knjigu.',['Ana knjigu.','Čita.','Ana i.'],2),
       choice('Koja rečenica najbolje odgovara pitanju „Tko spava?”','Mačka spava.',['Spava na kauču.','Kauč je mekan.','Gdje je mačka?'],2),
-      choice('Koja riječ najbolje dovršava: „Na stolu je jedna ___.”','olovka',['olovke','olovaka','olovkom'],2),
-      choice('Koja riječ najbolje dovršava: „U pernici su dvije ___.”','olovke',['olovka','olovkom','olovaka'],2)
+      choice('Koja riječ najbolje dovršava ovu rečenicu? „Na stolu je jedna ___.”','olovka',['olovke','olovaka','olovkom'],2),
+      choice('Koja riječ najbolje dovršava ovu rečenicu? „U pernici su dvije ___.”','olovke',['olovka','olovkom','olovaka'],2)
     ];
     qs.push(...extra);
   }
@@ -286,7 +295,7 @@ function curateKnownBank(generatorName, qs){
     if(generatorName==='genZbrajanje') qs.push(
       choice('Koji račun daje rezultat 7?','3 + 4',['2 + 4','1 + 5','5 + 3'],2),
       input('Dopuni jednakost: 6 + ___ = 10.',4,2),
-      choice('Broj 8 možemo rastaviti na:','5 i 3',['5 i 4','6 i 3','7 i 2'],2),
+      choice('Na koja dva broja možemo rastaviti broj 8?','5 i 3',['5 i 4','6 i 3','7 i 2'],2),
       input('Kreni od broja 4 i pomakni se 3 mjesta naprijed na brojevnoj crti. Na kojem si broju?',7,2),
       choice('Koji je zbroj jednak 10?','6 + 4',['6 + 3','5 + 4','8 + 1'],2),
       input('Broju 2 dodaj 5. Koji broj dobiješ?',7,1),
@@ -373,7 +382,7 @@ function curateKnownBank(generatorName, qs){
     qs=qs.map(q=>{
       const m=(q.question||'').match(/^Što najčešće radi (.+)\?$/u);
       if(!m) return q;
-      return {...q,question:`Koja radnja smisleno dovršava rečenicu: „${m[1][0].toUpperCase()+m[1].slice(1)} ___.”`};
+      return {...q,question:`Koja radnja smisleno dovršava ovu rečenicu? „${m[1][0].toUpperCase()+m[1].slice(1)} ___.”`};
     });
   }
 
@@ -404,9 +413,9 @@ function curateKnownBank(generatorName, qs){
       let m=(q.question||'').match(/^Pravokutni lik u kvadratnoj mreži prekriven je s (\d+) redaka po (\d+) jediničnih kvadrata\./u);
       if(m) return {...q,question:`Na kvadratnoj mreži pravokutnik zauzima ${m[1]} × ${m[2]} polja. Koliko polja zauzima ukupno?`};
       m=(q.question||'').match(/^Lik A zauzima (\d+) jediničnih kvadrata, a lik B (\d+)\. Koji lik ima veću površinu\?$/u);
-      if(m) return {...q,question:`Lik A prekriva ${m[1]} polja mreže, a lik B ${m[2]} polja. Koji lik zauzima veću površinu?`};
+      if(m) return {...q,question:`Lik A prekriva ${HR.brojIme(Number(m[1]),"polje")} mreže, a lik B ${HR.brojIme(Number(m[2]),"polje")}. Koji lik zauzima veću površinu?`};
       m=(q.question||'').match(/^Lik A zauzima (\d+), a lik B (\d+) jediničnih kvadrata\. Za koliko je površina lika B veća\?$/u);
-      if(m) return {...q,question:`Lik A prekriva ${m[1]} polja mreže, a lik B ${m[2]} polja. Za koliko polja lik B zauzima veću površinu?`};
+      if(m) return {...q,question:`Lik A prekriva ${HR.brojIme(Number(m[1]),"polje")} mreže, a lik B ${HR.brojIme(Number(m[2]),"polje")}. Za koliko polja lik B zauzima veću površinu?`};
       return q;
     });
   }
@@ -415,8 +424,8 @@ function curateKnownBank(generatorName, qs){
       const t=q.question||''; const nums=(t.match(/\d+/g)||[]).map(Number); const c=Number(q.correctAnswer ?? q.answers?.[q.correctIndex]);
       if(nums.length>=2 && Math.max(...nums)>=1000 && !/^\d+\s*[+\-]/.test(t)){
         const a=nums[0],b=nums[1];
-        if(a+b===c) return input(`Tvornica je u prvom mjesecu proizvela ${a} komada proizvoda, a u drugom ${b}. Koliko je komada proizvedeno ukupno?`,c,3);
-        if(a-b===c) return input(`U skladištu je bilo ${a} paketa. Otpremljeno je ${b} paketa. Koliko je paketa ostalo?`,c,3);
+        if(a+b===c) return input(`Tvornica je u prvom mjesecu proizvela ${HR.brojIme(a,"komad")} proizvoda, a u drugom ${b}. Koliko je komada proizvedeno ukupno?`,c,3);
+        if(a-b===c) return input(`U skladištu je bilo ${HR.brojIme(a,"paket")}. Otpremljeno je ${HR.brojIme(b,"paket")}. Koliko je paketa ostalo?`,c,3);
       }
       return q;
     });

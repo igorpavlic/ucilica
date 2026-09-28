@@ -176,6 +176,9 @@ const STRUKTURNE = {
   skupina:  { o: ['skupina', 'skupine', 'skupina'],    rod: 'z' },
   polica:   { o: ['polica', 'police', 'polica'],       rod: 'z' },
   paket:    { o: ['paket', 'paketa', 'paketa'],        rod: 'm' },
+  // Rabe ih zadatci iz pedagogyReview.js: "5 skupina po 3 predmeta".
+  predmet:  { o: ['predmet', 'predmeta', 'predmeta'],  rod: 'm' },
+  komad:    { o: ['komad', 'komada', 'komada'],        rod: 'm' },
   red:      { o: ['red', 'reda', 'redova'],            rod: 'm' },
 };
 

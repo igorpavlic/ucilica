@@ -186,6 +186,63 @@ const tvrdi = (uvjet, opis, detalj = '') => {
     sGik.length ? sGik[0].gik.outcome : 'nijedno');
 
   // 10) FSRS — stanje vještina nakon kviza
+  // ── Elo: mjerena težina pitanja ──────────────────────────────────
+  // FSRS zna kada ponoviti; Elo zna koliko je pitanje teško. Kod generiranih
+  // pitanja to je jedini način da se sazna stvarna težina.
+  {
+    const T = require('../services/tezina');
+
+    tvrdi(Math.abs(T.ocekivano(1500, 1500) - 0.5) < 1e-9,
+      'jednake ocjene → očekivana uspješnost 50 %');
+    tvrdi(T.ocekivano(1700, 1500) > 0.7,
+      'jače dijete od pitanja → veća očekivana uspješnost');
+
+    const brzTocan = T.nakonOdgovora({ ocjenaDjeteta: 1500, ocjenaPitanja: 1500, tocno: true, vrijemeMs: 800, difficulty: 1 });
+    tvrdi(brzTocan.dijete > 1500 && brzTocan.pitanje < 1500,
+      'točan odgovor diže dijete i spušta pitanje', `${brzTocan.dijete}/${brzTocan.pitanje}`);
+
+    const promasaj = T.nakonOdgovora({ ocjenaDjeteta: 1500, ocjenaPitanja: 1500, tocno: false, vrijemeMs: 800, difficulty: 1 });
+    tvrdi(promasaj.dijete < 1500 && promasaj.pitanje > 1500,
+      'netočan odgovor spušta dijete i diže pitanje', `${promasaj.dijete}/${promasaj.pitanje}`);
+
+    const sporTocan = T.nakonOdgovora({ ocjenaDjeteta: 1500, ocjenaPitanja: 1500, tocno: true, vrijemeMs: 9000, difficulty: 1 });
+    tvrdi(sporTocan.dijete < brzTocan.dijete,
+      'spor točan odgovor vrijedi manje od brzoga', `${sporTocan.dijete} < ${brzTocan.dijete}`);
+
+    // Pomaci idu u suprotnim smjerovima, ali NISU jednaki: pitanje ima manji
+    // K-faktor jer ga rješava mnogo djece pa mu se ocjena prije smiri, dok
+    // dijete napreduje i njegova ocjena smije dulje rasti.
+    const par = T.nakonOdgovora({ ocjenaDjeteta: 1500, ocjenaPitanja: 1500, odgovoraDijete: 50, odgovoraPitanje: 50, tocno: true, vrijemeMs: 1500, difficulty: 1 });
+    tvrdi((par.dijete - 1500) > 0 && (par.pitanje - 1500) < 0,
+      'pomaci djeteta i pitanja idu u suprotnim smjerovima', `${par.dijete - 1500} / ${par.pitanje - 1500}`);
+    tvrdi(Math.abs(par.pitanje - 1500) < Math.abs(par.dijete - 1500),
+      'ocjena pitanja se mijenja sporije od ocjene djeteta',
+      `K pitanja ${T.kFaktor(50, { pitanje: true })} < K djeteta ${T.kFaktor(50)}`);
+
+    // Nakon mnogo odgovora ocjena se mora smiriti, a ne rasti bez kraja.
+    let stab = 1500;
+    for (let i = 0; i < 200; i++) stab = T.nakonOdgovora({ ocjenaDjeteta: stab, ocjenaPitanja: stab - 100, odgovoraDijete: i, tocno: i % 4 !== 0, vrijemeMs: 2000, difficulty: 1 }).dijete;
+    tvrdi(stab > 1300 && stab < 2200, 'ocjena se ne raspliva kroz 200 odgovora', String(stab));
+
+    // Teško pitanje koje svi rješavaju mora postati lakše.
+    let p = 1800;
+    for (let i = 0; i < 25; i++) p = T.nakonOdgovora({ ocjenaDjeteta: 1500, ocjenaPitanja: p, odgovoraPitanje: i, tocno: true, vrijemeMs: 1200, difficulty: 1 }).pitanje;
+    tvrdi(p < 1600, 'pitanje koje svi rješavaju postaje lakše', `1800 → ${p}`);
+
+    const raspon = T.rasponZaDijete(1500);
+    tvrdi(raspon.min < 1500 && raspon.max > 1500 && raspon.max - raspon.min > 100,
+      'raspon za vježbu je pomaknut prema lakšemu', JSON.stringify(raspon));
+
+    const it = kolekcije.item_ratings || [];
+    tvrdi(it.length > 0, 'kviz je upisao mjerenu težinu pitanja', `${it.length} zapisa`);
+    tvrdi(it.every((z) => Number.isFinite(z.rating) && z.odgovora >= 1),
+      'svaki zapis ima ocjenu i broj odgovora');
+
+    const ur = kolekcije.user_ratings || [];
+    tvrdi(ur.length === 1 && ur[0].rating !== 1500,
+      'dijete je dobilo svoju ocjenu po predmetu', JSON.stringify(ur[0] && { r: ur[0].rating, n: ur[0].odgovora }));
+  }
+
   const stanja = kolekcije.skill_states || [];
   tvrdi(stanja.length > 0, 'kviz je upisao stanje vještina', `${stanja.length} zapisa`);
   if (stanja.length) {
