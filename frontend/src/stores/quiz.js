@@ -16,6 +16,8 @@ export const useQuizStore = defineStore('quiz', () => {
   const isCorrect = ref(false)
   const correctIdx = ref(null)
   const correctAnswerText = ref('')
+  const objasnjenje = ref('')
+  const redoslijed = ref([])
   const inputAnswer = ref('')
   const correctCount = ref(0)
   const quizAnswers = ref([])
@@ -37,6 +39,8 @@ export const useQuizStore = defineStore('quiz', () => {
     isCorrect.value = false
     correctIdx.value = null
     correctAnswerText.value = ''
+    objasnjenje.value = ''
+    redoslijed.value = []
     inputAnswer.value = ''
     correctCount.value = 0
     quizAnswers.value = []
@@ -50,11 +54,15 @@ export const useQuizStore = defineStore('quiz', () => {
     resetSession()
     loadingQuiz.value = true
     try {
-      const data = await api.get(`/quiz/${topicId}?count=${count}`)
+      const endpoint = topicId.startsWith('review-')
+        ? `/quiz/review/${topicId.slice(7)}?count=${count}`
+        : `/quiz/${topicId}?count=${count}`
+      const data = await api.get(endpoint)
       attemptId.value = data.attemptId || ''
       exhausted.value = !!data.exhausted
       exhaustedMsg.value = data.message || ''
       questions.value = data.questions || []
+      redoslijed.value = [...(questions.value[0]?.answers || [])]
       questionStartTime.value = Date.now()
       return data
     } finally {
@@ -86,6 +94,7 @@ export const useQuizStore = defineStore('quiz', () => {
     isCorrect.value = data.isCorrect
     correctIdx.value = data.correctIndex
     correctAnswerText.value = data.correctAnswer
+    objasnjenje.value = data.objasnjenje || ''
     recordAnswer(data.isCorrect, index)
     return data
   }
@@ -102,6 +111,7 @@ export const useQuizStore = defineStore('quiz', () => {
     isCorrect.value = data.isCorrect
     correctIdx.value = data.correctIndex
     correctAnswerText.value = data.correctAnswer
+    objasnjenje.value = data.objasnjenje || ''
     recordAnswer(data.isCorrect, userAnswer)
     return data
   }
@@ -146,8 +156,30 @@ export const useQuizStore = defineStore('quiz', () => {
     answered.value = true
     isCorrect.value = data.isCorrect
     correctAnswerText.value = data.correctAnswer
+    objasnjenje.value = data.objasnjenje || ''
     tocnihVeza.value = data.tocnihVeza ?? 0
     recordAnswer(data.isCorrect, veze.value)
+    return data
+  }
+
+  function pomakniStavku(index, delta) {
+    const next = index + delta
+    if (answered.value || next < 0 || next >= redoslijed.value.length) return
+    const items = [...redoslijed.value]
+    ;[items[index], items[next]] = [items[next], items[index]]
+    redoslijed.value = items
+  }
+
+  async function checkStructured(answer) {
+    if (answered.value) return null
+    const data = await api.post('/quiz/check', {
+      attemptId: attemptId.value, questionId: questions.value[currentQ.value]._id, answer
+    })
+    answered.value = true
+    isCorrect.value = data.isCorrect
+    correctAnswerText.value = data.correctAnswer
+    objasnjenje.value = data.objasnjenje || ''
+    recordAnswer(data.isCorrect, answer)
     return data
   }
 
@@ -158,6 +190,8 @@ export const useQuizStore = defineStore('quiz', () => {
     isCorrect.value = false
     correctIdx.value = null
     correctAnswerText.value = ''
+    objasnjenje.value = ''
+    redoslijed.value = [...(questions.value[currentQ.value]?.answers || [])]
     inputAnswer.value = ''
     veze.value = {}
     odabranLijevi.value = null
@@ -172,7 +206,8 @@ export const useQuizStore = defineStore('quiz', () => {
   async function submitQuiz(topicId) {
     return api.post('/quiz/submit', {
       attemptId: attemptId.value,
-      topicId,
+      ...(topicId.startsWith('review-')
+        ? { reviewGrade: Number(topicId.slice(7)) } : { topicId }),
       answers: quizAnswers.value
     })
   }
@@ -189,6 +224,8 @@ export const useQuizStore = defineStore('quiz', () => {
     isCorrect,
     correctIdx,
     correctAnswerText,
+    objasnjenje,
+    redoslijed,
     inputAnswer,
     veze,
     odabranLijevi,
@@ -200,6 +237,8 @@ export const useQuizStore = defineStore('quiz', () => {
     checkChoice,
     checkInput,
     checkMatch,
+    checkStructured,
+    pomakniStavku,
     odaberiLijevi,
     spoji,
     razvezi,

@@ -330,6 +330,46 @@ const tvrdi = (uvjet, opis, detalj = '') => {
   }
 
   // ── ocjenjivanje upisanog odgovora ──────────────────────────────
+  {
+    const review = await service.createReviewSession({ grade: 1, userId: ID.user, count: 3 });
+    tvrdi(review.questions.length > 0 && !!review.attemptId, 'miješano ponavljanje otvara sesiju po razredu');
+    const answers = review.questions.map(q => {
+      const original = kolekcije.questions.find(x => String(x._id) === String(q._id));
+      const userAnswer = original.type === 'choice'
+        ? q.answers.indexOf(original.answers[original.correctIndex])
+        : original.type === 'match' ? Object.fromEntries(original.pairs.map((_, i) => [i, i]))
+        : original.type === 'ordering' ? original.items
+        : original.type === 'true-false' ? original.correct : original.correctAnswer;
+      return { questionId: q._id, userAnswer, timeTaken: 900 };
+    });
+    const result = await service.submitQuiz({ userId: ID.user, topicId: null, reviewGrade: 1,
+      attemptId: review.attemptId, answers });
+    tvrdi(result.progress.correctAnswers === answers.length,
+      'miješano ponavljanje sprema točne odgovore', JSON.stringify(result.progress));
+  }
+
+  {
+    const orderingId = oid(), tfId = oid(), structuredAttempt = oid();
+    kolekcije.questions.push({ _id: orderingId, topic_id: ID.topic, type: 'ordering',
+      question: 'Poredaj korake?', items: ['prvo', 'drugo', 'treće'], objasnjenje: 'Po vremenskom redoslijedu.' });
+    kolekcije.questions.push({ _id: tfId, topic_id: ID.topic, type: 'true-false',
+      question: 'Je li tvrdnja točna?', correct: false, objasnjenje: 'Tvrdnja je pogrešna.' });
+    kolekcije.quiz_attempts.push({ _id: structuredAttempt, user_id: ID.user, topic_id: ID.topic,
+      question_ids: [orderingId, tfId], answer_orders: {}, completedAt: null });
+    const correctOrder = await service.checkAnswer({ attemptId: structuredAttempt,
+      questionId: orderingId, answer: ['prvo', 'drugo', 'treće'] });
+    tvrdi(correctOrder.isCorrect && !!correctOrder.objasnjenje, 'redoslijed se ocjenjuje i vraća objašnjenje');
+    const invalidOrder = await service.checkAnswer({ attemptId: structuredAttempt,
+      questionId: orderingId, answer: ['prvo', 'prvo', 'treće'] });
+    tvrdi(!invalidOrder.isCorrect, 'duplicirane stavke ne prolaze');
+    const correctFalse = await service.checkAnswer({ attemptId: structuredAttempt,
+      questionId: tfId, answer: false });
+    tvrdi(correctFalse.isCorrect && correctFalse.correctAnswer === 'Netočno', 'točno/netočno ocjenjuje boolean');
+    const absent = await service.checkAnswer({ attemptId: structuredAttempt,
+      questionId: tfId, answer: 'nešto' });
+    tvrdi(!absent.isCorrect, 'nevaljana tvrdnja ne prolazi');
+  }
+
   //
   // Prijavljena greška: "Popravi rečenicu: pada kiša" → dijete upiše
   // "Pada kiša", dobije netočno jer se očekivalo "Pada kiša.".

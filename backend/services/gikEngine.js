@@ -9,6 +9,12 @@ const SUBJECTS = {
 };
 
 const TOPIC_METADATA = {
+  'citanje-3': { grade: 3, subject: 'hrvatski', domain: 'Čitanje s razumijevanjem', outcome: 'OŠ HJ A.3.3', outcomeText: 'čita tekst i odgovara na pitanja o pročitanom', tags: ['čitanje', 'razumijevanje'] },
+  'citanje-4': { grade: 4, subject: 'hrvatski', domain: 'Čitanje s razumijevanjem', outcome: 'OŠ HJ A.4.3', outcomeText: 'čita tekst i tumači informacije', tags: ['čitanje', 'razumijevanje'] },
+  'podatci-3': { grade: 3, subject: 'matematika', domain: 'Podatci', outcome: 'MAT OŠ E.3.1', outcomeText: 'prikazuje i tumači jednostavne podatke', tags: ['podaci', 'graf'] },
+  'podatci-4': { grade: 4, subject: 'matematika', domain: 'Podatci', outcome: 'MAT OŠ E.4.1', outcomeText: 'tumači podatke prikazane grafom', tags: ['podaci', 'graf'] },
+  'nepoznati-3': { grade: 3, subject: 'matematika', domain: 'Brojevi', outcome: 'MAT OŠ A.3.6', outcomeText: 'primjenjuje odnose među brojevima u problemskim situacijama', tags: ['jednakost', 'nepoznati broj'] },
+  'nepoznati-4': { grade: 4, subject: 'matematika', domain: 'Brojevi', outcome: 'MAT OŠ A.4.4', outcomeText: 'primjenjuje odnose među brojevima u problemskim situacijama', tags: ['jednakost', 'nepoznati broj'] },
   // 1. razred
   'slova': { grade: 1, subject: 'hrvatski', domain: 'Početno opismenjavanje', outcome: 'OŠ HJ A.1.7', outcomeText: 'prepoznaje glasovnu strukturu riječi te glasovno analizira i sintetizira riječi', tags: ['slova', 'glasovi', 'čitanje'] },
   'glasovi': { grade: 1, subject: 'hrvatski', domain: 'Početno opismenjavanje', outcome: 'OŠ HJ A.1.7', outcomeText: 'prepoznaje glasovnu strukturu riječi te glasovno analizira i sintetizira riječi', tags: ['glasovi', 'samoglasnici', 'suglasnici'] },

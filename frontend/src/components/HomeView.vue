@@ -20,6 +20,9 @@
     </div>
 
     <h1 class="page-title">Odaberi <span>predmet</span></h1>
+    <button v-if="subjects.length" class="btn btn-secondary review-button" @click="startReview">
+      🔄 Miješano ponavljanje gradiva {{ aktivniRazred }}. razreda
+    </button>
 
     <div v-if="loading" class="loading-overlay">
       <div class="spinner"></div>
@@ -114,5 +117,10 @@ function goToTopics (subj) {
     params: { slug: subj.slug },
     query: { name: subj.name, icon: subj.icon, grade: aktivniRazred.value }
   })
+}
+
+function startReview () {
+  router.push({ name: 'quiz', params: { topicId: `review-${aktivniRazred.value}` },
+    query: { topicName: 'Miješano ponavljanje', topicIcon: '🔄', subjectSlug: '', subjectName: '' } })
 }
 </script>

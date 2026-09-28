@@ -1,6 +1,7 @@
 <template>
   <div class="shell">
-    <router-link
+    <router-link v-if="props.topicId.startsWith('review-')" to="/home" class="back-link">← Natrag na predmete</router-link>
+    <router-link v-else
       :to="{ name: 'topics', params: { slug: $route.query.subjectSlug || 'unknown' }, query: { name: $route.query.subjectName, icon: '' } }"
       class="back-link"
     >← Natrag na teme</router-link>
@@ -39,6 +40,15 @@
           <template v-else>
             <span v-for="(znak, i) in visualChars" :key="i" class="visual-item">{{ znak }}</span>
           </template>
+        </div>
+
+        <p v-if="questions[currentQ].passage" class="reading-passage">{{ questions[currentQ].passage }}</p>
+        <div v-if="questions[currentQ].chart?.length" class="quiz-chart" role="img" aria-label="Stupčasti grafikon s vrijednostima">
+          <div v-for="row in questions[currentQ].chart" :key="row.label" class="quiz-chart-row">
+            <span>{{ row.label }}</span>
+            <div class="quiz-chart-track"><div class="quiz-chart-fill" :style="{ width: `${row.value / Math.max(...questions[currentQ].chart.map(r => r.value)) * 100}%` }"></div></div>
+            <strong>{{ row.value }}</strong>
+          </div>
         </div>
 
         <div class="question-row">
@@ -137,6 +147,27 @@
           >
           <button v-if="!answered" class="btn-check" @click="handleInput">Provjeri</button>
         </div>
+
+        <div v-if="questions[currentQ].type === 'true-false'" class="answers-grid">
+          <button v-for="option in [true, false]" :key="String(option)" class="answer-btn"
+            :disabled="answered" @click="handleStructured(option)">{{ option ? 'Točno' : 'Netočno' }}</button>
+        </div>
+
+        <div v-if="questions[currentQ].type === 'ordering'" class="ordering-list">
+          <div v-for="(item, index) in redoslijed" :key="item" class="ordering-item">
+            <span>{{ index + 1 }}. {{ item }}</span>
+            <div>
+              <button type="button" :disabled="answered || index === 0" :aria-label="`Pomakni ${item} gore`" @click="pomakniStavku(index, -1)">↑</button>
+              <button type="button" :disabled="answered || index === redoslijed.length - 1" :aria-label="`Pomakni ${item} dolje`" @click="pomakniStavku(index, 1)">↓</button>
+            </div>
+          </div>
+          <button v-if="!answered" class="btn-check" @click="handleStructured([...redoslijed])">Provjeri redoslijed</button>
+        </div>
+      </div>
+
+      <div v-if="answered && objasnjenje" class="explanation-card">
+        <strong>Zašto?</strong> {{ objasnjenje }}
+        <button v-if="govorDostupan" type="button" class="btn-slusaj" aria-label="Pročitaj objašnjenje naglas" @click="reci(objasnjenje)">🔊</button>
       </div>
 
       <div v-if="answered" class="feedback-bar" :class="isCorrect ? 'correct' : 'wrong'">
@@ -198,6 +229,8 @@ const {
   isCorrect,
   correctIdx,
   correctAnswerText,
+  objasnjenje,
+  redoslijed,
   inputAnswer,
   veze,
   odabranLijevi,
@@ -214,7 +247,7 @@ function procitajPitanje () {
   if (!q) return
   // Uz tekst pitanja čitaju se i ponuđeni odgovori — inače dijete čuje
   // zadatak, ali ne i iz čega bira.
-  const dijelovi = [q.question]
+  const dijelovi = [q.passage, q.question].filter(Boolean)
   if (q.type === 'choice' && Array.isArray(q.answers)) {
     dijelovi.push(q.answers.map((a, i) => `${i + 1}. ${a}`).join('. '))
   }
@@ -226,6 +259,8 @@ const {
   checkChoice,
   checkInput,
   checkMatch,
+  checkStructured,
+  pomakniStavku,
   odaberiLijevi,
   spoji,
   razvezi,
@@ -292,6 +327,18 @@ const vezaTocna = (lijeviId) => String(veze.value[lijeviId]) === String(lijeviId
 async function handleMatch () {
   try {
     const result = await checkMatch()
+    if (result?.isCorrect) {
+      if (!isLoggedIn.value) addGuestScore(10)
+      triggerStars?.()
+    }
+  } catch (error) {
+    emit('error', error.message)
+  }
+}
+
+async function handleStructured (answer) {
+  try {
+    const result = await checkStructured(answer)
     if (result?.isCorrect) {
       if (!isLoggedIn.value) addGuestScore(10)
       triggerStars?.()

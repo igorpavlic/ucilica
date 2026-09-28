@@ -3,6 +3,8 @@ const { quizRepository } = require('./quiz.repository');
 const vjestine = require('../../services/vjestine');
 const tezina = require('../../services/tezina');
 const { tocan, ocisti } = require('../../seeds/jasnoca');
+const { getDb } = require('../../db/mongo');
+const { questionFamilyKey } = require('../../services/questionFamily');
 
 function createHttpError(status, message) {
   const error = new Error(message);
@@ -16,6 +18,8 @@ function mapSafeQuestion(question, answerOrder = null) {
     type: question.type,
     question: question.question,
     visual: question.visual || '',
+    passage: question.passage || '',
+    chart: question.chart || [],
     hint: question.hint || '',
     answers: question.type === 'choice' && Array.isArray(answerOrder)
       ? answerOrder.map((index) => question.answers[index])
@@ -30,6 +34,10 @@ function mapSafeQuestion(question, answerOrder = null) {
     osnovno.answers = [];
     osnovno.lijevo = (question.pairs || []).map((p, i) => ({ id: i, tekst: p[0] }));
     osnovno.desno = promijesaj((question.pairs || []).map((p, i) => ({ id: i, tekst: p[1] })));
+  }
+
+  if (question.type === 'ordering') {
+    osnovno.answers = promijesaj(question.items || []);
   }
 
   return osnovno;
@@ -51,6 +59,24 @@ function buildAnswerOrder(question) {
 }
 
 function evaluateQuestion(question, rawAnswer, answerOrder = null) {
+  if (question.type === 'ordering') {
+    const items = question.items || [];
+    const valid = Array.isArray(rawAnswer) && rawAnswer.length === items.length &&
+      new Set(rawAnswer).size === items.length &&
+      rawAnswer.every((item) => items.includes(item));
+    return {
+      normalizedAnswer: valid ? rawAnswer : [],
+      isCorrect: valid && rawAnswer.every((item, i) => item === items[i]),
+      correctAnswer: items.join(' → '), correctIndex: null
+    };
+  }
+
+  if (question.type === 'true-false') {
+    const chosen = rawAnswer === true || rawAnswer === 'true' ? true
+      : rawAnswer === false || rawAnswer === 'false' ? false : null;
+    return { normalizedAnswer: chosen, isCorrect: chosen !== null && chosen === question.correct,
+      correctAnswer: question.correct ? 'Točno' : 'Netočno', correctIndex: null };
+  }
   // Spajanje parova: odgovor je { lijeviId: desniId, ... }.
   // Točno je kad je svaki lijevi spojen sa svojim izvornim parom.
   if (question.type === 'match') {
@@ -188,6 +214,49 @@ function createQuizService() {
     };
   }
 
+  async function createReviewSession({ grade, userId, count }) {
+    const db = getDb();
+    const recent = userId ? await db.collection('progress')
+      .find({ user_id: userId, grade }).sort({ completedAt: -1 }).limit(10).toArray() : [];
+    const seen = new Set(recent.flatMap(p => (p.answers || []).map(a => String(a.question_id))));
+    const pool = await db.collection('questions').aggregate([
+      { $match: { grade, isActive: true } }, { $sample: { size: 120 } }
+    ]).toArray();
+    const fresh = pool.filter(q => !seen.has(String(q._id)));
+    const skills = [...new Set(fresh.map(q => q.gik?.outcome).filter(Boolean))];
+    let due = new Set();
+    if (userId && skills.length) due = await vjestine.dospjele(userId, skills);
+    const ordered = [...fresh.filter(q => due.has(q.gik?.outcome)),
+      ...fresh.filter(q => !due.has(q.gik?.outcome))];
+    const chosen = [], topics = new Set(), families = new Set();
+    for (const q of ordered) {
+      const family = questionFamilyKey(q);
+      if (topics.has(String(q.topic_id)) || families.has(family)) continue;
+      chosen.push(q); topics.add(String(q.topic_id)); families.add(family);
+      if (chosen.length >= count) break;
+    }
+    if (chosen.length < count) for (const q of ordered) {
+      if (chosen.some(x => String(x._id) === String(q._id))) continue;
+      if (families.has(questionFamilyKey(q))) continue;
+      chosen.push(q); families.add(questionFamilyKey(q));
+      if (chosen.length >= count) break;
+    }
+    if (!chosen.length) return { questions: [], exhausted: true,
+      message: 'Trenutačno nema novih pitanja za miješano ponavljanje.' };
+    const answerOrders = {};
+    for (const q of chosen) {
+      const order = buildAnswerOrder(q);
+      if (order) answerOrders[String(q._id)] = order;
+    }
+    const { insertedId } = await repo.createAttempt({ user_id: userId || null,
+      topic_id: null, subject_id: null, grade, review: true,
+      question_ids: chosen.map(q => q._id), answer_orders: answerOrders,
+      createdAt: new Date(), completedAt: null });
+    return { attemptId: insertedId, topic: { name: 'Miješano ponavljanje', icon: '🔄' },
+      questions: chosen.map(q => mapSafeQuestion(q, answerOrders[String(q._id)])),
+      totalAvailable: fresh.length, exhausted: false };
+  }
+
   async function checkAnswer({ attemptId, questionId, answer }) {
     const attempt = await repo.findAttemptById(attemptId);
     if (!attempt) throw createHttpError(404, 'Kviz sesija nije pronađena.');
@@ -199,21 +268,22 @@ function createQuizService() {
     const question = await repo.findQuestionById(questionId);
     if (!question) throw createHttpError(404, 'Pitanje nije pronađeno.');
 
-    return evaluateQuestion(question, answer, attempt.answer_orders?.[questionId.toString()] || null);
+    const evaluation = evaluateQuestion(question, answer, attempt.answer_orders?.[questionId.toString()] || null);
+    return { ...evaluation, objasnjenje: question.objasnjenje || '' };
   }
 
-  async function submitQuiz({ userId, topicId, attemptId, answers }) {
+  async function submitQuiz({ userId, topicId, reviewGrade, attemptId, answers }) {
     const attempt = await repo.findAttemptById(attemptId);
     if (!attempt) throw createHttpError(404, 'Kviz sesija nije pronađena.');
     if (attempt.completedAt) throw createHttpError(409, 'Kviz je već predan.');
     if (attempt.user_id && attempt.user_id.toString() !== userId.toString()) {
       throw createHttpError(403, 'Ova kviz sesija ne pripada prijavljenom korisniku.');
     }
-    if (attempt.topic_id.toString() !== topicId.toString()) {
+    if (attempt.review ? reviewGrade !== attempt.grade : (!topicId || attempt.topic_id.toString() !== topicId.toString())) {
       throw createHttpError(400, 'Tema i kviz sesija se ne podudaraju.');
     }
 
-    const { topic } = await ensureTopic(topicId);
+    const topic = attempt.review ? null : (await ensureTopic(topicId)).topic;
     const allowedQuestionIds = attempt.question_ids.map((id) => id.toString());
     const answerQuestionIds = answers.map((answer) => answer.questionId.toString());
 
@@ -238,7 +308,7 @@ function createQuizService() {
       if (!question) {
         throw createHttpError(400, 'Jedno od pitanja više ne postoji.');
       }
-      if (question.topic_id.toString() !== topicId.toString()) {
+      if (attempt.review ? question.grade !== attempt.grade : question.topic_id.toString() !== topicId.toString()) {
         throw createHttpError(400, 'Pitanje ne pripada odabranoj temi.');
       }
 
@@ -249,8 +319,13 @@ function createQuizService() {
 
       evaluatedAnswers.push({
         question_id: question._id,
+        ...(attempt.review ? { topic_id: question.topic_id, subject_id: question.subject_id } : {}),
         wasCorrect: evaluation.isCorrect,
         userAnswer: evaluation.normalizedAnswer,
+        // Kanonski tekst ostaje isti i nakon miješanja ponuđenih odgovora.
+        ...(question.type === 'choice' && Number.isInteger(evaluation.normalizedAnswer)
+          ? { chosenText: question.answers[attempt.answer_orders?.[question._id.toString()]?.[evaluation.normalizedAnswer]
+            ?? evaluation.normalizedAnswer] } : {}),
         timeTaken: vrijemeMs
       });
 
@@ -276,17 +351,20 @@ function createQuizService() {
     const totalQuestions = evaluatedAnswers.length;
     const allCorrect = totalQuestions > 0 && correctCount === totalQuestions;
 
-    await repo.insertProgress({
-      user_id: userId,
-      subject_id: topic.subject_id,
-      topic_id: topic._id,
-      grade: topic.grade,
-      totalQuestions,
-      correctAnswers: correctCount,
-      score,
-      answers: evaluatedAnswers,
-      completedAt: new Date()
-    });
+    const groups = new Map();
+    for (const answer of evaluatedAnswers) {
+      const q = questionMap.get(String(answer.question_id));
+      const key = attempt.review ? String(q.topic_id) : String(topic._id);
+      if (!groups.has(key)) groups.set(key, { topic_id: q.topic_id, subject_id: q.subject_id, answers: [] });
+      groups.get(key).answers.push(answer);
+    }
+    for (const group of groups.values()) {
+      const correct = group.answers.filter(a => a.wasCorrect).length;
+      await repo.insertProgress({ user_id: userId, subject_id: group.subject_id,
+        topic_id: group.topic_id, grade: attempt.grade,
+        totalQuestions: group.answers.length, correctAnswers: correct,
+        score: correct * 10, answers: group.answers, completedAt: new Date() });
+    }
 
     await repo.updateUserScoreAndStreak(userId, score, allCorrect);
     await repo.markAttemptCompleted(attemptId);
@@ -305,10 +383,19 @@ function createQuizService() {
     // Kao i gore, ne smije srušiti predaju kviza.
     let tezinaIshod = null;
     try {
-      const staro = await repo.findRating(userId, topic.subject_id);
-      const novo = await tezina.zabiljezi(userId, stavkeTezine, staro.rating, staro.odgovora);
-      await repo.saveRating(userId, topic.subject_id, novo);
-      tezinaIshod = { rating: novo.rating, promjena: novo.rating - staro.rating };
+      const subjectGroups = new Map();
+      for (const item of stavkeTezine) {
+        const q = questionMap.get(String(item.questionId));
+        const key = String(q.subject_id);
+        if (!subjectGroups.has(key)) subjectGroups.set(key, { subjectId: q.subject_id, items: [] });
+        subjectGroups.get(key).items.push(item);
+      }
+      for (const { subjectId, items } of subjectGroups.values()) {
+        const staro = await repo.findRating(userId, subjectId);
+        const novo = await tezina.zabiljezi(userId, items, staro.rating, staro.odgovora);
+        await repo.saveRating(userId, subjectId, novo);
+        if (subjectGroups.size === 1) tezinaIshod = { rating: novo.rating, promjena: novo.rating - staro.rating };
+      }
     } catch (err) {
       console.error('⚠️  Mjerenje težine nije uspjelo:', err.message);
     }
@@ -385,6 +472,7 @@ function createQuizService() {
 
   return {
     createSession,
+    createReviewSession,
     checkAnswer,
     submitQuiz,
     generateForTopic,

@@ -17,6 +17,13 @@ async function getQuiz(req, res, next) {
   }
 }
 
+async function getReview(req, res, next) {
+  try {
+    res.json(await service.createReviewSession({ grade: Number(req.params.grade),
+      userId: req.user?._id || null, count: Number.parseInt(req.query.count, 10) || 7 }));
+  } catch (error) { next(error); }
+}
+
 async function checkAnswer(req, res, next) {
   try {
     const result = await service.checkAnswer({
@@ -35,6 +42,7 @@ async function submitQuiz(req, res, next) {
     const result = await service.submitQuiz({
       userId: req.user._id,
       topicId: repo.toObjectId(req.body.topicId),
+      reviewGrade: req.body.reviewGrade == null ? null : Number(req.body.reviewGrade),
       attemptId: repo.toObjectId(req.body.attemptId),
       answers: req.body.answers.map((answer) => ({
         ...answer,
@@ -73,6 +81,7 @@ async function generateAll(req, res, next) {
 
 module.exports = {
   getQuiz,
+  getReview,
   checkAnswer,
   submitQuiz,
   generateTopic,

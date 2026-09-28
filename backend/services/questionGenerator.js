@@ -20,9 +20,9 @@ const { genDoba, genZivotinje, genTijelo, genObitelj, genSigurnost, genEkologija
 // Razred 2
 const { genImeniceRod, genGlagoli2, genRecenice2, genCitanje2, genBrojevi100, genZbrajanje100, genOduzimanje100, genMnozenjeDijeljenje, genGeometrija2, genMjerenjeNovac, genZavicaj, genDobaVrijeme, genBiljkeZivotinje, genVodaTlo, genZdravljeSigurnost2 } = require('../seeds/seed-r2');
 // Razred 3
-const { genVrsteRijeci, genGramatikaPravopis, genKnjizevniTekst, genJezicnoIzrazavanje, genBrojevi1000, genZbrOduz1000, genMnozDijel3, genGeometrijaMjerenje3, genZavicajKarta, genTloVodaZrak, genBiljkeZivotinje3, genGospodarskeDjelatnosti, genKulturnaBastina } = require('../seeds/seed-r3');
+const { genVrsteRijeci, genGramatikaPravopis, genKnjizevniTekst, genJezicnoIzrazavanje, genBrojevi1000, genZbrOduz1000, genMnozDijel3, genGeometrijaMjerenje3, genZavicajKarta, genTloVodaZrak, genBiljkeZivotinje3, genGospodarskeDjelatnosti, genKulturnaBastina, genPodatci3, genNepoznati3, genCitanje3 } = require('../seeds/seed-r3');
 // Razred 4
-const { genVrsteRijeci4, genPravopis4, genKnjizevnost4, genMedijskaKultura, genBrojeviMilijun, genPisanoZbrOduz, genPisanoMnozDijel, genGeometrijaKutovi, genOpsegPovrsina, genKvaderKocka, genUvjetiZivota, genKrajeviHR, genLjudskoTijelo, genHrvatskaDomovina, genBiljkeZivotinje4 } = require('../seeds/seed-r4');
+const { genVrsteRijeci4, genPravopis4, genKnjizevnost4, genMedijskaKultura, genBrojeviMilijun, genPisanoZbrOduz, genPisanoMnozDijel, genGeometrijaKutovi, genOpsegPovrsina, genKvaderKocka, genUvjetiZivota, genKrajeviHR, genLjudskoTijelo, genHrvatskaDomovina, genBiljkeZivotinje4, genPodatci4, genNepoznati4, genCitanje4 } = require('../seeds/seed-r4');
 
 // topic slug → generator funkcija (svi razredi)
 const GENERATORS = {
@@ -59,6 +59,12 @@ const GENERATORS = {
   'biljke-zivotinje': genBiljkeZivotinje,
   'voda-tlo': genVodaTlo,
   'zdravlje-sigurnost-2': genZdravljeSigurnost2,
+  'citanje-3': genCitanje3,
+  'podatci-3': genPodatci3,
+  'nepoznati-3': genNepoznati3,
+  'citanje-4': genCitanje4,
+  'podatci-4': genPodatci4,
+  'nepoznati-4': genNepoznati4,
   // Razred 3
   'vrste-rijeci': genVrsteRijeci,
   'gramatika-pravopis': genGramatikaPravopis,
@@ -188,6 +194,9 @@ async function generateAndStore(topic, subjectId, grade, requestedCount = null) 
       question: q.question,
       visual: q.visual || '',
       hint: q.hint || '',
+      objasnjenje: q.objasnjenje || '',
+      passage: q.passage || '',
+      chart: q.chart || [],
       answers: q.answers || [],
       ...(q.type === 'choice' ? { correctIndex: ci } : {}),
       ...(q.type === 'input' ? { correctAnswer: q.correctAnswer, placeholder: q.placeholder || '' } : {}),
@@ -195,6 +204,8 @@ async function generateAndStore(topic, subjectId, grade, requestedCount = null) 
       ...(q.konstrukt ? { konstrukt: q.konstrukt } : {}),
       ...(q.prihvatljivi?.length ? { prihvatljivi: q.prihvatljivi } : {}),
       ...(q.type === 'match' ? { pairs: q.pairs } : {}),
+      ...(q.type === 'ordering' ? { items: q.items } : {}),
+      ...(q.type === 'true-false' ? { correct: q.correct } : {}),
       grade,
       subject_id: subjectId,
       gik: buildQuestionMetadata({ topic, subject: null, difficulty: q.difficulty || 1 }),
@@ -211,6 +222,8 @@ async function generateAndStore(topic, subjectId, grade, requestedCount = null) 
     if (d.type === 'input' && !d.correctAnswer) return false;
     // Spajanje treba 3-5 parova; manje je trivijalno, više je previše za dijete
     if (d.type === 'match' && (!Array.isArray(d.pairs) || d.pairs.length < 3 || d.pairs.length > 5)) return false;
+    if (d.type === 'ordering' && (!Array.isArray(d.items) || d.items.length < 3 || d.items.length > 5 || new Set(d.items).size !== d.items.length)) return false;
+    if (d.type === 'true-false' && typeof d.correct !== 'boolean') return false;
     return true;
   });
 

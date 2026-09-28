@@ -104,6 +104,7 @@ function retry() {
 }
 
 function goTopics() {
+  if (String(route.query.topicId).startsWith('review-')) { router.push('/home'); return }
   router.push({
     name: 'topics',
     params: { slug: route.query.subjectSlug || 'unknown' },
