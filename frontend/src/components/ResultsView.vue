@@ -13,7 +13,7 @@
         <button class="btn btn-secondary" @click="goTopics">
           Odaberi temu 📚
         </button>
-        <button class="btn btn-secondary" @click="$router.push('/home')">
+        <button class="btn btn-secondary" @click="$router.push({ path: '/home', query: { grade: $route.query.grade } })">
           Početna 🏠
         </button>
       </div>
@@ -31,7 +31,7 @@ const route = useRoute()
 const triggerStars = inject('triggerStars')
 
 const correct = computed(() => parseInt(route.query.correct) || 0)
-const total = computed(() => parseInt(route.query.total) || 1)
+const total = computed(() => Math.max(1, parseInt(route.query.total) || 1))
 const pct = computed(() => correct.value / total.value)
 
 const resultEmoji = computed(() => {
@@ -98,19 +98,21 @@ function retry() {
       topicName: route.query.topicName,
       topicIcon: route.query.topicIcon,
       subjectSlug: route.query.subjectSlug,
-      subjectName: route.query.subjectName
+      subjectName: route.query.subjectName,
+      grade: route.query.grade
     }
   })
 }
 
 function goTopics() {
-  if (String(route.query.topicId).startsWith('review-')) { router.push('/home'); return }
+  if (String(route.query.topicId).startsWith('review-')) { router.push({ path: '/home', query: { grade: route.query.grade } }); return }
   router.push({
     name: 'topics',
     params: { slug: route.query.subjectSlug || 'unknown' },
     query: {
       name: route.query.subjectName,
-      icon: ''
+      icon: '',
+      grade: route.query.grade
     }
   })
 }

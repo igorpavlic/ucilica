@@ -41,7 +41,7 @@ async function main() {
       for (const q of GENERATORS[slug]().filter(q => q.objasnjenje)) {
         const doc = { ...q, correctIndex: q._c ? q.answers.indexOf(q._c) : q.correctIndex,
           grade, subject_id: topic.subject_id, topic_id: topic._id,
-          gik: buildQuestionMetadata({ topic, subject: null, difficulty: q.difficulty || 1 }),
+          gik: buildQuestionMetadata({ topic, subject: null, difficulty: q.difficulty || 1, question: q }),
           isActive: true, createdAt: new Date() };
         delete doc._c;
         await db.collection('questions').updateOne({ topic_id: topic._id, question: q.question },

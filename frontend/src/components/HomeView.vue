@@ -55,18 +55,20 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useApi } from '../composables/useApi'
 import { useAuth } from '../composables/useAuth'
 
 const emit = defineEmits(['error'])
 const router = useRouter()
+const route = useRoute()
 const { get, patch, loading } = useApi()
 const { grade, isLoggedIn, updateUser } = useAuth()
 
 const subjects = ref([])
 const razredi = ref([])
-const aktivniRazred = ref(grade.value || 1)
+// Razred iz upita (povratak iz teme/kviza) ima prednost pred razredom iz profila.
+const aktivniRazred = ref(Number.parseInt(route.query.grade, 10) || grade.value || 1)
 const spremam = ref(null)
 
 async function ucitajPredmete (g) {
@@ -97,6 +99,7 @@ async function promijeniRazred (g) {
   const prethodni = aktivniRazred.value
   try {
     aktivniRazred.value = g
+    router.replace({ query: { ...route.query, grade: g } })
     await ucitajPredmete(g)
     // Prijavljenom korisniku zapamti izbor; gost ga zadrži samo do osvježenja
     if (isLoggedIn.value) {

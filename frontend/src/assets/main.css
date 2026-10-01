@@ -1224,3 +1224,7 @@ select.form-input {
 .quiz-chart-row { display: grid; grid-template-columns: 7rem minmax(5rem, 1fr) 2.5rem; align-items: center; gap: .6rem; }
 .quiz-chart-track { height: 1.15rem; background: var(--bg-warm); border-radius: .4rem; overflow: hidden; }
 .quiz-chart-fill { height: 100%; background: var(--coral); border-radius: .4rem; }
+
+/* Naslov i tekst za čitanje odvojeni su praznim redom */
+.reading-passage { white-space: pre-line; }
+.scope-note { font-size: 0.85rem; opacity: 0.75; margin: 2px 0 6px; }

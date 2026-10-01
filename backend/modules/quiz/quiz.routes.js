@@ -20,7 +20,7 @@ router.get('/review/:grade', optionalAuth,
   param('grade').isInt({ min: 1, max: 4 }), query('count').optional().isInt({ min: 1, max: 20 }),
   validateRequest, controller.getReview);
 router.get('/:topicId', optionalAuth, getQuizValidators, validateRequest, controller.getQuiz);
-router.post('/check', checkAnswerValidators, validateRequest, controller.checkAnswer);
+router.post('/check', optionalAuth, checkAnswerValidators, validateRequest, controller.checkAnswer);
 router.post('/submit', auth, submitQuizValidators, validateRequest, controller.submitQuiz);
 
 module.exports = router;

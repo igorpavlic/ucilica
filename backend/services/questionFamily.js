@@ -9,7 +9,8 @@ function normalizeStem(text = '') {
   return String(text)
     .toLowerCase()
     // sadržaj pod navodnicima je primjer, ne novi tip zadatka
-    .replace(/“[^”]*”|"[^"]*"|'[^']*'/g, '"x"')
+    // uključuje hrvatske navodnike „…” i «…» koji su prije ostajali nenormalizirani
+    .replace(/„[^“”"]*[“”"]|“[^”]*”|«[^»]*»|"[^"]*"|'[^']*'/g, '"x"')
     // brojevi i decimalni zapisi su parametri predloška
     .replace(/\b\d+(?:[.,]\d+)?\b/g, 'n')
     // nizovi emoji-ja/slikovnih znakova također su parametri

@@ -42,6 +42,44 @@ function quizRepository() {
       );
     },
 
+    /**
+     * Atomsko zauzimanje sesije za predaju. Uspijeva samo jednom: uvjet
+     * completedAt: null i postavljanje u istoj operaciji isključuju dvostruki upis.
+     */
+    async claimAttempt(attemptId) {
+      const r = await collection('quiz_attempts').updateOne(
+        { _id: attemptId, completedAt: null },
+        { $set: { completedAt: new Date() } }
+      );
+      return (r.modifiedCount ?? r.matchedCount ?? 0) === 1;
+    },
+
+    /** Otpusti sesiju ako predaja nije stigla ništa zapisati. */
+    releaseAttempt(attemptId) {
+      return collection('quiz_attempts').updateOne(
+        { _id: attemptId },
+        { $set: { completedAt: null } }
+      );
+    },
+
+    /**
+     * Zapiši prvi pokušaj za pitanje sesije (samo ako ga još nema) i broji
+     * ponovne pokušaje. Vraća true ako je ovo bio prvi pokušaj.
+     */
+    async recordFirstCheck(attemptId, questionId, first) {
+      const key = `checks.${questionId}`;
+      const r = await collection('quiz_attempts').updateOne(
+        { _id: attemptId, completedAt: null, [key]: { $exists: false } },
+        { $set: { [key]: { ...first, attempts: 1 } } }
+      );
+      if ((r.modifiedCount ?? r.matchedCount ?? 0) === 1) return true;
+      await collection('quiz_attempts').updateOne(
+        { _id: attemptId, completedAt: null },
+        { $inc: { [`${key}.attempts`]: 1 } }
+      );
+      return false;
+    },
+
     insertProgress(progress) {
       return collection('progress').insertOne(progress);
     },

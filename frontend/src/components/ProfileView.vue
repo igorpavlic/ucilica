@@ -38,6 +38,26 @@
         </div>
       </div>
 
+      <!-- Obrađeno gradivo: miješano ponavljanje uzima samo ove teme -->
+      <div class="covered-section">
+        <label class="section-label">Obrađeno gradivo ({{ user.grade }}. razred)</label>
+        <p class="covered-help">
+          Označi teme koje su već obrađene u školi. Miješano ponavljanje tada uzima samo njih.
+          Ako ništa nije označeno, uzimaju se teme koje je dijete već vježbalo.
+        </p>
+        <div v-for="t in obradjeno" :key="t._id" class="covered-row">
+          <label>
+            <input type="checkbox" v-model="t.oznaceno" />
+            <span>{{ t.icon }} {{ t.name }}</span>
+            <small class="covered-meta">{{ t.predmet }}<template v-if="t.vjezbano"> · vježbano</template></small>
+          </label>
+        </div>
+        <button class="btn btn-secondary mt-md" :disabled="spremamObradjeno" @click="spremiObradjeno">
+          {{ spremamObradjeno ? 'Spremam…' : 'Spremi obrađeno gradivo' }}
+        </button>
+        <p v-if="obradjenoPoruka" class="covered-help">{{ obradjenoPoruka }}</p>
+      </div>
+
       <!-- Avatar picker -->
       <div class="avatar-section">
         <label class="section-label">Promijeni avatar</label>
@@ -76,7 +96,7 @@ import { useApi } from '../composables/useApi'
 import { useAuth } from '../composables/useAuth'
 
 const emit = defineEmits(['error'])
-const { get, patch } = useApi()
+const { get, patch, put } = useApi()
 const { user, updateUser } = useAuth()
 
 const avatars = ['🧒','👦','👧','🧒🏻','👦🏽','👧🏼','🦸','🧙','🐱','🐶','🦊','🐼','🦄','🐸']
@@ -84,11 +104,40 @@ const savingGrade = ref(null)
 // Nudimo samo razrede za koje u bazi postoji sadržaj
 const razredi = ref([1, 2, 3, 4])
 
+const obradjeno = ref([])
+const spremamObradjeno = ref(false)
+const obradjenoPoruka = ref('')
+
+async function ucitajObradjeno () {
+  if (!user.value) return
+  try {
+    const data = await get(`/progress/obradjeno?grade=${user.value.grade}`)
+    obradjeno.value = data.teme || []
+  } catch (e) { emit('error', e.message) }
+}
+
+async function spremiObradjeno () {
+  spremamObradjeno.value = true
+  obradjenoPoruka.value = ''
+  try {
+    const topicIds = obradjeno.value.filter((t) => t.oznaceno).map((t) => t._id)
+    const data = await put('/progress/obradjeno', { grade: user.value.grade, topicIds })
+    obradjenoPoruka.value = data.oznaceno
+      ? `Spremljeno: ${data.oznaceno} tema.`
+      : 'Oznake su uklonjene; ponavljanje uzima već vježbane teme.'
+  } catch (e) {
+    emit('error', e.message)
+  } finally {
+    spremamObradjeno.value = false
+  }
+}
+
 onMounted(async () => {
   try {
     const { razredi: dostupni } = await get('/subjects/razredi')
     if (dostupni?.length) razredi.value = dostupni
   } catch { /* ostaje zadano 1-4 */ }
+  await ucitajObradjeno()
 })
 
 async function changeGrade(g) {
@@ -97,6 +146,7 @@ async function changeGrade(g) {
   try {
     const data = await patch('/auth/me', { grade: g })
     updateUser(data.user)
+    await ucitajObradjeno()
   } catch (e) {
     emit('error', e.message)
   } finally {
@@ -116,6 +166,11 @@ async function changeAvatar(av) {
 </script>
 
 <style scoped>
+.covered-section { margin-top: var(--space-lg); text-align: left; }
+.covered-help { font-size: 0.9rem; opacity: 0.8; margin: 4px 0 var(--space-sm); }
+.covered-row label { display: flex; gap: 8px; align-items: baseline; padding: 6px 0; cursor: pointer; flex-wrap: wrap; }
+.covered-meta { opacity: 0.65; }
+
 .profile-card {
   background: var(--surface);
   border: 1.5px solid rgba(26, 22, 21, 0.06);

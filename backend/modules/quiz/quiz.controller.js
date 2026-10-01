@@ -29,7 +29,8 @@ async function checkAnswer(req, res, next) {
     const result = await service.checkAnswer({
       attemptId: repo.toObjectId(req.body.attemptId),
       questionId: repo.toObjectId(req.body.questionId),
-      answer: req.body.answer
+      answer: req.body.answer,
+      userId: req.user?._id || null
     });
     res.json(result);
   } catch (error) {

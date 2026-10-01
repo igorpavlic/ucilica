@@ -1,6 +1,6 @@
 <template>
   <div class="shell">
-    <router-link to="/home" class="back-link">← Natrag na predmete</router-link>
+    <router-link :to="{ path: '/home', query: { grade: odabraniRazred } }" class="back-link">← Natrag na predmete</router-link>
 
     <div class="section-header">
       <span class="emoji">{{ $route.query.icon || '📘' }}</span>
@@ -40,12 +40,13 @@ const { get, loading } = useApi()
 const { grade } = useAuth()
 
 const topics = ref([])
+// Razred iz upita ima prednost: izbornik na početnom zaslonu ga proslijedi,
+// a gostu se izbor ne sprema u profil pa bi inače pao natrag na 1.
+const odabraniRazred = Number.parseInt(route.query.grade, 10) || grade.value || 1
 
 onMounted(async () => {
   try {
-    // Razred iz upita ima prednost: izbornik na početnom zaslonu ga proslijedi,
-    // a gostu se izbor ne sprema u profil pa bi inače pao natrag na 1.
-    const g = Number.parseInt(route.query.grade, 10) || grade.value
+    const g = odabraniRazred
     const data = await get(`/subjects/${props.slug}/topics?grade=${g}`)
     topics.value = data.topics
   } catch (e) {
@@ -61,7 +62,9 @@ function startQuiz(topic) {
       topicName: topic.name,
       topicIcon: topic.icon,
       subjectName: route.query.name,
-      subjectSlug: props.slug
+      subjectSlug: props.slug,
+      // razred se nosi kroz kviz i rezultate kako povratak ne bi pao na razred iz profila
+      grade: odabraniRazred
     }
   })
 }

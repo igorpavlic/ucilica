@@ -29,10 +29,20 @@ const kolekcije = {
   users: [{ _id: ID.user, username: 'test', displayName: 'Test', totalScore: 0, streak: 0, password: 'tajna' }],
 };
 
+// Točkasti put ("checks.abc.attempts") kao u MongoDB-u.
+const dohvati = (doc, put) => put.split('.').reduce((o, k) => (o == null ? undefined : o[k]), doc);
+const postavi = (doc, put, vrijednost) => {
+  const dijelovi = put.split('.');
+  let o = doc;
+  for (const k of dijelovi.slice(0, -1)) { if (o[k] == null || typeof o[k] !== 'object') o[k] = {}; o = o[k]; }
+  o[dijelovi[dijelovi.length - 1]] = vrijednost;
+};
+
 const podudara = (doc, upit) => Object.entries(upit).every(([k, v]) => {
   if (k === '$and') return v.every((p) => podudara(doc, p));
-  const dv = doc[k];
+  const dv = dohvati(doc, k);
   if (v && typeof v === 'object' && !Array.isArray(v) && !(v instanceof ObjectId)) {
+    if ('$exists' in v) return (dv !== undefined) === !!v.$exists;
     if ('$in' in v) return v.$in.some((x) => String(x) === String(dv));
     if ('$nin' in v) return !v.$nin.some((x) => String(x) === String(dv));
     if ('$ne' in v) return String(dv) !== String(v.$ne);
@@ -61,10 +71,10 @@ function kolekcija(ime) {
     updateOne: async (u, op, opt = {}) => {
       let d = red.find((x) => podudara(x, u));
       if (!d && opt.upsert) { d = { _id: oid(), ...u }; red.push(d); }
-      if (!d) return { matchedCount: 0 };
-      if (op.$set) Object.assign(d, op.$set);
-      if (op.$inc) for (const [k, v] of Object.entries(op.$inc)) d[k] = (d[k] || 0) + v;
-      return { matchedCount: 1 };
+      if (!d) return { matchedCount: 0, modifiedCount: 0 };
+      if (op.$set) for (const [k, v] of Object.entries(op.$set)) postavi(d, k, v);
+      if (op.$inc) for (const [k, v] of Object.entries(op.$inc)) postavi(d, k, (dohvati(d, k) || 0) + v);
+      return { matchedCount: 1, modifiedCount: 1 };
     },
     createIndex: async () => 'ok',
     aggregate: (cjevovod) => {
@@ -125,14 +135,14 @@ const tvrdi = (uvjet, opis, detalj = '') => {
   const tocan = uBazi.type === 'choice'
     ? prvo.answers.indexOf(uBazi.answers[uBazi.correctIndex])
     : uBazi.correctAnswer;
-  const rez1 = await service.checkAnswer({ attemptId: sesija.attemptId, questionId: prvo._id, answer: tocan });
+  const rez1 = await service.checkAnswer({ userId: ID.user, attemptId: sesija.attemptId, questionId: prvo._id, answer: tocan });
   tvrdi(rez1.isCorrect === true, 'checkAnswer prepoznaje točan odgovor', JSON.stringify(rez1));
 
   // 4) netočan odgovor
   const netocan = uBazi.type === 'choice'
     ? (tocan + 1) % uBazi.answers.length
     : `${uBazi.correctAnswer}xx`;
-  const rez2 = await service.checkAnswer({ attemptId: sesija.attemptId, questionId: prvo._id, answer: netocan });
+  const rez2 = await service.checkAnswer({ userId: ID.user, attemptId: sesija.attemptId, questionId: prvo._id, answer: netocan });
   tvrdi(rez2.isCorrect === false, 'checkAnswer prepoznaje netočan odgovor');
 
   // 5) dijakritici i velika slova kod input pitanja
@@ -140,7 +150,7 @@ const tvrdi = (uvjet, opis, detalj = '') => {
     .map((q) => kolekcije.questions.find((x) => String(x._id) === String(q._id)))
     .find((q) => q.type === 'input' && /[a-zA-Zčćžšđ]/.test(q.correctAnswer));
   if (inputP) {
-    const r = await service.checkAnswer({
+    const r = await service.checkAnswer({ userId: ID.user,
       attemptId: sesija.attemptId, questionId: inputP._id,
       answer: `  ${String(inputP.correctAnswer).toUpperCase()}  `,
     });
@@ -151,7 +161,7 @@ const tvrdi = (uvjet, opis, detalj = '') => {
   const tuđe = oid();
   kolekcije.questions.push({ _id: tuđe, type: 'input', correctAnswer: '1', topic_id: ID.topic, isActive: true });
   let odbijeno = false;
-  try { await service.checkAnswer({ attemptId: sesija.attemptId, questionId: tuđe, answer: '1' }); }
+  try { await service.checkAnswer({ userId: ID.user, attemptId: sesija.attemptId, questionId: tuđe, answer: '1' }); }
   catch (e) { odbijeno = e.statusCode === 403; }
   tvrdi(odbijeno, 'odgovor na pitanje izvan sesije je odbijen (403)');
 
@@ -206,8 +216,8 @@ const tvrdi = (uvjet, opis, detalj = '') => {
       'netočan odgovor spušta dijete i diže pitanje', `${promasaj.dijete}/${promasaj.pitanje}`);
 
     const sporTocan = T.nakonOdgovora({ ocjenaDjeteta: 1500, ocjenaPitanja: 1500, tocno: true, vrijemeMs: 9000, difficulty: 1 });
-    tvrdi(sporTocan.dijete < brzTocan.dijete,
-      'spor točan odgovor vrijedi manje od brzoga', `${sporTocan.dijete} < ${brzTocan.dijete}`);
+    tvrdi(sporTocan.dijete === brzTocan.dijete,
+      'brzina ne mijenja vrijednost točnog odgovora (sporost nije manjak znanja)', `${sporTocan.dijete} = ${brzTocan.dijete}`);
 
     // Pomaci idu u suprotnim smjerovima, ali NISU jednaki: pitanje ima manji
     // K-faktor jer ga rješava mnogo djece pa mu se ocjena prije smiri, dok
@@ -252,7 +262,7 @@ const tvrdi = (uvjet, opis, detalj = '') => {
     tvrdi(s0.card.due > new Date(), 'rok ponavljanja je u budućnosti');
     tvrdi(s0.stats && s0.stats.ukupno === s0.stats.tocnih,
       'statistika bilježi sve točne', JSON.stringify(s0.stats));
-    tvrdi(!!s0.skill && s0.skill.includes('OŠ'), 'ključ vještine je GIK ishod', s0.skill);
+    tvrdi(!!s0.skill && /^R\d:/.test(s0.skill), 'ključ vještine je mikrovještina teme (skillId)', s0.skill);
   }
   tvrdi(Array.isArray(predaja.vjestine) && predaja.vjestine.length > 0,
     'submitQuiz vraća sažetak vještina');
@@ -308,10 +318,16 @@ const tvrdi = (uvjet, opis, detalj = '') => {
     tvrdi(matchKlijent.desno.length < 3 || redoslijedDesnih !== izvorni,
       'desni stupac je promiješan', redoslijedDesnih);
 
-    // točno spajanje: lijevi i → desni i
+    // Desne oznake ne smiju otkrivati par (ranije desni id === lijevi id).
+    tvrdi(matchKlijent.desno.every((d) => !matchKlijent.lijevo.some((l) => String(l.id) === String(d.id))),
+      'desne oznake spajanja ne ponavljaju lijeve ID-ove');
+    const att2 = kolekcije.quiz_attempts.find((a) => String(a._id) === String(ses2.attemptId));
+    const tokeni = att2.match_tokens[String(matchKlijent._id)];
+
+    // točno spajanje: lijevi i → oznaka desnog i
     const tocneVeze = {};
-    matchKlijent.lijevo.forEach((l) => { tocneVeze[l.id] = l.id; });
-    const rm1 = await service.checkAnswer({
+    matchKlijent.lijevo.forEach((l) => { tocneVeze[l.id] = tokeni[l.id]; });
+    const rm1 = await service.checkAnswer({ userId: ID.user,
       attemptId: ses2.attemptId, questionId: matchKlijent._id, answer: tocneVeze });
     tvrdi(rm1.isCorrect === true, 'ispravno spajanje je točno',
       `${rm1.tocnihVeza}/${rm1.ukupnoVeza}`);
@@ -320,9 +336,9 @@ const tvrdi = (uvjet, opis, detalj = '') => {
     // zamijeni dvije veze → netočno
     const ids = matchKlijent.lijevo.map((l) => l.id);
     const kriveVeze = { ...tocneVeze };
-    kriveVeze[ids[0]] = ids[1];
-    kriveVeze[ids[1]] = ids[0];
-    const rm2 = await service.checkAnswer({
+    kriveVeze[ids[0]] = tokeni[ids[1]];
+    kriveVeze[ids[1]] = tokeni[ids[0]];
+    const rm2 = await service.checkAnswer({ userId: ID.user,
       attemptId: ses2.attemptId, questionId: matchKlijent._id, answer: kriveVeze });
     tvrdi(rm2.isCorrect === false, 'zamijenjene veze su netočne');
     tvrdi(rm2.tocnihVeza === uBazi2.pairs.length - 2, 'broji koliko je veza ipak točno',
@@ -337,7 +353,8 @@ const tvrdi = (uvjet, opis, detalj = '') => {
       const original = kolekcije.questions.find(x => String(x._id) === String(q._id));
       const userAnswer = original.type === 'choice'
         ? q.answers.indexOf(original.answers[original.correctIndex])
-        : original.type === 'match' ? Object.fromEntries(original.pairs.map((_, i) => [i, i]))
+        : original.type === 'match' ? Object.fromEntries(original.pairs.map((_, i) => [i,
+          kolekcije.quiz_attempts.find((a) => String(a._id) === String(review.attemptId)).match_tokens[String(q._id)][i]]))
         : original.type === 'ordering' ? original.items
         : original.type === 'true-false' ? original.correct : original.correctAnswer;
       return { questionId: q._id, userAnswer, timeTaken: 900 };
@@ -356,16 +373,16 @@ const tvrdi = (uvjet, opis, detalj = '') => {
       question: 'Je li tvrdnja točna?', correct: false, objasnjenje: 'Tvrdnja je pogrešna.' });
     kolekcije.quiz_attempts.push({ _id: structuredAttempt, user_id: ID.user, topic_id: ID.topic,
       question_ids: [orderingId, tfId], answer_orders: {}, completedAt: null });
-    const correctOrder = await service.checkAnswer({ attemptId: structuredAttempt,
+    const correctOrder = await service.checkAnswer({ userId: ID.user, attemptId: structuredAttempt,
       questionId: orderingId, answer: ['prvo', 'drugo', 'treće'] });
     tvrdi(correctOrder.isCorrect && !!correctOrder.objasnjenje, 'redoslijed se ocjenjuje i vraća objašnjenje');
-    const invalidOrder = await service.checkAnswer({ attemptId: structuredAttempt,
+    const invalidOrder = await service.checkAnswer({ userId: ID.user, attemptId: structuredAttempt,
       questionId: orderingId, answer: ['prvo', 'prvo', 'treće'] });
     tvrdi(!invalidOrder.isCorrect, 'duplicirane stavke ne prolaze');
-    const correctFalse = await service.checkAnswer({ attemptId: structuredAttempt,
+    const correctFalse = await service.checkAnswer({ userId: ID.user, attemptId: structuredAttempt,
       questionId: tfId, answer: false });
     tvrdi(correctFalse.isCorrect && correctFalse.correctAnswer === 'Netočno', 'točno/netočno ocjenjuje boolean');
-    const absent = await service.checkAnswer({ attemptId: structuredAttempt,
+    const absent = await service.checkAnswer({ userId: ID.user, attemptId: structuredAttempt,
       questionId: tfId, answer: 'nešto' });
     tvrdi(!absent.isCorrect, 'nevaljana tvrdnja ne prolazi');
   }
@@ -417,6 +434,161 @@ const tvrdi = (uvjet, opis, detalj = '') => {
     // Gumb sa znakom nosi i ime znaka
     tvrdi(J.oznake(['.', '?', '!']).every((o) => /[a-zčćžšđ]/.test(o)),
       'gumb sa znakom nosi i ime znaka', J.oznake(['.', '?', '!']).join(' | '));
+  }
+
+  // ── P0 regresije iz analize 2026-10-01 ─────────────────────────
+  {
+    console.log('\n── predaja, sesija i prvi pokušaj ──\n');
+    const nova = async () => service.createSession({ topicId: ID.topic, userId: ID.user, count: 4 });
+    const tocanOdgovor = (q) => {
+      const b = kolekcije.questions.find((x) => String(x._id) === String(q._id));
+      return b.type === 'choice' ? q.answers.indexOf(b.answers[b.correctIndex]) : b.correctAnswer;
+    };
+    const krivOdgovor = (q) => {
+      const b = kolekcije.questions.find((x) => String(x._id) === String(q._id));
+      return b.type === 'choice' ? (q.answers.indexOf(b.answers[b.correctIndex]) + 1) % q.answers.length : 'xx-krivo';
+    };
+
+    // a) duplikat istog pitanja
+    const sA = await nova();
+    const q0 = sA.questions[0];
+    let dupOdbijen = false;
+    try {
+      await service.submitQuiz({ userId: ID.user, topicId: ID.topic, attemptId: sA.attemptId,
+        answers: [0, 1, 2].map(() => ({ questionId: q0._id, userAnswer: tocanOdgovor(q0), timeTaken: 500 })) });
+    } catch (e) { dupOdbijen = e.statusCode === 400; }
+    tvrdi(dupOdbijen, 'isto pitanje predano više puta je odbijeno (400)');
+    const sA2 = kolekcije.quiz_attempts.find((a) => String(a._id) === String(sA.attemptId));
+    tvrdi(sA2.completedAt === null, 'odbijena predaja ne zaključava sesiju');
+
+    // b) djelomična predaja ne smije izgledati kao 100 %
+    const djel = await service.submitQuiz({ userId: ID.user, topicId: ID.topic, attemptId: sA.attemptId,
+      answers: [{ questionId: q0._id, userAnswer: tocanOdgovor(q0), timeTaken: 500 }] });
+    tvrdi(djel.progress.totalQuestions === sA.questions.length,
+      'nazivnik je broj pitanja sesije', `${djel.progress.totalQuestions}/${sA.questions.length}`);
+    tvrdi(djel.progress.percentage < 100 && djel.progress.complete === false,
+      'djelomična predaja nije 100 % ni potpuna', JSON.stringify(djel.progress));
+    const zapis = kolekcije.progress.find((p) => String(p.attempt_id) === String(sA.attemptId));
+    tvrdi(zapis && zapis.complete === false && zapis.totalQuestions === sA.questions.length,
+      'zapis napretka bilježi nepotpunu predaju');
+
+    // c) istodobne predaje — samo jedna prolazi
+    const sC = await nova();
+    const sveC = sC.questions.map((q) => ({ questionId: q._id, userAnswer: tocanOdgovor(q), timeTaken: 500 }));
+    const bodoviPrije = kolekcije.users[0].totalScore;
+    const rez = await Promise.allSettled([
+      service.submitQuiz({ userId: ID.user, topicId: ID.topic, attemptId: sC.attemptId, answers: sveC }),
+      service.submitQuiz({ userId: ID.user, topicId: ID.topic, attemptId: sC.attemptId, answers: sveC })
+    ]);
+    const uspjelo = rez.filter((r) => r.status === 'fulfilled').length;
+    tvrdi(uspjelo === 1, 'od dviju istodobnih predaja prolazi točno jedna', `${uspjelo}`);
+    tvrdi(kolekcije.users[0].totalScore - bodoviPrije === sC.questions.length * 10,
+      'bodovi su upisani samo jednom', `${kolekcije.users[0].totalScore - bodoviPrije}`);
+
+    // d) prvi pokušaj je autoritativan
+    const sD = await nova();
+    const qd = sD.questions[0];
+    const p1 = await service.checkAnswer({ attemptId: sD.attemptId, questionId: qd._id, answer: krivOdgovor(qd), userId: ID.user });
+    const p2 = await service.checkAnswer({ attemptId: sD.attemptId, questionId: qd._id, answer: tocanOdgovor(qd), userId: ID.user });
+    tvrdi(p1.prviPokusaj === true && p2.prviPokusaj === false, 'server razlikuje prvi i ponovni pokušaj');
+    const sveD = sD.questions.map((q) => ({ questionId: q._id, userAnswer: tocanOdgovor(q), timeTaken: 500 }));
+    const predD = await service.submitQuiz({ userId: ID.user, topicId: ID.topic, attemptId: sD.attemptId, answers: sveD });
+    tvrdi(predD.progress.correctAnswers === sD.questions.length - 1,
+      'naknadno ispravljen odgovor ne broji se kao točan prvi pokušaj', JSON.stringify(predD.progress));
+    const zD = kolekcije.progress.find((p) => String(p.attempt_id) === String(sD.attemptId));
+    const ansD = zD.answers.find((a) => String(a.question_id) === String(qd._id));
+    tvrdi(ansD.pokusaja === 2 && ansD.kasnijeTocno === true, 'zapis čuva broj pokušaja i kasniji uspjeh', JSON.stringify(ansD));
+
+    // e) checkAnswer provjerava vlasnika sesije
+    const sE = await nova();
+    let tudaOdbijena = false;
+    try { await service.checkAnswer({ attemptId: sE.attemptId, questionId: sE.questions[0]._id, answer: 0, userId: oid() }); }
+    catch (e) { tudaOdbijena = e.statusCode === 403; }
+    tvrdi(tudaOdbijena, 'provjera odgovora u tuđoj sesiji je odbijena (403)');
+    let anonimnaOdbijena = false;
+    try { await service.checkAnswer({ attemptId: sE.attemptId, questionId: sE.questions[0]._id, answer: 0 }); }
+    catch (e) { anonimnaOdbijena = e.statusCode === 403; }
+    tvrdi(anonimnaOdbijena, 'neprijavljeni ne može provjeravati u tuđoj sesiji');
+  }
+
+  {
+    console.log('\n── ključevi i ocjenjivanje (analiza 2026-10-01) ──\n');
+    const J = require('../seeds/jasnoca');
+    tvrdi(J.tocan('A', 'a', 'velikoSlovo') === false, 'veličina slova se razlikuje kad je ona predmet zadatka');
+    tvrdi(J.tocan('a', 'a', 'velikoSlovo') === true, 'ispravno malo slovo prolazi');
+    tvrdi(J.tocan('27 770', '27770', 'broj') === true, 'broj sa razmakom između skupina znamenki je točan');
+    tvrdi(J.tocan('27770', '27 770') === true, 'broj bez razmaka jednak je zapisu s razmakom');
+    tvrdi(J.tocan('8 cm', '8', 'broj', [], { pitanje: 'Koliko je cm dugačka olovka?' }) === true,
+      'jedinica iz pitanja ne ruši brojčani odgovor');
+    tvrdi(J.tocan('8 kg', '8', 'broj', [], { pitanje: 'Koliko je cm dugačka olovka?' }) === false,
+      'pogrešna jedinica se ne priznaje');
+
+    const { GENERATORS } = require('../services/questionGenerator');
+    const r4 = GENERATORS['brojevi-milijun']();
+    const kljuc = (tekst) => { const q = r4.find((x) => x.question === tekst); return q && q.answers[q.correctIndex]; };
+    tvrdi(kljuc('Koliko stotica ima jedna tisuća?') === '10', 'tisuća ima 10 stotica');
+    tvrdi(kljuc('Koliko tisuća ima deset tisuća?') === '10', 'deset tisuća ima 10 tisuća');
+    tvrdi(kljuc('Koliko tisuća ima jedan milijun?') === '1 000', 'milijun ima 1 000 tisuća');
+
+    // Upitna riječ i oblik ključa: "Koliko" traži broj, "Koje/Koja su" ne smije imati brojčani ključ.
+    const sve = Object.entries(GENERATORS).flatMap(([slug, fn]) => fn().map((q) => ({ ...q, slug })));
+    const kljucOd = (q) => q.type === 'choice' ? q.answers?.[q.correctIndex] : q.correctAnswer;
+    const kolikoBezBroja = sve.filter((q) => /^Koliko\b/.test(q.question) && !/^Koliko je to\b/.test(q.question)
+      && ['choice', 'input'].includes(q.type) && !/\d/.test(String(kljucOd(q))) && !/^(nula|jedan|jedna|dva|dvije|tri|četiri|pet|šest|sedam|osam|devet|deset|\p{L}*naest|\p{L}*deset|više|manje|jednako|manja|veća|jednaka|manji|veći)(\s|$)/iu.test(String(kljucOd(q))));
+    tvrdi(kolikoBezBroja.length === 0, 'pitanje "Koliko…" ima brojčani ključ',
+      kolikoBezBroja.slice(0, 3).map((q) => `${q.slug}: ${q.question} → ${kljucOd(q)}`).join(' | '));
+    const kojeSBrojem = sve.filter((q) => /^Koj[eai] su\b/.test(q.question) && /^\d+$/.test(String(kljucOd(q))));
+    tvrdi(kojeSBrojem.length === 0, 'pitanje "Koje su…" nema čisto brojčani ključ',
+      kojeSBrojem.slice(0, 3).map((q) => `${q.slug}: ${q.question}`).join(' | '));
+    const proturjecno = sve.filter((q) => q.type === 'input' && q.question.includes('Napiši jednu riječ.') && /\s/.test(String(q.correctAnswer).trim()));
+    tvrdi(proturjecno.length === 0, 'uputa "Napiši jednu riječ." nema ključ od više riječi',
+      proturjecno.slice(0, 3).map((q) => `${q.slug}: ${q.question}`).join(' | '));
+    const genitiv = sve.filter((q) => /Koliko (stranica|kutova|vrhova) ima (kruga|trokuta|kvadrata|pravokutnika)\?/.test(q.question)
+      || /kut koji je [^?]* je /.test(q.question) || /koji je krakovi/.test(q.question));
+    tvrdi(genitiv.length === 0, 'nema poznatih negramatičnih predložaka', genitiv.slice(0, 3).map((q) => q.question).join(' | '));
+    const slovoVelicina = sve.filter((q) => q.type === 'input' && /(veliko|malo)( tiskano)? slovo|velikim početnim slovom/.test(q.question) && !['velikoSlovo', 'recenica'].includes(q.konstrukt));
+    tvrdi(slovoVelicina.length === 0, 'zadatci o veličini slova razlikuju veliko i malo slovo', slovoVelicina.slice(0, 2).map((q) => q.question).join(' | '));
+    const novacR2 = GENERATORS['mjerenje-novac']().filter((q) => (q.question.match(/\d+(?= €)/g) || []).some((n) => Number(n) > 100)
+      || /(\d+) € i (\d+) €\?/.test(q.question) && 0);
+    const zbrojiIznad100 = GENERATORS['mjerenje-novac']().filter((q) => /dati (\d+) €/.test(q.question) && Number(q.question.match(/dati (\d+) €/)[1]) > 100);
+    tvrdi(novacR2.length === 0 && zbrojiIznad100.length === 0, '2. razred: novčani iznosi ostaju do 100 €');
+    const r2Pretvorbe = GENERATORS['mjerenje-novac']().filter((q) => /1 (km|kg|L)\b/.test(q.question));
+    tvrdi(r2Pretvorbe.length === 0, '2. razred: nema pretvorbi km/kg/L', r2Pretvorbe.slice(0, 2).map((q) => q.question).join(' | '));
+
+    // Kalibracija: predložak kao polazište, izbor prema ocjeni, analiza pitanja
+    const T2 = require('../services/tezina');
+    tvrdi(T2.efektivnaOcjena({ item: null, template: { rating: 1700, odgovora: 40 }, difficulty: 1 }) === 1700,
+      'neizmjereni zadatak polazi od ocjene svoga predloška');
+    tvrdi(T2.efektivnaOcjena({ item: { rating: 1300, odgovora: 90 }, template: { rating: 1700, odgovora: 40 }, difficulty: 1 }) < 1360,
+      'dovoljno izmjeren zadatak nosi vlastitu ocjenu');
+    const bazen = [1200, 1350, 1450, 1500, 1600, 1750, 1900].map((r, i) => ({ _id: i, r }));
+    const izbor = T2.odaberiPoTezini(bazen, 3, 1500, (q) => q.r);
+    const pIzb = izbor.map((q) => T2.ocekivano(1500, q.r));
+    tvrdi(pIzb.every((p) => p >= 0.55 && p <= 0.92), 'izbor po ocjeni drži očekivanu uspješnost u pojasu 55–92 %', pIzb.map((p) => p.toFixed(2)).join(', '));
+    const zapisi = [];
+    for (let i = 0; i < 60; i++) {
+      const o = 1200 + i * 10;
+      zapisi.push({ kljuc: 'dobro', template_id: 't', ocjenaDjeteta: o, tocno: o > 1450 });
+      zapisi.push({ kljuc: 'krivi-kljuc', template_id: 't', ocjenaDjeteta: o, tocno: o < 1300 });
+    }
+    const an = T2.analizaPitanja(zapisi);
+    tvrdi(an.find((x) => x.kljuc === 'krivi-kljuc').oznake.includes('sumnjiv-kljuc') && !an.find((x) => x.kljuc === 'dobro').oznake.length,
+      'analiza označava pitanje koje jača djeca češće promašuju', JSON.stringify(an.map((x) => [x.kljuc, x.rpb.toFixed(2), x.oznake])));
+
+    // Objašnjenja: postupak, ne samo ključ
+    const O = require('../services/objasnjenja');
+    const ob = O.objasni({ type: 'input', question: 'Koji broj dolazi na prazno mjesto: 45 + ___ = 72?', correctAnswer: '27' });
+    tvrdi(ob && /72 − 45 = 27/.test(ob.tekst), 'objašnjenje nepoznatog pribrojnika pokazuje postupak', ob && ob.tekst);
+    const krivo = O.objasni({ type: 'input', question: 'Koliko je 45 + 27?', correctAnswer: '71' });
+    tvrdi(krivo === null, 'objašnjenje se ne piše kad se račun ne slaže s ključem');
+    const tekstovi = require('../seeds/citanje-tekstovi').TEKSTOVI;
+    tvrdi(tekstovi.every((t) => t.pitanja.every((p) => p.objasnjenje && p.proces)), 'svako pitanje uz tekst ima proces i objašnjenje');
+
+    const G = require('../services/gikEngine');
+    const meta = G.buildQuestionMetadata({ topic: { slug: 'zbrajanje-100', name: 'Zbrajanje do 100', grade: 2 }, subject: null, difficulty: 1 });
+    tvrdi(meta.outcome === 'MAT OŠ A.2.3' && meta.curriculumAlignment !== 'high', 'zbrajanje do 100 nosi A.2.3 bez tvrdnje "high"', JSON.stringify([meta.outcome, meta.curriculumAlignment]));
+    const nepoznata = G.buildQuestionMetadata({ topic: { slug: 'nesto-novo', name: 'Nešto', grade: 2 }, subject: null, difficulty: 1 });
+    tvrdi(nepoznata.outcome === null && nepoznata.curriculumAlignment === 'none', 'nepoznata tema ne dobiva izmišljeni ishod');
   }
 
   console.log('');

@@ -1,8 +1,8 @@
 <template>
   <div class="shell">
-    <router-link v-if="props.topicId.startsWith('review-')" to="/home" class="back-link">← Natrag na predmete</router-link>
+    <router-link v-if="props.topicId.startsWith('review-')" :to="{ path: '/home', query: { grade: props.topicId.slice(7) } }" class="back-link">← Natrag na predmete</router-link>
     <router-link v-else
-      :to="{ name: 'topics', params: { slug: $route.query.subjectSlug || 'unknown' }, query: { name: $route.query.subjectName, icon: '' } }"
+      :to="{ name: 'topics', params: { slug: $route.query.subjectSlug || 'unknown' }, query: { name: $route.query.subjectName, icon: '', grade: $route.query.grade } }"
       class="back-link"
     >← Natrag na teme</router-link>
 
@@ -16,6 +16,7 @@
         <span>{{ $route.query.topicIcon }} {{ $route.query.topicName }}</span>
         <span>{{ currentQ + 1 }} / {{ questions.length }}</span>
       </div>
+      <p v-if="opseg" class="scope-note">{{ opisOpsega }}</p>
       <div class="progress-track">
         <div class="progress-fill" :style="{ width: ((currentQ + 1) / questions.length * 100) + '%' }"></div>
       </div>
@@ -131,7 +132,7 @@
           <button
             v-if="!answered"
             class="btn-check match-check"
-            :disabled="!sveSpojeno"
+            :disabled="!sveSpojeno || provjeravam"
             @click="handleMatch"
           >{{ sveSpojeno ? 'Provjeri' : `Spoji još ${preostaloVeza}` }}</button>
         </div>
@@ -145,12 +146,12 @@
             :placeholder="questions[currentQ].placeholder || 'Upiši odgovor...'"
             @keyup.enter="handleInput"
           >
-          <button v-if="!answered" class="btn-check" @click="handleInput">Provjeri</button>
+          <button v-if="!answered" class="btn-check" :disabled="provjeravam" @click="handleInput">Provjeri</button>
         </div>
 
         <div v-if="questions[currentQ].type === 'true-false'" class="answers-grid">
           <button v-for="option in [true, false]" :key="String(option)" class="answer-btn"
-            :disabled="answered" @click="handleStructured(option)">{{ option ? 'Točno' : 'Netočno' }}</button>
+            :disabled="answered || provjeravam" @click="handleStructured(option)">{{ option ? 'Točno' : 'Netočno' }}</button>
         </div>
 
         <div v-if="questions[currentQ].type === 'ordering'" class="ordering-list">
@@ -223,6 +224,7 @@ const {
   loadingQuiz,
   exhausted,
   exhaustedMsg,
+  opseg,
   currentQ,
   selectedIdx,
   answered,
@@ -235,8 +237,18 @@ const {
   veze,
   odabranLijevi,
   tocnihVeza,
+  vezeTocne,
+  provjeravam,
   correctCount
 } = storeToRefs(quizStore)
+
+const opisOpsega = computed(() => {
+  const o = opseg.value
+  if (!o) return ''
+  if (o.nacin === 'oznaceno') return `Ponavljanje iz ${o.brojTema} označenih obrađenih tema.`
+  if (o.nacin === 'vjezbano') return `Ponavljanje iz ${o.brojTema} tema koje si već vježbao/la.`
+  return 'Ponavljanje iz cijeloga razreda — obrađeno gradivo nije označeno, pa se mogu pojaviti i teme koje još niste učili.'
+})
 
 // Čitanje pitanja naglas — za 1. razred, gdje dijete još ne čita tečno.
 const { dostupno: govorDostupan, govoriSe, reci, prekini } = useGovor()
@@ -321,8 +333,8 @@ const oznakaDesnog = (desniId) => {
   const l = Object.keys(veze.value).find(k => veze.value[k] === desniId)
   return l === undefined ? '' : redosljedVeza.value[l]
 }
-/** Nakon provjere: je li baš ta veza bila točna (lijevi id === desni id) */
-const vezaTocna = (lijeviId) => String(veze.value[lijeviId]) === String(lijeviId)
+/** Nakon provjere: je li baš ta veza bila točna — server vraća ocjenu po vezi */
+const vezaTocna = (lijeviId) => vezeTocne.value[lijeviId] === true
 
 async function handleMatch () {
   try {
@@ -407,6 +419,9 @@ async function nextQuestion() {
     return
   }
 
+  // Rezultat prikazuje server (prvi pokušaji, cijela sesija); gost vidi lokalni zbroj.
+  let correct = correctCount.value
+  let total = questions.value.length
   if (isLoggedIn.value) {
     try {
       const data = await submitQuiz(props.topicId)
@@ -414,6 +429,8 @@ async function nextQuestion() {
         totalScore: data.user.totalScore,
         streak: data.user.streak
       })
+      correct = data.progress?.correctAnswers ?? correct
+      total = data.progress?.totalQuestions ?? total
     } catch (error) {
       emit('error', error.message)
       return
@@ -423,8 +440,9 @@ async function nextQuestion() {
   router.push({
     name: 'results',
     query: {
-      correct: correctCount.value,
-      total: questions.value.length,
+      correct,
+      total,
+      grade: props.topicId.startsWith('review-') ? props.topicId.slice(7) : route.query.grade,
       topicId: props.topicId,
       topicName: route.query.topicName,
       topicIcon: route.query.topicIcon,

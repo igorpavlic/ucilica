@@ -10,6 +10,8 @@ export const useQuizStore = defineStore('quiz', () => {
   const loadingQuiz = ref(false)
   const exhausted = ref(false)
   const exhaustedMsg = ref('')
+  // Opseg miješanog ponavljanja: { nacin: 'oznaceno'|'vjezbano'|'sve', brojTema }
+  const opseg = ref(null)
   const currentQ = ref(0)
   const selectedIdx = ref(null)
   const answered = ref(false)
@@ -26,6 +28,10 @@ export const useQuizStore = defineStore('quiz', () => {
   const veze = ref({})
   const odabranLijevi = ref(null)
   const tocnihVeza = ref(0)
+  // Rezultat po vezi nakon provjere: { lijeviId: true|false }
+  const vezeTocne = ref({})
+  // Provjera u tijeku — brzi višestruki klikovi ne smiju poslati više zahtjeva
+  const provjeravam = ref(false)
 
   function resetSession() {
     attemptId.value = ''
@@ -33,6 +39,7 @@ export const useQuizStore = defineStore('quiz', () => {
     loadingQuiz.value = false
     exhausted.value = false
     exhaustedMsg.value = ''
+    opseg.value = null
     currentQ.value = 0
     selectedIdx.value = null
     answered.value = false
@@ -48,6 +55,22 @@ export const useQuizStore = defineStore('quiz', () => {
     veze.value = {}
     odabranLijevi.value = null
     tocnihVeza.value = 0
+    vezeTocne.value = {}
+    provjeravam.value = false
+  }
+
+  /**
+   * Jedna provjera odjednom. `answered` postaje istinit tek nakon odgovora
+   * servera, pa bez ove brave dvostruki klik šalje dva zahtjeva.
+   */
+  async function jednaProvjera(fn) {
+    if (answered.value || provjeravam.value) return null
+    provjeravam.value = true
+    try {
+      return await fn()
+    } finally {
+      provjeravam.value = false
+    }
   }
 
   async function loadQuiz(topicId, count = 7) {
@@ -61,6 +84,7 @@ export const useQuizStore = defineStore('quiz', () => {
       attemptId.value = data.attemptId || ''
       exhausted.value = !!data.exhausted
       exhaustedMsg.value = data.message || ''
+      opseg.value = data.opseg || null
       questions.value = data.questions || []
       redoslijed.value = [...(questions.value[0]?.answers || [])]
       questionStartTime.value = Date.now()
@@ -82,8 +106,11 @@ export const useQuizStore = defineStore('quiz', () => {
     }
   }
 
-  async function checkChoice(index) {
-    if (answered.value) return null
+  function checkChoice(index) {
+    return jednaProvjera(() => _checkChoice(index))
+  }
+
+  async function _checkChoice(index) {
     selectedIdx.value = index
     const data = await api.post('/quiz/check', {
       attemptId: attemptId.value,
@@ -99,8 +126,12 @@ export const useQuizStore = defineStore('quiz', () => {
     return data
   }
 
-  async function checkInput() {
-    if (answered.value || !inputAnswer.value.trim()) return null
+  function checkInput() {
+    if (!inputAnswer.value.trim()) return Promise.resolve(null)
+    return jednaProvjera(_checkInput)
+  }
+
+  async function _checkInput() {
     const userAnswer = inputAnswer.value.trim()
     const data = await api.post('/quiz/check', {
       attemptId: attemptId.value,
@@ -143,9 +174,13 @@ export const useQuizStore = defineStore('quiz', () => {
   }
 
   /** Predaja spajanja — tek kad su svi parovi povezani */
-  async function checkMatch () {
+  function checkMatch () {
+    return jednaProvjera(_checkMatch)
+  }
+
+  async function _checkMatch () {
     const p = questions.value[currentQ.value]
-    if (answered.value || !p) return null
+    if (!p) return null
     if (Object.keys(veze.value).length !== (p.lijevo?.length || 0)) return null
 
     const data = await api.post('/quiz/check', {
@@ -158,6 +193,7 @@ export const useQuizStore = defineStore('quiz', () => {
     correctAnswerText.value = data.correctAnswer
     objasnjenje.value = data.objasnjenje || ''
     tocnihVeza.value = data.tocnihVeza ?? 0
+    vezeTocne.value = data.vezeTocne || {}
     recordAnswer(data.isCorrect, veze.value)
     return data
   }
@@ -170,8 +206,11 @@ export const useQuizStore = defineStore('quiz', () => {
     redoslijed.value = items
   }
 
-  async function checkStructured(answer) {
-    if (answered.value) return null
+  function checkStructured(answer) {
+    return jednaProvjera(() => _checkStructured(answer))
+  }
+
+  async function _checkStructured(answer) {
     const data = await api.post('/quiz/check', {
       attemptId: attemptId.value, questionId: questions.value[currentQ.value]._id, answer
     })
@@ -196,6 +235,7 @@ export const useQuizStore = defineStore('quiz', () => {
     veze.value = {}
     odabranLijevi.value = null
     tocnihVeza.value = 0
+    vezeTocne.value = {}
     questionStartTime.value = Date.now()
   }
 
@@ -218,6 +258,7 @@ export const useQuizStore = defineStore('quiz', () => {
     loadingQuiz,
     exhausted,
     exhaustedMsg,
+    opseg,
     currentQ,
     selectedIdx,
     answered,
@@ -230,6 +271,8 @@ export const useQuizStore = defineStore('quiz', () => {
     veze,
     odabranLijevi,
     tocnihVeza,
+    vezeTocne,
+    provjeravam,
     correctCount,
     quizAnswers,
     questionStartTime,

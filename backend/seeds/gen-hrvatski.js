@@ -99,7 +99,7 @@ function genSlova() {
   // Sada su ponuđena tri jasno različita zapisa.
   dig.forEach(([u,t,l]) => {
     q.push({ type:"choice", difficulty:2, question:`Kako se dvoslov "${l}" piše velikim početnim slovom?`, answers:sh([t,u]), correctIndex:-1, _c:t, hint:"Kod dvoslova veliko je samo prvo slovo." });
-    q.push(unos({ pitanje:`Kako se dvoslov "${l}" piše velikim početnim slovom?`, odgovor:t, format:"slova", difficulty:3 }));
+    q.push({ ...unos({ pitanje:`Kako se dvoslov "${l}" piše velikim početnim slovom?`, odgovor:t, format:"slova", difficulty:3 }), konstrukt:"velikoSlovo" }); // veličina slova je predmet zadatka
   });
   for (let i = 0; i < abc.length - 1; i++)
     q.push({ type:"choice", difficulty:2, question:`Koje slovo u abecedi dolazi nakon slova "${abc[i]}"?`, answers:sh(distraktoriSlova(abc, i+1)), correctIndex:-1, _c:abc[i+1] });

@@ -74,6 +74,7 @@ const FORMAT = {
   slova:       { tekst: 'Napiši slova jedno do drugoga, bez razmaka.',           konstrukt: 'slovo' },
   rijec:       { tekst: 'Napiši jednu riječ.',                                   konstrukt: 'rijec' },
   rijeci:      { tekst: 'Odgovori s nekoliko riječi.',                           konstrukt: 'rijec' },
+  dvijeRijeci: { tekst: 'Napiši obje riječi.',                                   konstrukt: 'rijec' },
   recenica:    { tekst: 'Napiši cijelu rečenicu — velikim početnim slovom i s rečeničnim znakom na kraju.', konstrukt: 'recenica' },
   recenicniZnak: { tekst: 'Napiši rečenični znak: točku (.), upitnik (?) ili uskličnik (!).',               konstrukt: 'interpunkcija' },
 };
@@ -154,15 +155,50 @@ function dopuniFormat(q) {
  * doba godine, "zima." i "Zima" su isti točan odgovor — kažnjavati ih znači
  * mjeriti nešto što se ne poučava.
  */
-function tocan(dano, ocekivano, konstrukt = 'rijec', prihvatljivi = []) {
+function tocan(dano, ocekivano, konstrukt = 'rijec', prihvatljivi = [], opcije = {}) {
   const kandidati = [ocekivano, ...prihvatljivi];
-  return kandidati.some((k) => jednako(dano, k, konstrukt));
+  return kandidati.some((k) => jednako(dano, k, konstrukt, opcije));
 }
 
-function jednako(dano, ocekivano, konstrukt) {
+// Broj s neobaveznim razmacima između skupina znamenki: "27 770", "1 000 000", "3,5".
+const RE_BROJ = /^-?\d{1,3}(?:[ \u00a0\u202f]\d{3})+(?:[.,]\d+)?$|^-?\d+(?:[.,]\d+)?$/u;
+
+/** "27 770" → 27770, "3,5" → 3.5; null ako nije broj. */
+function kaoBroj(s) {
+  const t = ocisti(s);
+  if (!RE_BROJ.test(t)) return null;
+  const n = Number(t.replace(/[ \u00a0\u202f]/gu, '').replace(',', '.'));
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Ako je očekivan samo broj, a dijete doda mjernu jedinicu koja se nalazi u
+ * samom pitanju ("8 cm" uz pitanje o centimetrima), jedinica se odvaja.
+ * Jedinica koja se u pitanju ne spominje ne priznaje se.
+ */
+function bezJediniceIzPitanja(dano, pitanje) {
+  const m = ocisti(dano).match(/^(.+?)\s*([\p{L}€°²³]+\.?)$/u);
+  if (!m || !pitanje) return null;
+  const jedinica = m[2].replace(/\.$/, '');
+  const rijeci = ocisti(pitanje).split(/[\s,.;:?!()„“”"]+/u);
+  return rijeci.includes(jedinica) ? m[1] : null;
+}
+
+function jednako(dano, ocekivano, konstrukt, opcije = {}) {
   let a = ocisti(dano);
   let b = ocisti(ocekivano);
   if (a === '' || b === '') return false;
+
+  // Brojčani odgovor uspoređuje se matematički: "27 770" = "27770", "3,5" = "3.5".
+  const ocekivaniBroj = kaoBroj(b);
+  if (ocekivaniBroj !== null && konstrukt !== 'recenica' && konstrukt !== 'interpunkcija') {
+    let daniBroj = kaoBroj(a);
+    if (daniBroj === null) {
+      const bez = bezJediniceIzPitanja(a, opcije.pitanje);
+      if (bez !== null) daniBroj = kaoBroj(bez);
+    }
+    return daniBroj !== null && daniBroj === ocekivaniBroj;
+  }
 
   // Završni rečenični znak je dio odgovora samo kad se pravopis i provjerava.
   if (konstrukt !== 'interpunkcija' && konstrukt !== 'recenica') {
@@ -184,4 +220,4 @@ const ocisti = (s) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-module.exports = { IME_ZNAKA, oznaka, oznake, RECENICNI, FORMAT, unos, dopuniFormat, tocan, jednako, ocisti, cijelaRecenica };
+module.exports = { IME_ZNAKA, oznaka, oznake, RECENICNI, FORMAT, unos, dopuniFormat, tocan, jednako, ocisti, cijelaRecenica, kaoBroj };
