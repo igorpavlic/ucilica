@@ -4,6 +4,49 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −3. PID 3.–4.: Tlo, voda, zrak i Uvjeti života — više obitelji nad istim činjenicama
+
+**Bilo:** 11 i 13 zadataka; u simulaciji najčešće iscrpljene teme nakon
+podataka i nepoznatog broja (14/15 i 11/18 sesija bez novih pitanja).
+Uz to: „minerali,voda,zrak,humus”, poredak kruženja vode kao skraćenice
+(„ispar.→oblak→…”), „CO₂” u 3. razredu, „fotosinteza” u 4. (pojam iz 5. r.),
+„Čime počinje kruženje vode?” (krug nema početak), „neophodna za organizme”
+kao opis samo vode, „0°C” bez razmaka.
+
+**Sada:** `seeds/gen-pid-uvjeti.js`, poziva se iz `reviewQuestions`
+(prije dodjele `itemKey`). Ista činjenica ispituje se kroz više obitelji:
+
+| 3. r. — Tlo, voda, zrak | 4. r. — Uvjeti života |
+|---|---|
+| svojstvo vode / što NIJE svojstvo | pokus s grahom: koji je uvjet oduzet |
+| stanje vode u primjeru (led, rosa, inje…) | hoće li biljka rasti (točno/netočno) |
+| promjena stanja u svakodnevnoj situaciji | što smije biti različito u pokusu (jedna varijabla) |
+| kruženje vode — poredak (3 polazišta) | stanje vode pri nasumičnoj temperaturi |
+| pokus → zaključak (pijesak/glina, zrak u tlu, čaša, sol, smrzavanje) | prilagodbe — spajanje i izbor |
+| čuva / onečišćuje vodu, zrak, tlo | uvjet ↔ uloga — spajanje |
+| točno/netočno, činjenice | što NIJE uvjet, sastav zraka, živa i neživa priroda |
+
+- Ponude u „čuva / onečišćuje” su sve glagolske imenice, da točan odgovor ne
+  odskače oblikom (NCVVO: ometači istog gramatičkog oblika).
+- Ometači su česte zablude: „Mjesec svijetli sam”, „vodena para se vidi”,
+  „voda se smrzavanjem skuplja”, „glina propušta vodu bolje od pijeska”.
+- Sve nove stavke imaju objašnjenje.
+
+**Provjera:** `npm run test:sve` prolazi; 2 000 poziva bez nevaljanih zadataka
+(245 i 683 različita zadatka). Simulirani pilot:
+
+| Krak | Prije (−2) | Poslije |
+|---|---:|---:|
+| elo | 33 (0,8 %) | **11 (0,25 %)** |
+| kvote | 55 (1,3 %) | **14 (0,3 %)** |
+
+Preostalo: `citanje-3/4` (novi tekstovi), `geometrija-kutovi`, `zavicaj-karta`,
+`kulturna-bastina` — po 1–8 sesija.
+
+**Uvođenje:** `npm run seed:3 && npm run seed:4`.
+
+---
+
 ## −2. Podatci i nepoznati broj — parametrizirani generatori (iscrpljivanje tema)
 
 **Bilo:** `podatci-3` (6 zadataka), `podatci-4` (8) i `nepoznati-3` (12) bili su

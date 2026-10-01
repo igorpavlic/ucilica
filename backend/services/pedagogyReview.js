@@ -36,6 +36,7 @@ function itemKeyZa(q) {
   return kratkiHash(JSON.stringify(dijelovi));
 }
 const HR = require('../seeds/hr-gramatika');
+const PID_UVJETI = require('../seeds/gen-pid-uvjeti');
 const { oznake } = require('../seeds/jasnoca');
 
 // "5 skupine" nije hrvatski. Broj uz imenicu traži paukal ili genitiv množine,
@@ -492,10 +493,9 @@ function curateKnownBank(generatorName, qs){
     });
   }
   if(generatorName==='genNizovi') qs=qs.map(q=>q.question==='Čime mjerimo težinu?'?{...q,question:'Čime mjerimo masu?'}:q);
-  if(generatorName==='genUvjetiZivota'){
-    qs=qs.filter(q=>q.question!=='Što je biljci potrebno za fotosintezu?');
-    qs.push(choice('Koji su osnovni uvjeti potrebni biljci za fotosintezu?','voda, ugljikov dioksid i svjetlost',['samo tlo','samo kisik','vjetar i toplina'],3));
-  }
+  // Tlo/voda/zrak (3. r.) i uvjeti života (4. r.): čišćenje starog fonda i
+  // zadatci u više obitelji nad istim činjenicama (seeds/gen-pid-uvjeti.js).
+  qs=PID_UVJETI.prosiri(generatorName,qs);
   return qs;
 }
 

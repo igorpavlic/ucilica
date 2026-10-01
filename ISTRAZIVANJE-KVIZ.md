@@ -372,8 +372,8 @@ Infrastruktura za zadnja dva koraka već postoji (`tezina.js`,
 
 | Tema | Iscrpljenih sesija (elo / kvote) | Pristup |
 |---|---:|---|
-| R3 PID — Tlo, voda, zrak | 14 / 15 | više obitelji nad istim činjenicama + kratki pokusi |
-| R4 PID — Uvjeti života | 11 / 18 | isto; pokus s grahom kao uzor |
+| ~~R3 PID — Tlo, voda, zrak~~ | 14 / 15 → 0 / 0 | ✔ napravljeno (`gen-pid-uvjeti.js`) |
+| ~~R4 PID — Uvjeti života~~ | 11 / 18 → 0 / 0 | ✔ napravljeno (`gen-pid-uvjeti.js`) |
 | R3/R4 — Čitanje s razumijevanjem | 4 / 9 | novi tekstovi (ručno ili LLM + recenzija) |
 | R4 Mat — Kutovi, Kvadar i kocka | 1 / 7 | model zadatka moguć (broj vrhova, bridova, vrsta kuta po slici) |
 
