@@ -21,6 +21,8 @@
     "test:raznolikost": "node test/provjeri-raznolikost.js",
     "test:pedagogija": "node test/provjeri-pedagogiju.js",
     "sim:pilot": "node tools/simulacija/pokreni.js --krak elo --izlaz sim-elo.json && node tools/simulacija/pokreni.js --krak kvote --izlaz sim-kvote.json && node tools/simulacija/analiza.js sim-elo.json sim-kvote.json > sim-rezultati.json",
+    "recenzija": "node tools/recenzija-ucitelj.js",
+    "recenzija:detalji": "node tools/recenzija-ucitelj.js --detalji",
     "objasnjenja:praznine": "node tools/objasnjenja-praznine.js > objasnjenja-radna-lista.csv"
   },
   "keywords": [],

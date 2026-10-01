@@ -206,9 +206,9 @@ function vremenskaCrta() {
 
 const BASTINA_CINJENICE = [
   izbor('Što je kulturna baština?', 'sve vrijedno što su nam ostavili preci', ['samo nove zgrade u gradu', 'životinje u zoološkom vrtu', 'sve što kupimo u trgovini'], 1, 'Baštinu čine građevine, predmeti, običaji, pjesme i priče koje čuvamo od predaka.'),
-  izbor('Što je običaj?', 'način na koji ljudi nešto rade i prenose s koljena na koljeno', ['novi zakon', 'vrsta biljke', 'školski predmet'], 2, 'Običaji se prenose s generacije na generaciju.'),
+  izbor('Što je običaj?', 'način rada koji se prenosi s koljena na koljeno', ['pravilo koje je jučer donio gradonačelnik', 'vrsta biljke koja raste u zavičaju', 'predmet koji učimo u školi'], 2, 'Običaji se prenose s generacije na generaciju.'),
   izbor('Koliko je desetljeća u jednom stoljeću?', '10', ['100', '5', '1000'], 2, 'Stoljeće ima 100 godina, a desetljeće 10: 100 : 10 = 10.'),
-  izbor('Zašto čuvamo kulturnu baštinu?', 'da bi i budući naraštaji znali kako se živjelo prije', ['da bismo je mogli prodati', 'jer je zakonom zabranjeno igrati se', 'da bi muzeji bili puni'], 2, 'Baština nas povezuje s precima i govori tko smo.'),
+  izbor('Zašto čuvamo kulturnu baštinu?', 'da bi i budući naraštaji znali kako se živjelo prije', ['da bismo je mogli prodati na sajmu', 'da bi muzeji imali više posjetitelja', 'da bi turisti plaćali skuplje ulaznice'], 2, 'Baština nas povezuje s precima i govori tko smo.'),
   tocnoNetocno('Mogu li stara pjesma i ples biti kulturna baština?', true, 1, 'To je nematerijalna baština — ne može se dotaknuti, ali se prenosi.'),
   tocnoNetocno('Jesu li Plitvička jezera kulturna baština koju su izgradili ljudi?', false, 2, 'Plitvička jezera su prirodna baština — nastala su bez ljudske gradnje.'),
   tocnoNetocno('Je li stoljeće razdoblje od 100 godina?', true, 1, 'Stoljeće = 100 godina, desetljeće = 10 godina.'),

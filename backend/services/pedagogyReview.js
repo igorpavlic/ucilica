@@ -39,6 +39,7 @@ const HR = require('../seeds/hr-gramatika');
 const PID_UVJETI = require('../seeds/gen-pid-uvjeti');
 const KUTOVI = require('../seeds/gen-kutovi');
 const ZAVICAJ = require('../seeds/gen-zavicaj-bastina');
+const MEDIJI = require('../seeds/gen-mediji');
 const { oznake } = require('../seeds/jasnoca');
 
 // "5 skupine" nije hrvatski. Broj uz imenicu traži paukal ili genitiv množine,
@@ -226,7 +227,7 @@ function rewriteKnown(generatorName,q){
   if(generatorName==='genTloVodaZrak' && q.question==='Kako se zove stalno kruženje vode u prirodi?') q={...q,question:'Koji redoslijed najbolje prikazuje kruženje vode u prirodi?'};
   if(generatorName==='genUvjetiZivota' && q.question==='Što biljka stvara fotosintezom?') q={...q,question:'Koji plin biljka oslobađa tijekom fotosinteze?'};
   if(generatorName==='genLjudskoTijelo' && q.question==='Koliko obroka dnevno treba jesti?') q=choice('Koja navika najbolje podupire zdravu prehranu?','redoviti i raznoliki obroci',['jesti samo jednu vrstu hrane','preskakati obroke','jesti samo slatkiše'],2);
-  if(generatorName==='genKnjizevniTekst' && q.question==='Koji su dijelovi priče?') q=choice('Što nam pomaže pratiti događaje u priči?','redoslijed događaja',['boja korica','broj stranica','veličina slova'],2);
+  if(generatorName==='genKnjizevniTekst' && q.question==='Koji su dijelovi priče?') q=choice('Koje riječi pomažu pratiti redoslijed događaja u priči?','najprije, zatim, na kraju',['crven, plav, zelen','stol, stolica, ormar','veselo, tužno, ljutito'],2);
   if(generatorName==='genZavicajKarta' && q.question.includes('zelena boja')) q=choice('Na fizičkoj karti, kojom se bojom najčešće prikazuju nizine?','zelenom',['plavom','smeđom','crnom'],2);
   if(generatorName==='genZavicaj' && q.question.includes('zelena boja')) q=choice('Na fizičkoj karti, kojom se bojom najčešće prikazuju nizine?','zelenom',['plavom','smeđom','crnom'],2);
   if(generatorName==='genZavicaj' && q.question==='Tko gasi požar?') q=choice('Koja služba gasi požare?','vatrogasci',['policija','hitna medicinska služba','poštari'],2);
@@ -502,6 +503,7 @@ function curateKnownBank(generatorName, qs){
   if(generatorName==='genGeometrijaKutovi') qs=[...KUTOVI.ocistiKutove(qs),...KUTOVI.genKutoviDodatak()];
   if(generatorName==='genZavicajKarta') qs=[...ZAVICAJ.ocistiZavicajKarta(qs),...ZAVICAJ.genZavicajKartaDodatak()];
   if(generatorName==='genKulturnaBastina') qs=[...ZAVICAJ.ocistiKulturnaBastina(qs),...ZAVICAJ.genKulturnaBastinaDodatak()];
+  if(generatorName==='genMedijskaKultura') qs=[...MEDIJI.ocistiMedije(qs),...MEDIJI.genMedijiDodatak()];
   return qs;
 }
 

@@ -4,6 +4,22 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −5. Čitanje, medijska kultura i simulirana recenzija učitelja
+
+- **6 novih tekstova** (`citanje-tekstovi.js`): Pčele, Plakat, Hranilica (3. r.);
+  Ivana Brlić-Mažuranić, Vozni red, Utrka (4. r.). Ukupno 17 tekstova.
+- **Medijska kultura** (`gen-mediji.js`): stari fond s kraticama zamijenjen;
+  C.4.1–C.4.3, činjenica/mišljenje, sigurnost na internetu. Ishod teme → C.4.2.
+- **`tools/recenzija-ucitelj.js`** (`npm run recenzija`): kontrolni popis K1–K9
+  prema Haladyna i sur. (2002), NCVVO i PIRLS. Izvještaj: `RECENZIJA-UCITELJ.md`.
+- Recenzija je pronašla: točan odgovor osjetno najdulji u 57–73 % pitanja
+  čitanja i književnosti → 48 ometača prepisano (< 20 %); **zaplet definiran
+  kao najnapetiji dio** (to je vrhunac) → ispravljeno, dodan vrhunac;
+  pitanje koje u odgovoru ponavlja vlastitu osnovu.
+- Simulacija: sesije bez novih pitanja 7 → 2 (elo), 4 → 1 (kvote).
+
+---
+
 ## −4. Kutovi (4. r.), Zavičaj i karta, Kulturna baština (3. r.)
 
 **Bilo:** 12, 29 i 10 zadataka. Uz to: „S,J,I,Z”, „gore,dolje,L,D” i
