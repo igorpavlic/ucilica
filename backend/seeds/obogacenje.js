@@ -1,57 +1,8 @@
 /** Ručno napisani kratki zadatci; nema preuzimanja tuđih zbirki. */
-function genPodatci3() {
-  const q = [];
-  const podaci = [
-    { naslov: 'Omiljeno voće', oznake: ['jabuka', 'kruška', 'šljiva', 'breskva'], vrijednosti: [8, 5, 3, 6] },
-    { naslov: 'Posuđene knjige', oznake: ['ponedjeljak', 'utorak', 'srijeda', 'četvrtak'], vrijednosti: [4, 7, 5, 9] }
-  ];
-  for (const t of podaci) {
-    const max = Math.max(...t.vrijednosti), min = Math.min(...t.vrijednosti);
-    const najveci = t.oznake[t.vrijednosti.indexOf(max)];
-    const chart = t.oznake.map((label, i) => ({ label, value: t.vrijednosti[i] }));
-    q.push({ type: 'choice', difficulty: 2, question: `${t.naslov}: Koja oznaka ima najveći broj?`, chart,
-      answers: t.oznake, correctIndex: t.oznake.indexOf(najveci), objasnjenje: `${najveci} ima ${max}, više od ostalih.` });
-    q.push({ type: 'input', difficulty: 2, question: `${t.naslov}: Kolika je razlika između najvećeg i najmanjeg broja?`, chart,
-      correctAnswer: String(max - min), objasnjenje: `${max} − ${min} = ${max - min}.` });
-    q.push({ type: 'input', difficulty: 3, question: `${t.naslov}: Koliko je ukupno zabilježeno?`, chart,
-      correctAnswer: String(t.vrijednosti.reduce((a, b) => a + b, 0)),
-      objasnjenje: `Zbroji sve stupce: ${t.vrijednosti.join(' + ')} = ${t.vrijednosti.reduce((a, b) => a + b, 0)}.` });
-  }
-  return q;
-}
-
-function genNepoznati3() {
-  const q = [];
-  for (const [a, b] of [[16, 27], [35, 18], [48, 25], [71, 12], [124, 36], [235, 42]]) {
-    q.push({ type: 'input', difficulty: 2, question: `Koji broj nedostaje: ${a} + □ = ${a + b}?`,
-      correctAnswer: String(b), objasnjenje: `Od ${a + b} oduzmi ${a}: ${a + b} − ${a} = ${b}.` });
-    q.push({ type: 'input', difficulty: 2, question: `Koji broj nedostaje: □ − ${b} = ${a}?`,
-      correctAnswer: String(a + b), objasnjenje: `Zbroji ${a} i ${b}: ${a} + ${b} = ${a + b}.` });
-  }
-  return q;
-}
-
-function genPodatci4() {
-  const q = genPodatci3().map(x => ({ ...x, difficulty: 2 }));
-  const t = [120, 85, 145, 90];
-  const chart = ['siječanj', 'veljača', 'ožujak', 'travanj'].map((label, i) => ({ label, value: t[i] }));
-  q.push({ type: 'input', difficulty: 3, question: 'Broj posjetitelja: Koliko je više posjetitelja bilo u ožujku nego u veljači?', chart,
-    correctAnswer: '60', objasnjenje: '145 − 85 = 60.' });
-  q.push({ type: 'input', difficulty: 3, question: 'Broj posjetitelja: Koliko je ukupno posjetitelja bilo u prva dva mjeseca?', chart,
-    correctAnswer: '205', objasnjenje: '120 + 85 = 205.' });
-  return q;
-}
-
-function genNepoznati4() {
-  const q = genNepoznati3().slice(-6).map(x => ({ ...x, difficulty: 2 }));
-  for (const [a, b] of [[12, 7], [18, 5], [24, 4], [32, 3]]) {
-    q.push({ type: 'input', difficulty: 3, question: `Koji broj nedostaje: ${a} × □ = ${a * b}?`,
-      correctAnswer: String(b), objasnjenje: `${a * b} ÷ ${a} = ${b}.` });
-    q.push({ type: 'input', difficulty: 3, question: `Koji broj nedostaje: □ ÷ ${b} = ${a}?`,
-      correctAnswer: String(a * b), objasnjenje: `${a} × ${b} = ${a * b}.` });
-  }
-  return q;
-}
+// Podatci i nepoznati broj imaju vlastite parametrizirane generatore:
+// statičnih 6–14 zadataka iscrpilo se nakon dva kviza.
+const { genPodatci3, genPodatci4 } = require('./gen-podatci');
+const { genNepoznati3, genNepoznati4 } = require('./gen-nepoznati');
 
 function genCitanje3() {
   const tekst = 'Maja je u petak posudila knjigu o pticama. U subotu je s bakom u parku promatrala sjenice i zapisala njihove boje. U nedjelju je vratila knjigu u školsku knjižnicu.';

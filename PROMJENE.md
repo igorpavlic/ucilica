@@ -4,6 +4,148 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −5. Čitanje, medijska kultura i simulirana recenzija učitelja
+
+- **6 novih tekstova** (`citanje-tekstovi.js`): Pčele, Plakat, Hranilica (3. r.);
+  Ivana Brlić-Mažuranić, Vozni red, Utrka (4. r.). Ukupno 17 tekstova.
+- **Medijska kultura** (`gen-mediji.js`): stari fond s kraticama zamijenjen;
+  C.4.1–C.4.3, činjenica/mišljenje, sigurnost na internetu. Ishod teme → C.4.2.
+- **`tools/recenzija-ucitelj.js`** (`npm run recenzija`): kontrolni popis K1–K9
+  prema Haladyna i sur. (2002), NCVVO i PIRLS. Izvještaj: `RECENZIJA-UCITELJ.md`.
+- Recenzija je pronašla: točan odgovor osjetno najdulji u 36–64 % pitanja
+  čitanja, književnosti i medija → ometači prepisani u 46 pitanja (0–19 %); **zaplet definiran
+  kao najnapetiji dio** (to je vrhunac) → ispravljeno, dodan vrhunac;
+  pitanje koje u odgovoru ponavlja vlastitu osnovu.
+- Simulacija: sesije bez novih pitanja 7 → 2 (elo), 4 → 1 (kvote).
+
+---
+
+## −4. Kutovi (4. r.), Zavičaj i karta, Kulturna baština (3. r.)
+
+**Bilo:** 12, 29 i 10 zadataka. Uz to: „S,J,I,Z”, „gore,dolje,L,D” i
+„omjer karta/stvarnost” kao ponude; „jednakokračan” uz „jednakostranični”
+(različit oblik odaje odgovor); „Čemu služi muzej?” s ponudama „škola”,
+„tvornica” uz „čuvanje i izlaganje predmeta”; „U koje godišnje doba radimo
+ovo: Božić?” s objašnjenjem o godišnjem dobu umjesto o blagdanu.
+
+**Sada:**
+
+| Tema | Modul | Što je novo | Različitih zadataka u 2 000 poziva |
+|---|---|---|---:|
+| Kutovi | `gen-kutovi.js` | vrsta kuta prema satu i predmetima iz okoline, trokut prema zadanim duljinama stranica (uvijek postoji), krakovi, zablude (dulji krakovi ≠ veći kut, dva prava kuta) | 1 783 |
+| Zavičaj i karta | `gen-zavicaj-bastina.js` | nasumični **plan mjesta 3 × 3**: što je S/I/JZ… od škole, u kojem je smjeru zgrada, kojim smjerom ideš; okretanje (desno/lijevo/iza); sporedne strane i kratice; kompas, Sunce u podne, tumač znakova, boje zemljovida | 24 056 |
+| Kulturna baština | `gen-zavicaj-bastina.js` | prirodna / kulturna, materijalna / nematerijalna, vrste izvora o prošlosti, gdje se što čuva (spajanje), **vremenska crta** s vjerodostojnim godinama, desetljeće i stoljeće | 6 206 |
+
+- Bez mjerenja kuta u stupnjevima (nije gradivo 4. r.) i bez oduzimanja
+  četveroznamenkastih godina (3. r. oduzima do 1000) — pita se poredak.
+- Godine događaja imaju vjerodostojan raspon (željeznica od 1862., dom
+  zdravlja nakon 1950.), da „knjižnica 1677.” ne bude starija od crkve.
+- Kurikul: sporedne strane svijeta i vremenska crta su 3. r. PID;
+  C.4.2 — trokuti prema duljinama stranica i pravokutni trokut.
+
+**Provjera:** `npm run test:sve` prolazi; 2 000 poziva bez nevaljanih zadataka.
+Simulirani pilot:
+
+| Krak | Početak (prije −2) | Prije (−3) | Sada |
+|---|---:|---:|---:|
+| elo | 133 (3,1 %) | 11 | **7 (0,16 %)** |
+| kvote | 164 (3,8 %) | 14 | **4 (0,09 %)** |
+
+Preostalo (1–3 sesije po temi): `citanje-3/4`, `medijska-kultura`,
+`biljke-zivotinje-3`, `hrvatska-domovina`.
+
+**Uvođenje:** `npm run seed:3 && npm run seed:4`.
+
+---
+
+## −3. PID 3.–4.: Tlo, voda, zrak i Uvjeti života — više obitelji nad istim činjenicama
+
+**Bilo:** 11 i 13 zadataka; u simulaciji najčešće iscrpljene teme nakon
+podataka i nepoznatog broja (14/15 i 11/18 sesija bez novih pitanja).
+Uz to: „minerali,voda,zrak,humus”, poredak kruženja vode kao skraćenice
+(„ispar.→oblak→…”), „CO₂” u 3. razredu, „fotosinteza” u 4. (pojam iz 5. r.),
+„Čime počinje kruženje vode?” (krug nema početak), „neophodna za organizme”
+kao opis samo vode, „0°C” bez razmaka.
+
+**Sada:** `seeds/gen-pid-uvjeti.js`, poziva se iz `reviewQuestions`
+(prije dodjele `itemKey`). Ista činjenica ispituje se kroz više obitelji:
+
+| 3. r. — Tlo, voda, zrak | 4. r. — Uvjeti života |
+|---|---|
+| svojstvo vode / što NIJE svojstvo | pokus s grahom: koji je uvjet oduzet |
+| stanje vode u primjeru (led, rosa, inje…) | hoće li biljka rasti (točno/netočno) |
+| promjena stanja u svakodnevnoj situaciji | što smije biti različito u pokusu (jedna varijabla) |
+| kruženje vode — poredak (3 polazišta) | stanje vode pri nasumičnoj temperaturi |
+| pokus → zaključak (pijesak/glina, zrak u tlu, čaša, sol, smrzavanje) | prilagodbe — spajanje i izbor |
+| čuva / onečišćuje vodu, zrak, tlo | uvjet ↔ uloga — spajanje |
+| točno/netočno, činjenice | što NIJE uvjet, sastav zraka, živa i neživa priroda |
+
+- Ponude u „čuva / onečišćuje” su sve glagolske imenice, da točan odgovor ne
+  odskače oblikom (NCVVO: ometači istog gramatičkog oblika).
+- Ometači su česte zablude: „Mjesec svijetli sam”, „vodena para se vidi”,
+  „voda se smrzavanjem skuplja”, „glina propušta vodu bolje od pijeska”.
+- Sve nove stavke imaju objašnjenje.
+
+**Provjera:** `npm run test:sve` prolazi; 2 000 poziva bez nevaljanih zadataka
+(245 i 683 različita zadatka). Simulirani pilot:
+
+| Krak | Prije (−2) | Poslije |
+|---|---:|---:|
+| elo | 33 (0,8 %) | **11 (0,25 %)** |
+| kvote | 55 (1,3 %) | **14 (0,3 %)** |
+
+Preostalo: `citanje-3/4` (novi tekstovi), `geometrija-kutovi`, `zavicaj-karta`,
+`kulturna-bastina` — po 1–8 sesija.
+
+**Uvođenje:** `npm run seed:3 && npm run seed:4`.
+
+---
+
+## −2. Podatci i nepoznati broj — parametrizirani generatori (iscrpljivanje tema)
+
+**Bilo:** `podatci-3` (6 zadataka), `podatci-4` (8) i `nepoznati-3` (12) bili su
+statični popisi. Simulirani pilot: 133 od 4 320 sesija (elo) i 164 (kvote) bez
+novih pitanja; 77–102 od toga otpada na ove četiri teme. `nepoznati-3/4` padali su
+i na `provjeri-raznolikost` (2 i 4 obitelji pitanja).
+
+**Sada:** `seeds/gen-podatci.js` i `seeds/gen-nepoznati.js`. Konteksti su pisani
+ručno, brojevi se biraju pri svakom pozivu — kad se tema iscrpi,
+`generateAndStore` dobiva nove zadatke s novim `itemKey`, umjesto istih 6.
+
+| Tema | Ishod | Po pozivu | Obitelji | Što dijete radi |
+|---|---|---:|---:|---|
+| `podatci-3` | E.3.1 | 42 | ~27 | grafikon **i** tablica: najveći/najmanji, očitaj, razlika, zbroj, dopuna, prag, poredaj, točna tvrdnja, par sa zadanim zbrojem |
+| `podatci-4` | E.4.1, E.4.2 | 56 | ~37 | isto s većim brojevima + prebrojavanje s popisa odgovora, crtice, vjerojatnost (siguran/moguć/nemoguć, vjerojatnije, jednako vjerojatno) |
+| `nepoznati-3` | B.3.1 | 52 | ~20 | □ i **slovo** kao oznaka broja, sve četiri operacije, zamjena slova brojem, provjera rješenja, priča → jednakost |
+| `nepoznati-4` | B.4.1 | 49 | ~23 | isto do 10 000 + **nejednakosti** (najveći/najmanji broj, koji broj zadovoljava), razlikovanje jednakosti i nejednakosti |
+
+- Ometači su tipične pogreške (zbroj umjesto razlike, ±1, ±10), ne slučajni brojevi.
+- Svaki zadatak ima `objasnjenje` i `ishod`.
+- Slova `b, c, x, y` — ne „a”, „i”, „u”, „s”, „k” koja su i riječi.
+- Imenice u pričama idu kroz `hr-gramatika` (1 naljepnicu / 3 naljepnice / 5 naljepnica).
+- `itemKeyZa` sada uključuje grafikon kad postoji: isti tekst uz druge podatke
+  drugi je zadatak. Ključevi pitanja bez grafikona nisu promijenjeni.
+- `test:raznolikost` dodan u `test:sve` — prije nije bio pokretan, pa pad nije bio vidljiv.
+
+**Provjera:**
+- `npm run test:sve` prolazi (3 uzastopna pokretanja s različitim slučajnim brojevima).
+- 2 000 poziva svakog generatora (398 000 zadataka): 0 nevaljanih (NaN, negativan
+  ili prazan ključ, dupli ponuđeni odgovori, ključ izvan ponude, > 200 znakova).
+- Simulirani pilot, isti seed:
+
+| Krak | Prije | Poslije | Ove 4 teme |
+|---|---:|---:|---:|
+| elo | 133 / 4 320 (3,1 %) | **33 (0,8 %)** | 77 → **0** |
+| kvote | 164 / 4 320 (3,8 %) | **55 (1,3 %)** | 119 → **0** |
+
+Preostalo iscrpljivanje: `uvjeti-zivota`, `tlo-voda-zrak`, `citanje-3/4` —
+činjenični i tekstovni sadržaj koji se ne može parametrizirati brojevima;
+vidi `ISTRAZIVANJE-KVIZ.md`, odjeljak 8.
+
+**Uvođenje:** `npm run seed:3 && npm run seed:4` (ili `seed:all`).
+
+---
+
 ## −1. Tekstovi, objašnjenja, predlošci, obrađeno gradivo, dvoznamenkasto, kalibracija + simulirani pilot
 
 - **Tekstovi za čitanje** — `seeds/citanje-tekstovi.js`: 11 izvornih tekstova (2.–4.), 66 pitanja s `proces`

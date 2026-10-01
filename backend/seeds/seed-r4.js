@@ -53,13 +53,13 @@ return fix(q).slice(0,210)}
 function genKnjizevnost4(){const q=[];
 const vrste=[["bajka","priča s čudesnim događajima i bićima"],["basna","kratka poučna priča u kojoj često govore životinje"],["pjesma","književni tekst oblikovan u stihovima"],["igrokaz","tekst namijenjen izvođenju na pozornici"],["biografija","tekst o životu stvarne osobe"],["dječji roman","dulje prozno djelo namijenjeno djeci"],["pripovijetka","kraće prozno književno djelo"]];
 vrste.forEach(([v,o])=>{q.push({type:"choice",difficulty:2,question:`Kojoj književnoj vrsti pripada opis: "${o}"?`,answers:sh([v,...wf(vrste.map(x=>x[0]),v)]),correctIndex:-1,_c:v});q.push({type:"input",difficulty:3,question:`Napiši naziv književne vrste opisane ovako: "${o}".`,konstrukt:"rijec",correctAnswer:v})});
-q.push({type:"choice",difficulty:2,question:"Tko je glavni lik u priči?",answers:["lik oko kojega se razvija glavni dio događaja","autor teksta","čitatelj","izdavač"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"Tko je glavni lik u priči?",answers:["lik oko kojega se razvija glavni dio događaja","lik koji se u priči pojavi samo jednom","osoba koja je napisala priču","osoba koja priču čita naglas"],correctIndex:0});
 const personifikacije=["Vjetar pjeva.","Kiša plače.","Sunce se smije.","Lišće pleše na vjetru."];
 personifikacije.forEach(t=>q.push({type:"choice",difficulty:3,question:`Koje je obilježje pjesničkoga jezika u primjeru "${t}"?`,answers:["personifikacija","onomatopeja","rima","ponavljanje"],correctIndex:0}));
 const onomatopeje=["bum","mijau","kuc-kuc","šuš"];
 onomatopeje.forEach(t=>q.push({type:"choice",difficulty:3,question:`Koje je obilježje pjesničkoga jezika riječ "${t}"?`,answers:["personifikacija","onomatopeja","rima","ponavljanje"],correctIndex:1}));
-q.push({type:"choice",difficulty:2,question:"Što je stih?",answers:["jedan redak pjesme","cijela pjesma","naslov","ime autora"],correctIndex:0});
-q.push({type:"choice",difficulty:2,question:"Što je strofa?",answers:["skupina stihova","jedan stih","naslov","ime lika"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"Što je stih?",answers:["jedan redak pjesme","skupina od nekoliko redaka","riječ koja se rimuje s drugom","ime osobe koja je napisala pjesmu"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"Što je strofa?",answers:["skupina stihova","jedan redak pjesme","dvije riječi koje se rimuju","naslov na vrhu pjesme"],correctIndex:0});
 return fix(q).slice(0,210)}
 
 function genMedijskaKultura(){const q=[];

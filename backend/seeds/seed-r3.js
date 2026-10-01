@@ -92,15 +92,16 @@ return fix(q).slice(0,210)}
 function genKnjizevniTekst(){const q=[];
 [["bajka","priča s čarobnim elementima"],["basna","priča s životinjama i poukom"],["pjesma","tekst u stihovima"],["priča","kratki pripovjedni tekst"],["roman","dugi pripovjedni tekst"],["legenda","priča s temeljima u stvarnosti"],["mit","priča o bogovima"]].forEach(([v,o])=>{q.push({type:"choice",difficulty:2,question:`Kojoj književnoj vrsti pripada ovaj opis? "${o}"`,answers:sh([v,...wf(["bajka","basna","pjesma","priča","roman","legenda","mit"],v)]),correctIndex:-1,_c:v});q.push({type:"input",difficulty:3,question:`Kojoj književnoj vrsti pripada ovaj opis? "${o}"`,correctAnswer:v})});
 q.push({type:"choice",difficulty:2,question:"Koji su dijelovi priče?",answers:["uvod, zaplet, rasplet","početak, sredina","naslov, tekst","pitanje, odgovor"],correctIndex:0});
-q.push({type:"choice",difficulty:2,question:"Što je uvod u priči?",answers:["početak s likovima","najnapetiji dio","kraj","pouka"],correctIndex:0});
-q.push({type:"choice",difficulty:2,question:"Što je zaplet u priči?",answers:["početak","najnapetiji dio","kraj","naslov"],correctIndex:1});
-q.push({type:"choice",difficulty:2,question:"Što je rasplet u priči?",answers:["početak","najnapetiji dio","rješenje/kraj","naslov"],correctIndex:2});
-q.push({type:"choice",difficulty:3,question:"Po čemu najlakše prepoznajemo usporedbu?",answers:["po riječima kao ili poput","po naslovu","po broju redaka","po točki na kraju"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"Što je uvod u priči?",answers:["dio u kojem upoznajemo likove i mjesto radnje", "dio u kojem nastaje problem ili sukob", "najnapetiji dio priče", "dio u kojem se problem riješi"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"Što je zaplet u priči?",answers:["dio u kojem upoznajemo likove i mjesto radnje", "dio u kojem nastaje problem ili sukob", "najnapetiji dio priče", "dio u kojem se problem riješi"],correctIndex:1});
+q.push({type:"choice",difficulty:2,question:"Što je vrhunac u priči?",answers:["dio u kojem upoznajemo likove i mjesto radnje", "dio u kojem nastaje problem ili sukob", "najnapetiji dio priče", "dio u kojem se problem riješi"],correctIndex:2});
+q.push({type:"choice",difficulty:2,question:"Što je rasplet u priči?",answers:["dio u kojem upoznajemo likove i mjesto radnje", "dio u kojem nastaje problem ili sukob", "najnapetiji dio priče", "dio u kojem se problem riješi"],correctIndex:3});
+q.push({type:"choice",difficulty:3,question:"Po čemu najlakše prepoznajemo usporedbu?",answers:["po riječima kao ili poput","po naslovu pjesme","po broju redaka u kitici","po točki na kraju rečenice"],correctIndex:0});
 q.push({type:"choice",difficulty:3,question:`Je li izraz "Brz kao vjetar" usporedba?`,answers:["Da","Ne"],correctIndex:0});
 q.push({type:"choice",difficulty:3,question:`Je li izraz "Lijep kao slika" usporedba?`,answers:["Da","Ne"],correctIndex:0});
 [["dom-grom","da"],["kuća-škola","ne"],["sat-brat","da"],["drvo-more","ne"],["cvijet-svijet","da"],["dan-san","da"],["knjiga-voda","ne"],["mrak-vlak","da"]].forEach(([p,r])=>q.push({type:"choice",difficulty:2,question:`Rimuju li se riječi "${p}"?`,answers:["Da","Ne"],correctIndex:r==="da"?0:1}));
-q.push({type:"choice",difficulty:2,question:"Što je stih?",answers:["jedan redak pjesme","cijela pjesma","naslov","autor"],correctIndex:0});
-q.push({type:"choice",difficulty:2,question:"Što je strofa?",answers:["skupina stihova","jedan stih","naslov","rima"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"Što je stih?",answers:["jedan redak pjesme","skupina od nekoliko redaka","riječ koja se rimuje s drugom","ime osobe koja je napisala pjesmu"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"Što je strofa?",answers:["skupina stihova","jedan redak pjesme","dvije riječi koje se rimuju","naslov na vrhu pjesme"],correctIndex:0});
 return fix(q).slice(0,210)}
 
 function genJezicnoIzrazavanje(){const q=[];
@@ -205,8 +206,8 @@ q.push({type:"choice",difficulty:2,question:"Što je kulturna baština?",answers
 q.push({type:"choice",difficulty:2,question:"Čemu služi muzej?",answers:["čuvanje i izlaganje predmeta","škola","bolnica","tvornica"],correctIndex:0});
 q.push({type:"choice",difficulty:2,question:"Što je običaj?",answers:["ponašanje kroz generacije","biljka","zadatak","instrument"],correctIndex:0});
 [["Božić","zima"],["Uskrs","proljeće"],["Svi sveti","jesen"],["Fašnik","zima"]].forEach(([ob,doba])=>{const S=["proljeće","ljeto","jesen","zima"];q.push({type:"choice",difficulty:2,question:`U koje godišnje doba radimo ovo: "${ob}"?`,answers:S,correctIndex:S.indexOf(doba)})});
-q.push({type:"choice",difficulty:2,question:"Što je tradicijska nošnja?",answers:["odjeća naših predaka","moderna odjeća","školska uniforma","sportska odjeća"],correctIndex:0});
-q.push({type:"choice",difficulty:2,question:"Što čuvamo u muzeju?",answers:["stare predmete i umjetnine","hranu","životinje","automobile"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"Što je tradicijska nošnja?",answers:["odjeća naših predaka","odjeća kupljena prošloga tjedna","uniforma koju nose učenici","dres za nogometnu utakmicu"],correctIndex:0});
+q.push({type:"choice",difficulty:2,question:"Što čuvamo u muzeju?",answers:["stare predmete i umjetnine","divlje životinje iz šume","nove automobile za prodaju","svježu hranu iz trgovine"],correctIndex:0});
 q.push({type:"choice",difficulty:2,question:"Čemu služi knjižnica?",answers:["posuđivanje knjiga","kupovinu hrane","gledanje filmova","sport"],correctIndex:0});
 return fix(q).slice(0,210)}
 
