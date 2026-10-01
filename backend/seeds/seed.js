@@ -6,6 +6,7 @@
 require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
 const { MongoClient } = require("mongodb");
 const { buildQuestionMetadata } = require("../services/gikEngine");
+const { storedExtras } = require("../services/pedagogyReview");
 
 const { genSlova, genGlasovi, genRijeci, genRecenice } = require("./gen-hrvatski");
 const { genBrojevi, genZbrajanje, genOduzimanje, genUsporedbe, genGeometrija, genNizovi } = require("./gen-matematika");
@@ -92,6 +93,9 @@ async function seed() {
           question: q.question,
           visual: q.visual || "",
           hint: q.hint || "",
+          objasnjenje: q.objasnjenje || "",
+          passage: q.passage || "",
+          chart: q.chart || [],
           answers: q.answers || [],
           correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
           correctAnswer: q.correctAnswer || "",
@@ -99,14 +103,18 @@ async function seed() {
           ...(q.konstrukt ? { konstrukt: q.konstrukt } : {}),
           ...(q.prihvatljivi?.length ? { prihvatljivi: q.prihvatljivi } : {}),
           ...(q.type === "match" ? { pairs: q.pairs } : {}),
+          ...(q.type === "ordering" ? { items: q.items } : {}),
+          ...(q.type === "true-false" ? { correct: q.correct } : {}),
           placeholder: q.placeholder || "Upiši odgovor...",
+          ...storedExtras(q),
           grade: GRADE,
           subject_id: sId,
           topic_id: tId,
           gik: buildQuestionMetadata({
             topic: { ...tops[i], grade: GRADE },
             subject: null,
-            difficulty: q.difficulty || 1
+            difficulty: q.difficulty || 1,
+            question: q
           }),
           isActive: true,
           createdAt: new Date()

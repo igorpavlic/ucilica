@@ -52,6 +52,7 @@ export function useApi() {
   const get = (path) => request(path)
   const post = (path, body) => request(path, { method: 'POST', body: JSON.stringify(body) })
   const patch = (path, body) => request(path, { method: 'PATCH', body: JSON.stringify(body) })
+  const put = (path, body) => request(path, { method: 'PUT', body: JSON.stringify(body) })
 
-  return { loading, error, get, post, patch }
+  return { loading, error, get, post, patch, put }
 }

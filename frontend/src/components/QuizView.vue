@@ -1,7 +1,8 @@
 <template>
   <div class="shell">
-    <router-link
-      :to="{ name: 'topics', params: { slug: $route.query.subjectSlug || 'unknown' }, query: { name: $route.query.subjectName, icon: '' } }"
+    <router-link v-if="props.topicId.startsWith('review-')" :to="{ path: '/home', query: { grade: props.topicId.slice(7) } }" class="back-link">← Natrag na predmete</router-link>
+    <router-link v-else
+      :to="{ name: 'topics', params: { slug: $route.query.subjectSlug || 'unknown' }, query: { name: $route.query.subjectName, icon: '', grade: $route.query.grade } }"
       class="back-link"
     >← Natrag na teme</router-link>
 
@@ -15,6 +16,7 @@
         <span>{{ $route.query.topicIcon }} {{ $route.query.topicName }}</span>
         <span>{{ currentQ + 1 }} / {{ questions.length }}</span>
       </div>
+      <p v-if="opseg" class="scope-note">{{ opisOpsega }}</p>
       <div class="progress-track">
         <div class="progress-fill" :style="{ width: ((currentQ + 1) / questions.length * 100) + '%' }"></div>
       </div>
@@ -39,6 +41,15 @@
           <template v-else>
             <span v-for="(znak, i) in visualChars" :key="i" class="visual-item">{{ znak }}</span>
           </template>
+        </div>
+
+        <p v-if="questions[currentQ].passage" class="reading-passage">{{ questions[currentQ].passage }}</p>
+        <div v-if="questions[currentQ].chart?.length" class="quiz-chart" role="img" aria-label="Stupčasti grafikon s vrijednostima">
+          <div v-for="row in questions[currentQ].chart" :key="row.label" class="quiz-chart-row">
+            <span>{{ row.label }}</span>
+            <div class="quiz-chart-track"><div class="quiz-chart-fill" :style="{ width: `${row.value / Math.max(...questions[currentQ].chart.map(r => r.value)) * 100}%` }"></div></div>
+            <strong>{{ row.value }}</strong>
+          </div>
         </div>
 
         <div class="question-row">
@@ -121,7 +132,7 @@
           <button
             v-if="!answered"
             class="btn-check match-check"
-            :disabled="!sveSpojeno"
+            :disabled="!sveSpojeno || provjeravam"
             @click="handleMatch"
           >{{ sveSpojeno ? 'Provjeri' : `Spoji još ${preostaloVeza}` }}</button>
         </div>
@@ -135,8 +146,29 @@
             :placeholder="questions[currentQ].placeholder || 'Upiši odgovor...'"
             @keyup.enter="handleInput"
           >
-          <button v-if="!answered" class="btn-check" @click="handleInput">Provjeri</button>
+          <button v-if="!answered" class="btn-check" :disabled="provjeravam" @click="handleInput">Provjeri</button>
         </div>
+
+        <div v-if="questions[currentQ].type === 'true-false'" class="answers-grid">
+          <button v-for="option in [true, false]" :key="String(option)" class="answer-btn"
+            :disabled="answered || provjeravam" @click="handleStructured(option)">{{ option ? 'Točno' : 'Netočno' }}</button>
+        </div>
+
+        <div v-if="questions[currentQ].type === 'ordering'" class="ordering-list">
+          <div v-for="(item, index) in redoslijed" :key="item" class="ordering-item">
+            <span>{{ index + 1 }}. {{ item }}</span>
+            <div>
+              <button type="button" :disabled="answered || index === 0" :aria-label="`Pomakni ${item} gore`" @click="pomakniStavku(index, -1)">↑</button>
+              <button type="button" :disabled="answered || index === redoslijed.length - 1" :aria-label="`Pomakni ${item} dolje`" @click="pomakniStavku(index, 1)">↓</button>
+            </div>
+          </div>
+          <button v-if="!answered" class="btn-check" @click="handleStructured([...redoslijed])">Provjeri redoslijed</button>
+        </div>
+      </div>
+
+      <div v-if="answered && objasnjenje" class="explanation-card">
+        <strong>Zašto?</strong> {{ objasnjenje }}
+        <button v-if="govorDostupan" type="button" class="btn-slusaj" aria-label="Pročitaj objašnjenje naglas" @click="reci(objasnjenje)">🔊</button>
       </div>
 
       <div v-if="answered" class="feedback-bar" :class="isCorrect ? 'correct' : 'wrong'">
@@ -192,18 +224,31 @@ const {
   loadingQuiz,
   exhausted,
   exhaustedMsg,
+  opseg,
   currentQ,
   selectedIdx,
   answered,
   isCorrect,
   correctIdx,
   correctAnswerText,
+  objasnjenje,
+  redoslijed,
   inputAnswer,
   veze,
   odabranLijevi,
   tocnihVeza,
+  vezeTocne,
+  provjeravam,
   correctCount
 } = storeToRefs(quizStore)
+
+const opisOpsega = computed(() => {
+  const o = opseg.value
+  if (!o) return ''
+  if (o.nacin === 'oznaceno') return `Ponavljanje iz ${o.brojTema} označenih obrađenih tema.`
+  if (o.nacin === 'vjezbano') return `Ponavljanje iz ${o.brojTema} tema koje si već vježbao/la.`
+  return 'Ponavljanje iz cijeloga razreda — obrađeno gradivo nije označeno, pa se mogu pojaviti i teme koje još niste učili.'
+})
 
 // Čitanje pitanja naglas — za 1. razred, gdje dijete još ne čita tečno.
 const { dostupno: govorDostupan, govoriSe, reci, prekini } = useGovor()
@@ -214,7 +259,7 @@ function procitajPitanje () {
   if (!q) return
   // Uz tekst pitanja čitaju se i ponuđeni odgovori — inače dijete čuje
   // zadatak, ali ne i iz čega bira.
-  const dijelovi = [q.question]
+  const dijelovi = [q.passage, q.question].filter(Boolean)
   if (q.type === 'choice' && Array.isArray(q.answers)) {
     dijelovi.push(q.answers.map((a, i) => `${i + 1}. ${a}`).join('. '))
   }
@@ -226,6 +271,8 @@ const {
   checkChoice,
   checkInput,
   checkMatch,
+  checkStructured,
+  pomakniStavku,
   odaberiLijevi,
   spoji,
   razvezi,
@@ -286,12 +333,24 @@ const oznakaDesnog = (desniId) => {
   const l = Object.keys(veze.value).find(k => veze.value[k] === desniId)
   return l === undefined ? '' : redosljedVeza.value[l]
 }
-/** Nakon provjere: je li baš ta veza bila točna (lijevi id === desni id) */
-const vezaTocna = (lijeviId) => String(veze.value[lijeviId]) === String(lijeviId)
+/** Nakon provjere: je li baš ta veza bila točna — server vraća ocjenu po vezi */
+const vezaTocna = (lijeviId) => vezeTocne.value[lijeviId] === true
 
 async function handleMatch () {
   try {
     const result = await checkMatch()
+    if (result?.isCorrect) {
+      if (!isLoggedIn.value) addGuestScore(10)
+      triggerStars?.()
+    }
+  } catch (error) {
+    emit('error', error.message)
+  }
+}
+
+async function handleStructured (answer) {
+  try {
+    const result = await checkStructured(answer)
     if (result?.isCorrect) {
       if (!isLoggedIn.value) addGuestScore(10)
       triggerStars?.()
@@ -360,6 +419,9 @@ async function nextQuestion() {
     return
   }
 
+  // Rezultat prikazuje server (prvi pokušaji, cijela sesija); gost vidi lokalni zbroj.
+  let correct = correctCount.value
+  let total = questions.value.length
   if (isLoggedIn.value) {
     try {
       const data = await submitQuiz(props.topicId)
@@ -367,6 +429,8 @@ async function nextQuestion() {
         totalScore: data.user.totalScore,
         streak: data.user.streak
       })
+      correct = data.progress?.correctAnswers ?? correct
+      total = data.progress?.totalQuestions ?? total
     } catch (error) {
       emit('error', error.message)
       return
@@ -376,8 +440,9 @@ async function nextQuestion() {
   router.push({
     name: 'results',
     query: {
-      correct: correctCount.value,
-      total: questions.value.length,
+      correct,
+      total,
+      grade: props.topicId.startsWith('review-') ? props.topicId.slice(7) : route.query.grade,
       topicId: props.topicId,
       topicName: route.query.topicName,
       topicIcon: route.query.topicIcon,

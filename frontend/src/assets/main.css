@@ -1201,3 +1201,30 @@ select.form-input {
   .question-row { gap: 8px; }
   .btn-slusaj { width: 44px; height: 44px; font-size: 1.2rem; }
 }
+/* Čitljiv odlomak i redoslijed za zadatke razumijevanja i poredavanja. */
+.reading-passage, .explanation-card {
+  padding: 1rem 1.2rem;
+  margin: 0 0 1rem;
+  border-radius: var(--r-md);
+  line-height: 1.65;
+  background: var(--bg-warm);
+  color: var(--text-primary);
+}
+.explanation-card { margin-top: 1rem; border-left: 4px solid var(--coral); }
+.explanation-card .btn-slusaj { margin-left: .5rem; }
+.ordering-list { display: grid; gap: .6rem; margin-top: 1rem; }
+.ordering-item {
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  padding: .7rem 1rem; border: 1px solid var(--text-tertiary);
+  border-radius: var(--r-md); background: var(--surface);
+}
+.ordering-item button { min-width: 2.5rem; min-height: 2.5rem; margin-left: .25rem; cursor: pointer; }
+.ordering-item button:disabled { opacity: .35; cursor: default; }
+.quiz-chart { display: grid; gap: .65rem; margin: 1rem 0; }
+.quiz-chart-row { display: grid; grid-template-columns: 7rem minmax(5rem, 1fr) 2.5rem; align-items: center; gap: .6rem; }
+.quiz-chart-track { height: 1.15rem; background: var(--bg-warm); border-radius: .4rem; overflow: hidden; }
+.quiz-chart-fill { height: 100%; background: var(--coral); border-radius: .4rem; }
+
+/* Naslov i tekst za čitanje odvojeni su praznim redom */
+.reading-passage { white-space: pre-line; }
+.scope-note { font-size: 0.85rem; opacity: 0.75; margin: 2px 0 6px; }

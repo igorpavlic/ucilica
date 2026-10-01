@@ -103,6 +103,7 @@ async function zabiljeziKviz(userId, stavke, sada = new Date()) {
           grade: v.meta?.grade,
           subjectSlug: v.meta?.subjectSlug,
           topicSlug: v.meta?.topicSlug,
+          outcome: v.meta?.outcome,
           outcomeText: v.meta?.outcomeText,
           card: spremi(card),
           stats,

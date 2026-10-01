@@ -4,6 +4,89 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −1. Tekstovi, objašnjenja, predlošci, obrađeno gradivo, dvoznamenkasto, kalibracija + simulirani pilot
+
+- **Tekstovi za čitanje** — `seeds/citanje-tekstovi.js`: 11 izvornih tekstova (2.–4.), 66 pitanja s `proces`
+  (podatak/zaključak/tumačenje/vrednovanje), objašnjenjem-dokazom i ishodom po pitanju (`ishod` → `gik.outcome`).
+  Učitelj ih treba pregledati prije objave.
+- **Objašnjenja** — `services/objasnjenja.js`: postupak ili pravilo izvedeno iz zadatka, upisuje se samo ako se
+  slaže s ključem; `objasnjenjeIzvor`, `objasnjenjeVrsta`. Pokrivenost 1,5 % → ~66 % (MAT 94 %, HJ 66 %, PID 21 %).
+  Ostatak: `npm run objasnjenja:praznine` → CSV radni popis (~945 predložaka).
+- **templateId / itemKey** — stabilna oznaka predloška i sadržajni ključ zadatka, spremaju se uz pitanje.
+- **Obrađeno gradivo** — `services/obradjeno.js`, `GET/PUT /api/progress/obradjeno`, odjeljak u profilu;
+  miješano ponavljanje: označeno → vježbano → sve; slojeviti uzorak i ravnoteža predmeta.
+- **Dvoznamenkasto množenje/dijeljenje** — 62 zadatka u 9 predložaka (`pmd2:*`) u `pisano-mnoz-dijel`.
+- **Kalibracija** — `tezina.js`: bez kazne za sporost; ocjene po `itemKey` + `template_ratings`; izbor po
+  izmjerenoj težini (cilj ~75 %) nakon 15 odgovora u predmetu; zapis `responses`; `analizaPitanja` za pregled.
+- **Simulirani pilot** — `tools/simulacija/` (`npm run sim:pilot`). Popravci koje je otkrio: duplikati pri
+  iscrpljivanju banke (generiranje sada preskače postojeći `itemKey`), redoslijed predmeta u ponavljanju.
+- Sitno: „podsjeća na kuglu”, biljožder/mesožder/svežder u pitanju, uklonjeno „Je li ova hrana zdrava?”.
+- Uvođenje: `npm run seed:all`; nove kolekcije `responses`, `template_ratings`; `item_ratings` sada po `kljuc`.
+
+---
+
+## 0. Provedba analize od 1. listopada 2026. (P0 + dio P1)
+
+Izvor: *Učilica — detaljna analiza koda, kurikuluma i pitanja* (presjek 3 940 pitanja).
+Svih 93 zapisa s posebnom oznakom dorade riješeno je u generatorima; 13 zadataka o
+stranama svijeta premješteno je iz 2. u 3. razred, kako analiza predlaže.
+
+### Ključevi i formulacije (P0)
+- `seed-r4.js` — „Koliko stotica ima tisuća?" → **10**, „Koliko tisuća ima deset tisuća?" → **10**,
+  „Koliko tisuća ima milijun?" → **1 000**; ometači su tipične zamjene mjesnih vrijednosti, uz objašnjenje.
+- `seed-r3.js` — „Koje su glavne strane svijeta?" (brojčani ključ) → „Koliko je glavnih strana svijeta?";
+  „Koliko agregatnih stanja…?" (ključ nazivi) → „Koja su tri agregatna stanja vode?";
+  „jadransko more… Napiši jednu riječ." → „Napiši obje riječi."
+- `seed-r2.js` — „Ana ___ knjigu." i ostali otvoreni upisi sada nude tri riječi od kojih samo jedna pristaje.
+- Negramatični predlošci: „Koliko stranica ima kruga?" (stari kratki oblik + dorada) i
+  „Kako se zove kut koji je manji je od…" — zamijenjeni pravilnim rečenicama; krug se opisuje, ne broji kao 0.
+
+### Ocjenjivanje i sesije (P0)
+| Problem | Sada |
+|---|---|
+| Isti ID odgovora bodovan više puta | Predaja s ponovljenim pitanjem → 400 |
+| Djelomična predaja = 100 % | Nazivnik je broj pitanja sesije; `progress.complete`, `answeredQuestions` |
+| Prvi pokušaj nije spremljen | `checkAnswer` sprema prvi odgovor u `quiz_attempts.checks`; predaja boduje prvi pokušaj, bilježi `pokusaja` i `kasnijeTocno` |
+| Istodobne predaje | Atomsko `claimAttempt` (`completedAt: null` u uvjetu); pri grešci prije upisa sesija se otpušta |
+| Match: isti ID lijevo i desno | Desni članovi nose nasumične sesijske oznake (`match_tokens`); server vraća `vezeTocne` po vezi |
+| `checkAnswer` bez vlasnika | `optionalAuth` + ista provjera vlasnika kao kod predaje (gost: `user_id: null`) |
+| `tocan('A','a','slovo')` = točno | Zadatci o velikom/malom slovu i dvoslovima imaju `konstrukt: 'velikoSlovo'` |
+| `'27 770'` ≠ `'27770'` | Brojčani ključ uspoređuje se matematički; jedinica se prihvaća samo ako je navedena u pitanju |
+| Dvostruki klik šalje dvije provjere | Brava `provjeravam` u storeu i onemogućeni gumbi |
+| Razred se gubi u navigaciji | `grade` se nosi kroz teme → kviz → rezultate → početnu |
+
+### Kurikulum i metapodatci (P1)
+- `gikEngine` više ne tvrdi `curriculumAlignment: 'high'`: `topic-level` (poznata tema) ili `none`,
+  uz `reviewStatus: 'unreviewed'`, `needsReview`, `limitation`, `secondaryOutcomes`.
+  Nepoznata tema ne dobiva izmišljeni ishod „GIK" ni zadani predmet.
+- Ispravljeni ishodi: zbrajanje/oduzimanje do 100 → A.2.3; množenje/dijeljenje → A.2.4;
+  pisano zbr./oduz. → A.4.2; pisano množ./dijelj. → A.4.3; nepoznati-3/4 → B.3.1/B.4.1;
+  oduzimanje (1.) → A.1.4; citanje-2 → A.2.5 (uz ograničenje: rječnik, ne čitanje teksta);
+  recenice-2 → A.2.4; zavicaj-karta → B.3.4; biljke-zivotinje-3 → B.3.2.
+- FSRS ključ: `gik.skillId` (`R2:zbrajanje-100`) umjesto širokog ishoda; stara pitanja padaju na `gik.outcome`.
+- `questionFamily` normalizira i „…" / «…» navodnike — obitelji sada odgovaraju predlošcima.
+- 2. razred: novac do 100 € (bez 120 € / 102 €), bez pretvorbi km/kg/L; zavičaj = orijentiri, put, plan mjesta.
+
+### Provjera
+- `npm run test:sve` — sve prolazi; `provjeri-tijek.js` proširen s 31 novom provjerom
+  (duplikati, djelomična i istodobna predaja, prvi pokušaj, vlasnik sesije, ključevi,
+  upitna riječ ↔ oblik ključa, „jedna riječ" ↔ ključ, novac/pretvorbe 2. razreda, ishodi).
+- `audit.js` iz analize: 3 904 pitanja (seed 20261001), raspodjela točnog položaja 400/356/398/382.
+- Frontend: `vite build` prolazi. Integracijski test s pravim MongoDB-om nije pokrenut.
+
+### Uvođenje
+1. `npm run seed:all` — ponovno generira banku (ključevi, ishodi, `skillId`). Seed briše pitanja i teme
+   po razredu, pa stari zapisi u `progress` ostaju vezani uz stare `topic_id`.
+2. `skill_states` sa starim ključevima (npr. `MAT OŠ A.2.4` koji je značio zbrajanje) treba obrisati
+   ili zanemariti — novi ključevi su `R{razred}:{tema}`.
+
+### Nije obuhvaćeno (P1/P2 — traži stručni sadržaj ili pilot)
+Stvarni tekstovi za čitanje (2.–4.), `templateId`/mikrovještine po predlošku, oznaka „obrađeno gradivo"
+za miješano ponavljanje, ciljano pisano množenje s dvoznamenkastim množiteljem, kalibracija Elo težine
+i njezino uključivanje u izbor pitanja, objašnjenja za ~98 % pitanja, pregled učitelja i pilot s djecom.
+
+---
+
 ## 1. Hrvatska gramatika — glavni popravak
 
 **Bilo:** od 212 parova „broj + imenica" u generiranim pitanjima, **153 (72 %)

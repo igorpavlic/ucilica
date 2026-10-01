@@ -9,8 +9,13 @@ const { ObjectId } = require('mongodb');
 const { getDb } = require('../db/mongo');
 const EMOJI_ONLY = /^[\p{Emoji_Presentation}\p{Extended_Pictographic}\u{200D}\u{FE0F}\u{20E3}]+$/u;
 const vjestine = require('./vjestine');
-const { buildQuestionMetadata, decideDifficultyTarget, pickBalancedQuestions } = require('./gikEngine');
-const { questionFamilyKey } = require('./questionFamily');
+const { buildQuestionMetadata, decideDifficultyTarget, pickBalancedQuestions, skillKeyOf } = require('./gikEngine');
+const { questionFamilyKey, orderWithoutAdjacentFamilies } = require('./questionFamily');
+const tezina = require('./tezina');
+
+/** Koliko odgovora u predmetu treba prije izbora po izmjerenoj težini. */
+const MIN_ODGOVORA_ZA_ELO = Number(process.env.UCILICA_MIN_ODGOVORA_ZA_ELO || 15);
+const { storedExtras } = require('./pedagogyReview');
 
 // Generatori iz seeds/
 // Razred 1
@@ -20,9 +25,9 @@ const { genDoba, genZivotinje, genTijelo, genObitelj, genSigurnost, genEkologija
 // Razred 2
 const { genImeniceRod, genGlagoli2, genRecenice2, genCitanje2, genBrojevi100, genZbrajanje100, genOduzimanje100, genMnozenjeDijeljenje, genGeometrija2, genMjerenjeNovac, genZavicaj, genDobaVrijeme, genBiljkeZivotinje, genVodaTlo, genZdravljeSigurnost2 } = require('../seeds/seed-r2');
 // Razred 3
-const { genVrsteRijeci, genGramatikaPravopis, genKnjizevniTekst, genJezicnoIzrazavanje, genBrojevi1000, genZbrOduz1000, genMnozDijel3, genGeometrijaMjerenje3, genZavicajKarta, genTloVodaZrak, genBiljkeZivotinje3, genGospodarskeDjelatnosti, genKulturnaBastina } = require('../seeds/seed-r3');
+const { genVrsteRijeci, genGramatikaPravopis, genKnjizevniTekst, genJezicnoIzrazavanje, genBrojevi1000, genZbrOduz1000, genMnozDijel3, genGeometrijaMjerenje3, genZavicajKarta, genTloVodaZrak, genBiljkeZivotinje3, genGospodarskeDjelatnosti, genKulturnaBastina, genPodatci3, genNepoznati3, genCitanje3 } = require('../seeds/seed-r3');
 // Razred 4
-const { genVrsteRijeci4, genPravopis4, genKnjizevnost4, genMedijskaKultura, genBrojeviMilijun, genPisanoZbrOduz, genPisanoMnozDijel, genGeometrijaKutovi, genOpsegPovrsina, genKvaderKocka, genUvjetiZivota, genKrajeviHR, genLjudskoTijelo, genHrvatskaDomovina, genBiljkeZivotinje4 } = require('../seeds/seed-r4');
+const { genVrsteRijeci4, genPravopis4, genKnjizevnost4, genMedijskaKultura, genBrojeviMilijun, genPisanoZbrOduz, genPisanoMnozDijel, genGeometrijaKutovi, genOpsegPovrsina, genKvaderKocka, genUvjetiZivota, genKrajeviHR, genLjudskoTijelo, genHrvatskaDomovina, genBiljkeZivotinje4, genPodatci4, genNepoznati4, genCitanje4 } = require('../seeds/seed-r4');
 
 // topic slug → generator funkcija (svi razredi)
 const GENERATORS = {
@@ -59,6 +64,12 @@ const GENERATORS = {
   'biljke-zivotinje': genBiljkeZivotinje,
   'voda-tlo': genVodaTlo,
   'zdravlje-sigurnost-2': genZdravljeSigurnost2,
+  'citanje-3': genCitanje3,
+  'podatci-3': genPodatci3,
+  'nepoznati-3': genNepoznati3,
+  'citanje-4': genCitanje4,
+  'podatci-4': genPodatci4,
+  'nepoznati-4': genNepoznati4,
   // Razred 3
   'vrste-rijeci': genVrsteRijeci,
   'gramatika-pravopis': genGramatikaPravopis,
@@ -188,6 +199,9 @@ async function generateAndStore(topic, subjectId, grade, requestedCount = null) 
       question: q.question,
       visual: q.visual || '',
       hint: q.hint || '',
+      objasnjenje: q.objasnjenje || '',
+      passage: q.passage || '',
+      chart: q.chart || [],
       answers: q.answers || [],
       ...(q.type === 'choice' ? { correctIndex: ci } : {}),
       ...(q.type === 'input' ? { correctAnswer: q.correctAnswer, placeholder: q.placeholder || '' } : {}),
@@ -195,9 +209,12 @@ async function generateAndStore(topic, subjectId, grade, requestedCount = null) 
       ...(q.konstrukt ? { konstrukt: q.konstrukt } : {}),
       ...(q.prihvatljivi?.length ? { prihvatljivi: q.prihvatljivi } : {}),
       ...(q.type === 'match' ? { pairs: q.pairs } : {}),
+      ...(q.type === 'ordering' ? { items: q.items } : {}),
+      ...(q.type === 'true-false' ? { correct: q.correct } : {}),
+      ...storedExtras(q),
       grade,
       subject_id: subjectId,
-      gik: buildQuestionMetadata({ topic, subject: null, difficulty: q.difficulty || 1 }),
+      gik: buildQuestionMetadata({ topic, subject: null, difficulty: q.difficulty || 1, question: q }),
       topic_id: topic._id,
       isActive: true,
       createdAt: new Date()
@@ -211,12 +228,24 @@ async function generateAndStore(topic, subjectId, grade, requestedCount = null) 
     if (d.type === 'input' && !d.correctAnswer) return false;
     // Spajanje treba 3-5 parova; manje je trivijalno, više je previše za dijete
     if (d.type === 'match' && (!Array.isArray(d.pairs) || d.pairs.length < 3 || d.pairs.length > 5)) return false;
+    if (d.type === 'ordering' && (!Array.isArray(d.items) || d.items.length < 3 || d.items.length > 5 || new Set(d.items).size !== d.items.length)) return false;
+    if (d.type === 'true-false' && typeof d.correct !== 'boolean') return false;
     return true;
   });
 
   if (!docs.length) return 0;
 
-  const result = await db.collection('questions').insertMany(docs);
+  // Ne upisuj zadatak koji u temi već postoji (isti itemKey). Ranije se pri
+  // svakom „iscrpljivanju” upisivao cijeli izlaz generatora iznova, pa je isti
+  // zadatak dobivao novi _id i djetetu se vraćao kao „novo” pitanje
+  // (simulirani pilot: +27 % duplikata u banci).
+  const postojeci = new Set((await db.collection('questions')
+    .find({ topic_id: topic._id, itemKey: { $exists: true } }).project({ itemKey: 1 }).toArray())
+    .map((q) => q.itemKey));
+  const noviDocs = docs.filter((d) => !d.itemKey || !postojeci.has(d.itemKey));
+  if (!noviDocs.length) return 0;
+
+  const result = await db.collection('questions').insertMany(noviDocs);
   console.log(`  📝 Generirano ${result.insertedCount} pitanja za "${topic.name}"`);
   return result.insertedCount;
 }
@@ -274,15 +303,15 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
   if (pool.length === 0) return [];
 
   // 4. Prednost vještinama koje su dospjele za ponavljanje (FSRS).
-  //    Vještina je ishod iz kurikula koji pitanje nosi u gik.outcome.
+  //    Vještina je gik.skillId (tema kao mikrovještina); starija pitanja padaju na gik.outcome.
   //    Ako zapne, nastavi bez prioritizacije — kviz je važniji od rasporeda.
   try {
-    const sveVjestine = [...new Set(pool.map((q) => q.gik?.outcome).filter(Boolean))];
+    const sveVjestine = [...new Set(pool.map((q) => skillKeyOf(q)).filter(Boolean))];
     if (sveVjestine.length > 1 && userId) {
       const dospjele = await vjestine.dospjele(userId, sveVjestine);
       if (dospjele.size > 0 && dospjele.size < sveVjestine.length) {
-        const prioritet = pool.filter((q) => dospjele.has(q.gik?.outcome));
-        const ostatak = pool.filter((q) => !dospjele.has(q.gik?.outcome));
+        const prioritet = pool.filter((q) => dospjele.has(skillKeyOf(q)));
+        const ostatak = pool.filter((q) => !dospjele.has(skillKeyOf(q)));
         // Dospjelo ide naprijed, ostatak ostaje kao dopuna ako nema dovoljno
         if (prioritet.length >= count) pool = prioritet;
         else pool = [...prioritet, ...ostatak];
@@ -292,10 +321,33 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
     console.error('⚠️  Prioritizacija vještina preskočena:', err.message);
   }
 
-  // 5. Težina prema dosadašnjoj uspješnosti na ovoj temi
-  const stats = await getTopicStats(userId, topicId, 5);
-  const { quotas } = decideDifficultyTarget(stats);
-  const questions = pickBalancedQuestions(pool, count, quotas, { avoidFamilies: recentFamilies });
+  // 5. Težina. Kad dijete ima dovoljno odgovora u predmetu, bira se prema
+  //    izmjerenoj (Elo) težini zadatka i predloška, s ciljem ~75 % uspjeha.
+  //    Inače (hladni početak) kvote prema autorskoj oznaci težine.
+  let questions = null;
+  try {
+    if (userId) {
+      const dijete = await db.collection('user_ratings').findOne({ user_id: userId, subject_id: subjectId });
+      if (dijete && dijete.odgovora >= MIN_ODGOVORA_ZA_ELO) {
+        const { item, template } = await tezina.ocjeneZa(pool.map((q) => ({ questionId: q._id, itemKey: q.itemKey, templateId: q.templateId })));
+        const ocjena = (q) => tezina.efektivnaOcjena({
+          item: item.get(tezina.kljucZadatka({ questionId: q._id, itemKey: q.itemKey })),
+          template: q.templateId ? template.get(q.templateId) : null,
+          difficulty: q.difficulty
+        });
+        questions = orderWithoutAdjacentFamilies(tezina.odaberiPoTezini(pool, count, dijete.rating, ocjena,
+          { familyKey: questionFamilyKey, avoidFamilies: recentFamilies }));
+      }
+    }
+  } catch (err) {
+    console.error('⚠️  Izbor po izmjerenoj težini preskočen:', err.message);
+    questions = null;
+  }
+  if (!questions) {
+    const stats = await getTopicStats(userId, topicId, 5);
+    const { quotas } = decideDifficultyTarget(stats);
+    questions = pickBalancedQuestions(pool, count, quotas, { avoidFamilies: recentFamilies });
+  }
 
   // 4. Još uvijek nedovoljno? Sva pitanja su viđena u zadnjih 10 rundi.
   //    Ne vraćamo stara — korisnik mora odigrati druge teme pa se vratiti.

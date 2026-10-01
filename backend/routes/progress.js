@@ -3,6 +3,7 @@ const { ObjectId } = require('mongodb');
 const { getDb } = require('../db/mongo');
 const { auth } = require('../middleware/auth');
 const vjestine = require('../services/vjestine');
+const obradjeno = require('../services/obradjeno');
 
 const router = express.Router();
 
@@ -229,6 +230,33 @@ router.get('/vjestine', auth, async (req, res, next) => {
       vjestine: stanje
     });
   } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * GET /api/progress/obradjeno?grade=2 — teme razreda s oznakom obrađeno/vježbano
+ * PUT /api/progress/obradjeno { grade, topicIds } — označi obrađene teme
+ * Miješano ponavljanje uzima samo obrađene teme (vidi services/obradjeno.js).
+ */
+router.get('/obradjeno', auth, async (req, res, next) => {
+  try {
+    const grade = Number.parseInt(req.query.grade, 10) || req.user.grade || 1;
+    res.json({ grade, teme: await obradjeno.pregled(req.user._id, grade) });
+  } catch (error) { next(error); }
+});
+
+router.put('/obradjeno', auth, async (req, res, next) => {
+  try {
+    const grade = Number.parseInt(req.body.grade, 10);
+    if (!(grade >= 1 && grade <= 4)) return res.status(400).json({ error: 'Razred: 1-4' });
+    if (!Array.isArray(req.body.topicIds) || req.body.topicIds.some((id) => !ObjectId.isValid(id))) {
+      return res.status(400).json({ error: 'topicIds mora biti popis valjanih ID-ova tema.' });
+    }
+    const n = await obradjeno.postavi(req.user._id, grade, req.body.topicIds);
+    res.json({ grade, oznaceno: n });
+  } catch (error) {
+    if (error.statusCode) return res.status(error.statusCode).json({ error: error.message });
     next(error);
   }
 });

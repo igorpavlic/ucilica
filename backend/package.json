@@ -14,9 +14,13 @@
     "seed:4": "node seeds/seed-r4.js",
     "seed:all": "npm run test:sve && node seeds/seed.js && node seeds/seed-r2.js && node seeds/seed-r3.js && node seeds/seed-r4.js",
     "fix:emoji": "node seeds/fix-emoji-inputs.js",
+    "topics:add": "node tools/add-new-topics.js",
+    "analyze:distractors": "node tools/analyze-distractors.js",
     "test:tijek": "node test/provjeri-tijek.js",
     "test:sve": "npm test && npm run test:pedagogija && npm run test:tijek",
-    "test:pedagogija": "node test/provjeri-pedagogiju.js"
+    "test:pedagogija": "node test/provjeri-pedagogiju.js",
+    "sim:pilot": "node tools/simulacija/pokreni.js --krak elo --izlaz sim-elo.json && node tools/simulacija/pokreni.js --krak kvote --izlaz sim-kvote.json && node tools/simulacija/analiza.js sim-elo.json sim-kvote.json > sim-rezultati.json",
+    "objasnjenja:praznine": "node tools/objasnjenja-praznine.js > objasnjenja-radna-lista.csv"
   },
   "keywords": [],
   "author": "",

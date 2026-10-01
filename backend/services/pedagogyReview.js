@@ -1,4 +1,36 @@
+const crypto = require('crypto');
 const { questionFamilyKey } = require('./questionFamily');
+const { dodajObjasnjenje, dodajSkupinska } = require('./objasnjenja');
+const { pitanjaZaTemu } = require('../seeds/citanje-tekstovi');
+
+// Tekstovi za čitanje (seeds/citanje-tekstovi.js) po generatoru teme.
+const TEKSTOVI_ZA_GENERATOR = {
+  genCitanje2: 'citanje-2', genCitanje3: 'citanje-3', genCitanje4: 'citanje-4',
+  genKnjizevnost4: 'knjizevnost-4', genMedijskaKultura: 'medijska-kultura'
+};
+
+const kratkiHash = (s) => crypto.createHash('sha1').update(String(s)).digest('hex').slice(0, 10);
+
+/**
+ * Stabilna oznaka predloška: isti generator + isti oblik pitanja (bez brojeva i
+ * primjera u navodnicima) uvijek daju istu oznaku, bez obzira na nasumičnost.
+ * Ručno zadan templateId (tekstovi, novi predlošci) ima prednost.
+ */
+function templateIdZa(generatorName, q) {
+  return q.templateId || `${generatorName}:${kratkiHash(questionFamilyKey(q))}`;
+}
+
+/**
+ * Sadržajni ključ zadatka: isti zadatak generiran ponovno dobiva isti ključ,
+ * pa se njegova izmjerena težina ne gubi pri novom generiranju banke.
+ * Redoslijed ponuđenih odgovora ne ulazi u ključ.
+ */
+function itemKeyZa(q) {
+  const kljuc = q.type === 'choice' ? (q._c ?? q.answers?.[q.correctIndex])
+    : q.type === 'true-false' ? q.correct : q.type === 'match' ? q.pairs : q.type === 'ordering' ? q.items : q.correctAnswer;
+  return kratkiHash(JSON.stringify([q.type, q.question, q.visual || '', q.passage || '',
+    [...(q.answers || [])].map(String).sort(), kljuc]));
+}
 const HR = require('../seeds/hr-gramatika');
 const { oznake } = require('../seeds/jasnoca');
 
@@ -40,8 +72,10 @@ function transformVisualCount(q,i){
 }
 
 function transformMoney(i){
-  const den=[1,2,5,10,20,50,100];
-  const d1=den[i%den.length], d2=den[(i+2)%den.length];
+  // Parovi apoena kojima zbroj ostaje u rasponu do 100 (2. razred).
+  // Ranije je (20, 100) i (100, 2) davalo 120 € i 102 €.
+  const parovi=[[1,5],[2,10],[5,20],[10,50],[20,50],[50,2],[20,10]];
+  const [d1,d2]=parovi[i%parovi.length];
   const mode=i%8;
   if(mode===0)return input(`Koliko eura vrijede zajedno ${d1} € i ${d2} €?`,d1+d2,2);
   if(mode===1)return choice(`Koja dva apoena mogu zajedno dati ${d1+d2} €?`,`${d1} € i ${d2} €`,[`${d1} € i ${d1} €`,`${d2} € i ${d2} €`,`1 € i 2 €`],2);
@@ -132,16 +166,16 @@ function transformComparison(q,i){
 function transformLetter(q,i){
   let m=q.question.match(/^Koje je malo slovo od "([A-ZČĆĐŠŽ])"/u); if(m){const U=m[1],l=U.toLowerCase(),mode=i%5;
     if(mode===0)return choice(`Koje malo slovo odgovara velikom slovu ${U}?`,l,['a','e','m'].filter(x=>x!==l),1);
-    if(mode===1)return input(`Koje malo tiskano slovo odgovara velikom slovu ${U}? Napiši samo jedno slovo.`,l,1,{konstrukt:'slovo'});
+    if(mode===1)return input(`Koje malo tiskano slovo odgovara velikom slovu ${U}? Napiši samo jedno slovo.`,l,1,{konstrukt:'velikoSlovo'});
     if(mode===2)return choice(`U paru ${U} – ___ nedostaje koje malo slovo?`,l,[U,'a','e'].filter(x=>x!==l),1);
     if(mode===3)return choice(`Koje je od ovih slova malo slovo?`,l,[U,'B','D'],1);
-    return input(`Koje malo slovo odgovara velikom slovu ${U}? Napiši samo jedno slovo.`,l,1,{konstrukt:'slovo'});
+    return input(`Koje malo slovo odgovara velikom slovu ${U}? Napiši samo jedno slovo.`,l,1,{konstrukt:'velikoSlovo'});
   }
   m=q.question.match(/^Koje je veliko slovo od "([a-zčćđšž])"/u); if(m){const l=m[1],U=l.toUpperCase(),mode=i%4;
-    if(mode===0)return input(`Koje veliko tiskano slovo odgovara malom slovu ${l}? Napiši samo jedno slovo.`,U,1,{konstrukt:'slovo'});
+    if(mode===0)return input(`Koje veliko tiskano slovo odgovara malom slovu ${l}? Napiši samo jedno slovo.`,U,1,{konstrukt:'velikoSlovo'});
     if(mode===1)return choice(`U paru ${l} – ___ nedostaje koje veliko slovo?`,U,[l,'A','E'].filter(x=>x!==U),1);
     if(mode===2)return choice(`Koje veliko slovo odgovara malom slovu ${l}?`,U,['A','E','M'].filter(x=>x!==U),1);
-    return input(`Koje veliko slovo odgovara malom slovu ${l}? Napiši samo jedno slovo.`,U,1,{konstrukt:'slovo'});
+    return input(`Koje veliko slovo odgovara malom slovu ${l}? Napiši samo jedno slovo.`,U,1,{konstrukt:'velikoSlovo'});
   }
   return null;
 }
@@ -199,6 +233,8 @@ function rewriteKnown(generatorName,q){
 function shouldRemove(generatorName,q){
   const t=(q.question||'').toLowerCase();
   if(generatorName==='genBrojevi' && t.includes('paran ili neparan')) return true;
+  // Binarne oznake hrane ("zdravo/nije zdravo") uklonjene su i u drugim temama.
+  if(generatorName==='genTijelo' && t.startsWith('je li ova hrana zdrava')) return true;
   if(generatorName==='genRecenice' && t.startsWith('kako se pravilno piše ime koje označava')) return true;
   if(generatorName==='genGlasovi' && t.startsWith('svaka riječ ima barem jedan samoglasnik')) return true;
   if(generatorName==='genDoba' && ['kada idemo na more','kada nosimo jaknu','kada pada kiša','kada jedemo sladoled','kada idemo u školu','kada imamo odmor za ručak','kada igramo se vani','kada se igramo vani','kada gledamo tv'].some(x=>t.startsWith(x))) return true;
@@ -322,7 +358,11 @@ function curateKnownBank(generatorName, qs){
       let t=q.question||'';
       t=t.replace('oblik valjaka','oblik valjka').replace('oblik stožaca','oblik stošca')
            .replace('Koji geometrijski lik ima nema stranica ni kutova?','Koji geometrijski lik nema ravne stranice ni vrhove?');
-      if(/^Koji predmet ima oblik /.test(t)) t=t.replace(/^Koji predmet ima oblik /,'Koji predmet oblikom najviše podsjeća na ');
+      if(/^Koji predmet ima oblik /.test(t)){
+        // "ima oblik kugle" (genitiv) → "podsjeća na kuglu" (akuzativ)
+        const AK={kugle:'kuglu',valjka:'valjak',kocke:'kocku',kvadra:'kvadar',kvadara:'kvadar',stošca:'stožac',piramide:'piramidu'};
+        t=t.replace(/^Koji predmet ima oblik (\p{L}+)\?$/u,(m,w)=>`Koji predmet oblikom najviše podsjeća na ${AK[w]||w}?`);
+      }
       if(/^Koji oblik ima (novčić|sat|prozor|krov kuće|pizza|bilježnica)\?$/.test(t)) t=t.replace(/^Koji oblik ima /,'Na koji geometrijski lik najviše podsjeća obris predmeta: ').replace(/\?$/, '?');
       if(t==='Koliko stranica ima krug?') return choice('Odaberi točan opis kruga.','nema ravnih stranica',['ima tri ravne stranice','ima četiri ravne stranice'],2);
       t=t.replace(/^Koji geometrijski lik ima /,'Prepoznaj geometrijski lik prema opisu: ');
@@ -373,7 +413,7 @@ function curateKnownBank(generatorName, qs){
     qs=qs.filter(q=>!/^Gdje živi /.test(q.question||''));
     qs=qs.map(q=>{
       const m=(q.question||'').match(/^Čime se hrani "([^"]+)"\?$/u);
-      return m?{...q,question:`Prema načinu prehrane, je li ${m[1]} biljojed, mesojed ili svejed?`}:q;
+      return m?{...q,question:`Prema načinu prehrane, je li ${m[1]} biljožder, mesožder ili svežder?`}:q;
     });
   }
 
@@ -490,6 +530,9 @@ function reviewQuestions(generatorName, questions){
   }
 
 
+  // Izvorni tekstovi za čitanje s pitanjima po procesima razumijevanja.
+  if (TEKSTOVI_ZA_GENERATOR[generatorName]) qs.push(...pitanjaZaTemu(TEKSTOVI_ZA_GENERATOR[generatorName]));
+
   // Family diversification. Keep a useful drill core; transform surplus instances into other representations.
   const groups=new Map();
   qs.forEach((q,idx)=>{const k=questionFamilyKey(q);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(idx);});
@@ -507,7 +550,22 @@ function reviewQuestions(generatorName, questions){
     const cap=mathFluency?24:10;
     return n<=cap;
   });
-  return qs;
+  // Objašnjenja (postupak ili pravilo, nikad samo „točan odgovor je…”),
+  // stabilna oznaka predloška i sadržajni ključ zadatka.
+  const oznaceno = qs.map((q) => {
+    const x = dodajObjasnjenje(q);
+    return { ...x, templateId: templateIdZa(generatorName, x), itemKey: itemKeyZa(x) };
+  });
+  return dodajSkupinska(oznaceno);
+}
+
+/** Polja koja seed i generiranje upisuju uz pitanje (osim osnovnih). */
+function storedExtras(q) {
+  const out = {};
+  for (const k of ['templateId', 'itemKey', 'objasnjenjeIzvor', 'objasnjenjeVrsta', 'proces', 'tekstId', 'ishod']) {
+    if (q[k] !== undefined && q[k] !== null && q[k] !== '') out[k] = q[k];
+  }
+  return out;
 }
 
 function wrapGenerator(fn){
@@ -516,4 +574,4 @@ function wrapGenerator(fn){
   return wrapped;
 }
 
-module.exports={reviewQuestions,wrapGenerator};
+module.exports={reviewQuestions,wrapGenerator,storedExtras,templateIdZa,itemKeyZa};

@@ -284,3 +284,15 @@ kvotama. Svako spremljeno pitanje nosi `gik` metapodatke s ishodom iz kurikula
 | 2. | imenice i rod, glagoli, rečenice, čitanje | brojevi do 100, +/−, ×/÷, geometrija, mjerenje | zavičaj, godišnja doba, biljke i životinje, voda i tlo, zdravlje |
 | 3. | vrste riječi, pravopis, književnost, izražavanje | brojevi do 1000, ×/÷, geometrija i mjerenje | zavičaj i karta, tlo/voda/zrak, biljke i životinje, gospodarstvo, baština |
 | 4. | vrste riječi, pravopis, književnost, mediji | brojevi do milijun, pisano ×/÷, kutovi, opseg i površina, kvadar i kocka | uvjeti života, krajevi RH, ljudsko tijelo, domovina, biljke i životinje |
+# Dopuna sadržaja 3. i 4. razreda
+
+Nove teme (čitanje s razumijevanjem, podatci i grafovi, nepoznati broj) mogu se
+dodati u postojeću bazu naredbom `cd backend && npm run topics:add`. Skripta
+ne briše postojeća pitanja ni napredak te preskače teme koje već imaju pitanja.
+Na praznoj bazi koristi se uobičajeni `npm run seed:all`. Taj postupak briše i
+ponovno stvara pitanja za sve razrede; nemojte ga koristiti za nadogradnju baze
+s postojećim rezultatima.
+
+Za uredničku analizu distraktora nakon prikupljanja odgovora pokrenite
+`cd backend && npm run analyze:distractors`. Izvještaj daje podatke tek za
+pitanja s najmanje 20 odabira; slabiji distraktor samo označi za ručni pregled.
