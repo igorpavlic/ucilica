@@ -12,8 +12,8 @@ Pregled svega što je popravljeno, s načinom provjere.
   C.4.1–C.4.3, činjenica/mišljenje, sigurnost na internetu. Ishod teme → C.4.2.
 - **`tools/recenzija-ucitelj.js`** (`npm run recenzija`): kontrolni popis K1–K9
   prema Haladyna i sur. (2002), NCVVO i PIRLS. Izvještaj: `RECENZIJA-UCITELJ.md`.
-- Recenzija je pronašla: točan odgovor osjetno najdulji u 57–73 % pitanja
-  čitanja i književnosti → ometači prepisani u 46 pitanja (< 20 %); **zaplet definiran
+- Recenzija je pronašla: točan odgovor osjetno najdulji u 36–64 % pitanja
+  čitanja, književnosti i medija → ometači prepisani u 46 pitanja (0–19 %); **zaplet definiran
   kao najnapetiji dio** (to je vrhunac) → ispravljeno, dodan vrhunac;
   pitanje koje u odgovoru ponavlja vlastitu osnovu.
 - Simulacija: sesije bez novih pitanja 7 → 2 (elo), 4 → 1 (kvote).

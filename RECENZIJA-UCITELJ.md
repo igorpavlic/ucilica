@@ -37,18 +37,22 @@ razlikuju samo po tome. Prvi prolaz bez te iznimke dao je 30 lažnih
 
 ### 2.1. Duljina točnog odgovora odavala je odgovor u čitanju
 
-| Tema | Prije | Poslije |
-|---|---:|---:|
-| R3 Čitanje s razumijevanjem | 73 % (točan jedini najdulji) | < 20 % (osjetno najdulji) |
-| R4 Čitanje s razumijevanjem | 65 % | < 20 % |
-| R3 Književni tekstovi | 57 % | < 20 % |
-| R4 Književnost | 58 % | 21 % |
-| R3 Kulturna baština | 53 % | < 20 % |
-| R4 Medijska kultura | — (stari fond) | 5 % |
+Mjereno na 30 generiranja svake teme, isto mjerilo prije i poslije
+(„osjetno najdulji” = točan odgovor ≥ 1,25 × i ≥ 4 znaka dulji od svakog ometača):
 
-S tri ponude slučajno je ~33 %. Dijete koje bira najdulji odgovor ne čitajući
-tekst dobilo bi u čitanju 3. razreda gotovo tri četvrtine točno — zadatak je
-mjerio lukavost, ne razumijevanje.
+| Tema | Jedini najdulji — prije | poslije | Osjetno najdulji — prije | poslije |
+|---|---:|---:|---:|---:|
+| R3 Čitanje s razumijevanjem | 70 % | 42 % | 55 % | **0 %** |
+| R4 Čitanje s razumijevanjem | 64 % | 42 % | 50 % | **8 %** |
+| R3 Književni tekstovi | 53 % | 22 % | 36 % | **0 %** |
+| R4 Književnost | 60 % | 40 % | 43 % | **19 %** |
+| R3 Kulturna baština | 42 % | 33 % | 39 % | **19 %** |
+| R4 Medijska kultura | 71 % | 30 % | 64 % | **10 %** |
+
+S tri ponude slučajno je ~33 % „jedini najdulji”. Dijete koje bira najdulji
+odgovor ne čitajući tekst dobilo bi prije u čitanju 3. razreda 70 % točno —
+zadatak je mjerio lukavost, ne razumijevanje. Sada je to na razini slučaja,
+a razlika koju dijete može primijetiti („osjetno”) gotovo je nestala.
 
 **Kako je ispravljeno:** točni odgovori nisu dirani (osim jednoga koji je skraćen). U 46 pitanja ometači su prepisani
 tako da budu jednako dugi, jednako uvjerljivi i i dalje jasno netočni prema

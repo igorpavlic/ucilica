@@ -154,7 +154,8 @@ function ocistiZavicajKarta(qs) {
 
 const PRIRODNA = ['Plitvička jezera', 'slapovi rijeke Krke', 'Velebit', 'otočje Kornati', 'stara hrastova šuma'];
 const KULTURNA = ['zidine Dubrovnika', 'Dioklecijanova palača u Splitu', 'Eufrazijeva bazilika u Poreču', 'dvorac Trakošćan', 'stari mlin na potoku'];
-const MATERIJALNA = ['stara crkva', 'tradicijska nošnja', 'stari mlin', 'dvorac', 'stara kamena kuća'];
+// Nazivi su slične duljine kao u nematerijalnoj baštini, da duljina ne odaje odgovor.
+const MATERIJALNA = ['stara crkva u središtu sela', 'tradicijska nošnja iz zavičaja', 'stari mlin na potoku', 'dvorac na brežuljku', 'stara kamena kuća s konobom'];
 const NEMATERIJALNA = ['narodni ples kolo', 'klapsko pjevanje', 'bećarac', 'običaj ophoda zvončara', 'priča koju pričaju bake', 'izrada licitarskih srca'];
 const IZVORI = [
   ['staro pismo', 'pisani'], ['stara knjiga', 'pisani'], ['rodni list', 'pisani'],
