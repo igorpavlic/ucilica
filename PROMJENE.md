@@ -4,6 +4,51 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −2. Podatci i nepoznati broj — parametrizirani generatori (iscrpljivanje tema)
+
+**Bilo:** `podatci-3` (6 zadataka), `podatci-4` (8) i `nepoznati-3` (12) bili su
+statični popisi. Simulirani pilot: 133 od 4 320 sesija (elo) i 164 (kvote) bez
+novih pitanja; 77–102 od toga otpada na ove četiri teme. `nepoznati-3/4` padali su
+i na `provjeri-raznolikost` (2 i 4 obitelji pitanja).
+
+**Sada:** `seeds/gen-podatci.js` i `seeds/gen-nepoznati.js`. Konteksti su pisani
+ručno, brojevi se biraju pri svakom pozivu — kad se tema iscrpi,
+`generateAndStore` dobiva nove zadatke s novim `itemKey`, umjesto istih 6.
+
+| Tema | Ishod | Po pozivu | Obitelji | Što dijete radi |
+|---|---|---:|---:|---|
+| `podatci-3` | E.3.1 | 42 | ~27 | grafikon **i** tablica: najveći/najmanji, očitaj, razlika, zbroj, dopuna, prag, poredaj, točna tvrdnja, par sa zadanim zbrojem |
+| `podatci-4` | E.4.1, E.4.2 | 56 | ~37 | isto s većim brojevima + prebrojavanje s popisa odgovora, crtice, vjerojatnost (siguran/moguć/nemoguć, vjerojatnije, jednako vjerojatno) |
+| `nepoznati-3` | B.3.1 | 52 | ~20 | □ i **slovo** kao oznaka broja, sve četiri operacije, zamjena slova brojem, provjera rješenja, priča → jednakost |
+| `nepoznati-4` | B.4.1 | 49 | ~23 | isto do 10 000 + **nejednakosti** (najveći/najmanji broj, koji broj zadovoljava), razlikovanje jednakosti i nejednakosti |
+
+- Ometači su tipične pogreške (zbroj umjesto razlike, ±1, ±10), ne slučajni brojevi.
+- Svaki zadatak ima `objasnjenje` i `ishod`.
+- Slova `b, c, x, y` — ne „a”, „i”, „u”, „s”, „k” koja su i riječi.
+- Imenice u pričama idu kroz `hr-gramatika` (1 naljepnicu / 3 naljepnice / 5 naljepnica).
+- `itemKeyZa` sada uključuje grafikon kad postoji: isti tekst uz druge podatke
+  drugi je zadatak. Ključevi pitanja bez grafikona nisu promijenjeni.
+- `test:raznolikost` dodan u `test:sve` — prije nije bio pokretan, pa pad nije bio vidljiv.
+
+**Provjera:**
+- `npm run test:sve` prolazi (3 uzastopna pokretanja s različitim slučajnim brojevima).
+- 2 000 poziva svakog generatora (398 000 zadataka): 0 nevaljanih (NaN, negativan
+  ili prazan ključ, dupli ponuđeni odgovori, ključ izvan ponude, > 200 znakova).
+- Simulirani pilot, isti seed:
+
+| Krak | Prije | Poslije | Ove 4 teme |
+|---|---:|---:|---:|
+| elo | 133 / 4 320 (3,1 %) | **33 (0,8 %)** | 77 → **0** |
+| kvote | 164 / 4 320 (3,8 %) | **55 (1,3 %)** | 119 → **0** |
+
+Preostalo iscrpljivanje: `uvjeti-zivota`, `tlo-voda-zrak`, `citanje-3/4` —
+činjenični i tekstovni sadržaj koji se ne može parametrizirati brojevima;
+vidi `ISTRAZIVANJE-KVIZ.md`, odjeljak 8.
+
+**Uvođenje:** `npm run seed:3 && npm run seed:4` (ili `seed:all`).
+
+---
+
 ## −1. Tekstovi, objašnjenja, predlošci, obrađeno gradivo, dvoznamenkasto, kalibracija + simulirani pilot
 
 - **Tekstovi za čitanje** — `seeds/citanje-tekstovi.js`: 11 izvornih tekstova (2.–4.), 66 pitanja s `proces`

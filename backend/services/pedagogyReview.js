@@ -28,8 +28,12 @@ function templateIdZa(generatorName, q) {
 function itemKeyZa(q) {
   const kljuc = q.type === 'choice' ? (q._c ?? q.answers?.[q.correctIndex])
     : q.type === 'true-false' ? q.correct : q.type === 'match' ? q.pairs : q.type === 'ordering' ? q.items : q.correctAnswer;
-  return kratkiHash(JSON.stringify([q.type, q.question, q.visual || '', q.passage || '',
-    [...(q.answers || [])].map(String).sort(), kljuc]));
+  const dijelovi = [q.type, q.question, q.visual || '', q.passage || '',
+    [...(q.answers || [])].map(String).sort(), kljuc];
+  // Isti tekst uz drugi grafikon je drugi zadatak. Grafikon se dodaje samo
+  // kad postoji, pa ključevi pitanja bez grafikona ostaju nepromijenjeni.
+  if (q.chart?.length) dijelovi.push(q.chart);
+  return kratkiHash(JSON.stringify(dijelovi));
 }
 const HR = require('../seeds/hr-gramatika');
 const { oznake } = require('../seeds/jasnoca');

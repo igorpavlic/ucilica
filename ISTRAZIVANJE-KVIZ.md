@@ -271,3 +271,120 @@ naziva analizom kvalitete zadatka nakon provedbe.
 - Klinkenberg i sur. (2011), Math Garden: https://www.sciencedirect.com/science/article/abs/pii/S0360131511000418
 - Rodriguez (2005), tri ponude su optimalne: https://onlinelibrary.wiley.com/doi/10.1111/j.1745-3992.2005.00006.x
 - Sailer i Homner (2020) i kasnija meta-analiza igrifikacije: https://link.springer.com/article/10.1007/s11423-023-10337-7
+
+---
+
+## 8. Kako povećati bazu kvalitetnim pitanjima (1. 10. 2026.)
+
+Problem nije broj pitanja nego **broj različitih zadataka koje dijete još nije
+vidjelo**. Tema s 12 zadataka iscrpi se nakon dva kviza, a 100 parafraza istog
+zadatka ne pomaže jer ih `questionFamily` s pravom tretira kao isti zadatak.
+
+### 8.1. Četiri izvora i za što je koji dobar
+
+| Izvor | Prikladno za | Kvaliteta | Trošak | Stanje u Učilici |
+|---|---|---|---|---|
+| **Model zadatka + parametri** (automatsko generiranje zadataka, AIG) | matematika, podatci, mjerenje, pravopisna pravila | jednaka ručnoj ako je model dobar | nizak; beskonačno varijanti | `gen-podatci.js`, `gen-nepoznati.js`, većina matematike |
+| **Ručno pisani zadatci učitelja** | PID, književnost, čitanje, medijska kultura | najviša | visok | `citanje-tekstovi.js`, dio PID-a |
+| **LLM nacrt + ljudska recenzija** | proširenje činjeničnih tema PID-a i HJ-a | nacrt nepouzdan, nakon recenzije dobar | srednji | nije uvedeno |
+| **Otvorene zbirke** (Dabar, CC BY-SA) | logika, računalno razmišljanje | visoka, već kalibrirana | nizak | nije uvedeno |
+
+### 8.2. Model zadatka (AIG) — što je napravljeno i zašto radi
+
+Gierl i Lai opisuju AIG u tri dijela: **kognitivni model** (što učenik mora
+znati i koje pogreške radi), **model zadatka** (predložak s varijablama) i
+**provjera**. U studijama iz medicinske edukacije tako nastali zadatci imali
+su psihometrijska svojstva usporediva s ručno pisanima, a sudionici su nakon
+obuke izradili gotovo 9 500 zadataka.
+
+Kako to izgleda u `gen-nepoznati.js`:
+
+| Dio AIG-a | U kodu |
+|---|---|
+| Kognitivni model | B.3.1: nepoznati član se računa iz veze među operacijama; tipična pogreška je kriva operacija (zbroji umjesto oduzme) |
+| Model zadatka | 11 obitelji (`drugiPribrojnik`, `umanjitelj`, `djelitelj`, `zamjena`, `provjera`…) + priče |
+| Varijable | brojevi u rasponu razreda; slovo (`b, c, x, y`); imenica iz `hr-gramatika` |
+| Ometači | iz kognitivnog modela: `zb + p` (kriva operacija), `±1`, `±10` |
+| Provjera | `provjeri-pitanja`, `provjeri-raznolikost`, 2 000 poziva bez greške, simulacija |
+
+Za podatke (E.3.1, E.4.1) dodatna je dimenzija **prikaz**: isti skup podataka
+kao grafikon, tablica, crtice ili popis odgovora. To nisu parafraze nego
+različite vještine čitanja podataka, što kurikul i traži.
+
+**Rezultat:** iscrpljivanje u simulaciji palo je s 3,1 % na 0,8 % (elo), a na
+četiri ciljane teme na nulu.
+
+### 8.3. Gdje model zadatka ne pomaže
+
+PID i književnost nose **činjenice i tekstove**. „Koja je rijeka u Panonskoj
+Hrvatskoj?" nema brojeva koje se može mijenjati. Preostalo iscrpljivanje u
+simulaciji upravo je tamo: `uvjeti-zivota`, `tlo-voda-zrak`, `citanje-3/4`.
+
+Za te teme postoje dvije poluge:
+
+1. **Više obitelji nad istim činjenicama.** Jedna činjenica („biljke trebaju
+   svjetlost") daje prepoznavanje, točno/netočno, uzrok → posljedica, pokus
+   (kao tekst o grahu u `genCitanje4`), razvrstavanje i poredak. Šest zadataka
+   različitih obitelji umjesto jednog.
+2. **Ručno pisanje uz LLM kao pomoćnika** — vidi 8.4.
+
+### 8.4. LLM nacrt — samo uz recenziju
+
+Što kažu istraživanja (2024.–2025.):
+
+- Sustavni pregled za medicinsku edukaciju: GPT-4 je bio usporediv s ljudima u
+  jasnoći i ometačima, slabiji modeli lošiji.
+- Ljudski recenzenti ocijenili su **51–65 % LLM zadataka dobrima**, dakle
+  trećina do polovica treba ispravak ili odbacivanje.
+- Najčešća mana (57 %): bar jedan **neuvjerljiv ometač**; zatim nedostatak
+  konteksta (17 %).
+- Opći modeli ne proizvode pouzdano ometače koji zadovoljavaju stručnjake.
+
+Za hrvatski jezik i djecu od 7 do 10 godina rizik je veći: gramatika slaganja,
+regionalne činjenice, primjerenost dobi.
+
+**Predloženi tijek** (ništa ne ide djetetu bez recenzije):
+
+```
+LLM nacrt (ishod, razred, 3 razine: prepoznavanje / primjena / zaključivanje)
+  → automatske provjere: npm test (gramatika, jasnoća, duplikati, ključ)
+  → recenzija učitelja razredne nastave (reviewStatus: 'reviewed')
+  → objava s needsReview: false
+  → pilot: Elo težina + analiza ometača (tools/analyze-distractors.js)
+  → ometač koji bira < 5 % djece zamijeniti; zadatak s obrnutom
+    diskriminacijom (bolja djeca griješe) povući
+```
+
+Infrastruktura za zadnja dva koraka već postoji (`tezina.js`,
+`analyze-distractors.js`, `reviewStatus` u `gikEngine`).
+
+### 8.5. Ciljevi po temi
+
+| Mjera | Cilj | Kako se mjeri |
+|---|---|---|
+| Zadataka po temi | ≥ 30 (statična), neograničeno (parametrizirana) | `export-all-questions.js` |
+| Obitelji po temi | ≥ 10 | `provjeri-raznolikost.js` (sada u `test:sve`) |
+| Sesije bez novih pitanja | < 1 % | `npm run sim:pilot` |
+| Pokrivenost objašnjenjem | 100 % novih zadataka | `objasnjenja:praznine` |
+| Ishod po zadatku | 100 % | `gik.outcome` / `ishod` |
+
+### 8.6. Sljedeće teme za proširenje (prema simulaciji)
+
+| Tema | Iscrpljenih sesija (elo / kvote) | Pristup |
+|---|---:|---|
+| R3 PID — Tlo, voda, zrak | 14 / 15 | više obitelji nad istim činjenicama + kratki pokusi |
+| R4 PID — Uvjeti života | 11 / 18 | isto; pokus s grahom kao uzor |
+| R3/R4 — Čitanje s razumijevanjem | 4 / 9 | novi tekstovi (ručno ili LLM + recenzija) |
+| R4 Mat — Kutovi, Kvadar i kocka | 1 / 7 | model zadatka moguć (broj vrhova, bridova, vrsta kuta po slici) |
+
+### Izvori (odjeljak 8)
+- Automatic item generation — pregled: https://en.wikipedia.org/wiki/Automatic_item_generation
+- Gierl i Lai, *The Role of Item Models in Automatic Item Generation*: https://www.researchgate.net/publication/239794821_The_Role_of_Item_Models_in_Automatic_Item_Generation
+- Kvaliteta i valjanost AIG zadataka: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10700404/
+- AIG u testovima napretka: https://link.springer.com/article/10.1007/s10639-023-12014-x
+- LLM i MCQ, sustavni pregled: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12758716/
+- AI naspram ljudskih MCQ-ova: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11806894/
+- Mane LLM pitanja (IWF): https://public.websites.umich.edu/~kevynct/pubs/L_S_2024_WorkInProgress_Question_Generation_CRFinal2.pdf
+- Kurikul Matematike, NN 7/2019 (B.3.1, B.4.1, E.3.1, E.4.1, E.4.2): https://narodne-novine.nn.hr/clanci/sluzbeni/2019_01_7_146.html
+- GIK razredna nastava, 4. razred: https://i-nastava.gov.hr/UserDocsImages//dokumenti/2021-2022/GIK-RazrednaNastava//GIK%20-%20Razredna%20nastava%20-%204.%20razred.pdf
+- Statistika i vjerojatnost u razrednoj nastavi (UFZG): https://repozitorij.unizg.hr/object/ufzg:3919/FILE0/download
