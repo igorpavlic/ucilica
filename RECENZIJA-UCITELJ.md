@@ -50,7 +50,7 @@ S tri ponude slučajno je ~33 %. Dijete koje bira najdulji odgovor ne čitajući
 tekst dobilo bi u čitanju 3. razreda gotovo tri četvrtine točno — zadatak je
 mjerio lukavost, ne razumijevanje.
 
-**Kako je ispravljeno:** točni odgovori nisu dirani. 48 ometača prepisano je
+**Kako je ispravljeno:** točni odgovori nisu dirani (osim jednoga koji je skraćen). U 46 pitanja ometači su prepisani
 tako da budu jednako dugi, jednako uvjerljivi i i dalje jasno netočni prema
 tekstu, npr.:
 
@@ -114,8 +114,8 @@ nauči da „samo” znači „netočno”. Popis: `npm run recenzija:detalji`.
 | Utrka | 4. | pripovjedni | B.4.1 | osobine lika izvode se iz postupaka, ne iz pridjeva u tekstu |
 
 Svako pitanje nosi proces (podatak / zaključak / tumačenje / vrednovanje) i
-objašnjenje koje upućuje na dokaz u tekstu. Najdulji tekst ima 117 riječi
-(granica za 4. r. je 200), najdulja prosječna rečenica 13 riječi.
+objašnjenje koje upućuje na dokaz u tekstu. Najdulji tekst ima 83 riječi
+(granica za 4. r. je 200), a najdulja prosječna rečenica 10,9 riječi (izmjereno).
 
 ### 3.2. Medijska kultura (8 → do 625 različitih zadataka)
 
