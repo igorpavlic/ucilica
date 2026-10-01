@@ -4,6 +4,44 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −4. Kutovi (4. r.), Zavičaj i karta, Kulturna baština (3. r.)
+
+**Bilo:** 12, 29 i 10 zadataka. Uz to: „S,J,I,Z”, „gore,dolje,L,D” i
+„omjer karta/stvarnost” kao ponude; „jednakokračan” uz „jednakostranični”
+(različit oblik odaje odgovor); „Čemu služi muzej?” s ponudama „škola”,
+„tvornica” uz „čuvanje i izlaganje predmeta”; „U koje godišnje doba radimo
+ovo: Božić?” s objašnjenjem o godišnjem dobu umjesto o blagdanu.
+
+**Sada:**
+
+| Tema | Modul | Što je novo | Različitih zadataka u 2 000 poziva |
+|---|---|---|---:|
+| Kutovi | `gen-kutovi.js` | vrsta kuta prema satu i predmetima iz okoline, trokut prema zadanim duljinama stranica (uvijek postoji), krakovi, zablude (dulji krakovi ≠ veći kut, dva prava kuta) | 1 783 |
+| Zavičaj i karta | `gen-zavicaj-bastina.js` | nasumični **plan mjesta 3 × 3**: što je S/I/JZ… od škole, u kojem je smjeru zgrada, kojim smjerom ideš; okretanje (desno/lijevo/iza); sporedne strane i kratice; kompas, Sunce u podne, tumač znakova, boje zemljovida | 24 056 |
+| Kulturna baština | `gen-zavicaj-bastina.js` | prirodna / kulturna, materijalna / nematerijalna, vrste izvora o prošlosti, gdje se što čuva (spajanje), **vremenska crta** s vjerodostojnim godinama, desetljeće i stoljeće | 6 206 |
+
+- Bez mjerenja kuta u stupnjevima (nije gradivo 4. r.) i bez oduzimanja
+  četveroznamenkastih godina (3. r. oduzima do 1000) — pita se poredak.
+- Godine događaja imaju vjerodostojan raspon (željeznica od 1862., dom
+  zdravlja nakon 1950.), da „knjižnica 1677.” ne bude starija od crkve.
+- Kurikul: sporedne strane svijeta i vremenska crta su 3. r. PID;
+  C.4.2 — trokuti prema duljinama stranica i pravokutni trokut.
+
+**Provjera:** `npm run test:sve` prolazi; 2 000 poziva bez nevaljanih zadataka.
+Simulirani pilot:
+
+| Krak | Početak (prije −2) | Prije (−3) | Sada |
+|---|---:|---:|---:|
+| elo | 133 (3,1 %) | 11 | **7 (0,16 %)** |
+| kvote | 164 (3,8 %) | 14 | **4 (0,09 %)** |
+
+Preostalo (1–3 sesije po temi): `citanje-3/4`, `medijska-kultura`,
+`biljke-zivotinje-3`, `hrvatska-domovina`.
+
+**Uvođenje:** `npm run seed:3 && npm run seed:4`.
+
+---
+
 ## −3. PID 3.–4.: Tlo, voda, zrak i Uvjeti života — više obitelji nad istim činjenicama
 
 **Bilo:** 11 i 13 zadataka; u simulaciji najčešće iscrpljene teme nakon

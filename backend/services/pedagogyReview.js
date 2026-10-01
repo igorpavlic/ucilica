@@ -37,6 +37,8 @@ function itemKeyZa(q) {
 }
 const HR = require('../seeds/hr-gramatika');
 const PID_UVJETI = require('../seeds/gen-pid-uvjeti');
+const KUTOVI = require('../seeds/gen-kutovi');
+const ZAVICAJ = require('../seeds/gen-zavicaj-bastina');
 const { oznake } = require('../seeds/jasnoca');
 
 // "5 skupine" nije hrvatski. Broj uz imenicu traži paukal ili genitiv množine,
@@ -496,6 +498,10 @@ function curateKnownBank(generatorName, qs){
   // Tlo/voda/zrak (3. r.) i uvjeti života (4. r.): čišćenje starog fonda i
   // zadatci u više obitelji nad istim činjenicama (seeds/gen-pid-uvjeti.js).
   qs=PID_UVJETI.prosiri(generatorName,qs);
+  // Kutovi (4. r.), Zavičaj i karta i Kulturna baština (3. r.).
+  if(generatorName==='genGeometrijaKutovi') qs=[...KUTOVI.ocistiKutove(qs),...KUTOVI.genKutoviDodatak()];
+  if(generatorName==='genZavicajKarta') qs=[...ZAVICAJ.ocistiZavicajKarta(qs),...ZAVICAJ.genZavicajKartaDodatak()];
+  if(generatorName==='genKulturnaBastina') qs=[...ZAVICAJ.ocistiKulturnaBastina(qs),...ZAVICAJ.genKulturnaBastinaDodatak()];
   return qs;
 }
 

@@ -374,8 +374,10 @@ Infrastruktura za zadnja dva koraka već postoji (`tezina.js`,
 |---|---:|---|
 | ~~R3 PID — Tlo, voda, zrak~~ | 14 / 15 → 0 / 0 | ✔ napravljeno (`gen-pid-uvjeti.js`) |
 | ~~R4 PID — Uvjeti života~~ | 11 / 18 → 0 / 0 | ✔ napravljeno (`gen-pid-uvjeti.js`) |
-| R3/R4 — Čitanje s razumijevanjem | 4 / 9 | novi tekstovi (ručno ili LLM + recenzija) |
-| R4 Mat — Kutovi, Kvadar i kocka | 1 / 7 | model zadatka moguć (broj vrhova, bridova, vrsta kuta po slici) |
+| R3/R4 — Čitanje s razumijevanjem | 4 / 9 → 3 / 3 | novi tekstovi (ručno ili LLM + recenzija učitelja) |
+| ~~R4 Mat — Kutovi~~ | 1 / 7 → 0 / 0 | ✔ napravljeno (`gen-kutovi.js`) |
+| ~~R3 PID — Zavičaj i karta, Kulturna baština~~ | 2 / 9 → 0 / 0 | ✔ napravljeno (`gen-zavicaj-bastina.js`) |
+| R4 HJ — Medijska kultura (8 zadataka) | 2 / 0 | ručno: vrste medija, oglas, poruka, sigurnost na internetu |
 
 ### Izvori (odjeljak 8)
 - Automatic item generation — pregled: https://en.wikipedia.org/wiki/Automatic_item_generation
