@@ -437,8 +437,8 @@ const tvrdi = (uvjet, opis, detalj = '') => {
       nodemailer.createTransport = izvorni;
       delete process.env.SMTP_HOST;
       const m = poslano[0] || {};
-      tvrdi(sa.poslano && m.to === 'contact@fromrim.hr' && m.replyTo === 'roditelj@example.hr',
-        'prijava ide na contact@fromrim.hr, odgovor roditelju (Reply-To)', JSON.stringify({ to: m.to, replyTo: m.replyTo }));
+      tvrdi(sa.poslano && m.to === 'contact@fromrim.com' && m.replyTo === 'roditelj@example.hr',
+        'prijava ide na contact@fromrim.com, odgovor roditelju (Reply-To)', JSON.stringify({ to: m.to, replyTo: m.replyTo }));
       tvrdi(!/[\r\n]/.test(m.subject || '') && m.text.includes(pitanje.question) && m.text.includes('Pitanje je nejasno'),
         'naslov je jedan redak, a poruka sadrži pitanje i razlog');
     }

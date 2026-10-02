@@ -9,7 +9,7 @@ Pregled svega što je popravljeno, s načinom provjere.
 - **Gumb „🚩 Prijavi pitanje”** ispod svakog pitanja otvara prozor s poljem „Razlog prijave” i gumbom „Pošalji”.
   - **Backend:** `POST /api/prijave`, `services/prijave.js`.
   - **Spremanje i slanje:** prijava se uvijek sprema u zbirku `prijave`. Ako je SMTP podešen (`SMTP_*`), šalje se i
-    e-poštom na `PRIJAVE_EMAIL` (zadano contact@fromrim.hr), s pitanjem, ponudama, točnim odgovorom, temom i ID-om.
+    e-poštom na `PRIJAVE_EMAIL` (zadano contact@fromrim.com), s pitanjem, ponudama, točnim odgovorom, temom i ID-om.
   - **Zaštita od zloupotrebe:** najviše 5 prijava u 15 minuta s iste adrese, skriveno polje za robote, naslov
     poruke uvijek je jedan redak, a gumb ne šalje dvaput.
   - **Profil:** novo neobavezno polje „E-adresa roditelja”. Ako je upisana, ide u Reply-To, pa odgovor stiže
@@ -26,7 +26,7 @@ Pregled svega što je popravljeno, s načinom provjere.
   - dodano je 5 novih uputa za računalo i robota (fotografija tabletom, spremanje i ispis crteža,
     e-poruka, robot otvara vrata), pa su upute za uređaje u većini (7 od 12);
   - uklonjene su dvije upute koje ne govore ništa o računalu (obuvanje, slanje pisma).
-- Testovi: prijava se sprema bez SMTP-a; sa SMTP-om ide na contact@fromrim.hr uz Reply-To roditelja;
+- Testovi: prijava se sprema bez SMTP-a; sa SMTP-om ide na contact@fromrim.com uz Reply-To roditelja;
   naslov poruke je jedan redak.
 
 ## −9. Padeži, Da/Ne, povlačenje i šarene spojnice

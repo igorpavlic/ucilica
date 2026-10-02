@@ -3,7 +3,7 @@
  *
  * Svaka prijava se sprema u zbirku `prijave` (ništa se ne gubi ako pošta ne
  * radi) i, ako je SMTP podešen, šalje e-poštom na PRIJAVE_EMAIL
- * (zadano contact@fromrim.hr). E-adresa roditelja iz profila, ako je upisana,
+ * (zadano contact@fromrim.com). E-adresa roditelja iz profila, ako je upisana,
  * ide u Reply-To, pa odgovor stiže roditelju, a ne djetetu.
  *
  * Varijable okruženja: SMTP_HOST, SMTP_PORT (587), SMTP_SECURE (true za 465),
@@ -12,7 +12,7 @@
 const nodemailer = require('nodemailer');
 const { getDb } = require('../db/mongo');
 
-const PRIMATELJ = () => process.env.PRIJAVE_EMAIL || 'contact@fromrim.hr';
+const PRIMATELJ = () => process.env.PRIJAVE_EMAIL || 'contact@fromrim.com';
 let transport = null;
 
 function posta() {
