@@ -35,7 +35,7 @@ Pregled svega što je popravljeno, s načinom provjere.
 | | prije | poslije |
 |---|---:|---:|
 | treće ili kasnije pitanje iste vrste u kvizu | 121 | 0 |
-| kvizova s 3+ pitanja istoga početka | 211 | (mjerenje u tijeku) |
+| kvizova s 3+ pitanja istoga početka | 211 | 55 |
 | davno viđeno pitanje vraćeno (samo kasni kvizovi) | 113 | 326 |
 
 **Provjera:** `npm run test:sve` prolazi.
