@@ -257,7 +257,8 @@ function gramatikaPravopisDodatak() {
   for (const [dobro, krivo] of IJE) q.push(izbor(`Koji je zapis pravilan: ${promijesaj([dobro, krivo]).join(' ili ')}?`, dobro, [krivo], 2));
   for (const [dobro, krivo] of DZ) q.push(izbor(`Kako se pravilno piše: ${promijesaj([dobro, krivo]).join(' ili ')}?`, dobro, [krivo], 2));
   for (const [r, veliko, opis] of VELIKO) q.push(tocnoNetocno(`Piše li se ${r} velikim početnim slovom?`, veliko, 2, veliko ? `To je ${opis}, a vlastita imena pišemo velikim slovom.` : `To je ${opis}, pa ga pišemo malim slovom.`));
-  for (const [r, krivo, dobro] of REC_VELIKO) q.push(upisRijeci(`Koju riječ u rečenici „${r}” treba napisati velikim početnim slovom?`, dobro, 2));
+  // konstrukt velikoSlovo: ocjena razlikuje veliko i malo slovo (split ≠ Split)
+  for (const [r, krivo, dobro] of REC_VELIKO) q.push({ ...upisRijeci(`Koju riječ u rečenici „${r}” treba napisati velikim početnim slovom?`, dobro, 2), konstrukt: 'velikoSlovo' });
   return q;
 }
 
