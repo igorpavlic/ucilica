@@ -1,5 +1,5 @@
 /**
- * seed-r3.js — Učilica 3. razred — OBOGAĆENI generatori
+ * seed-r3.js — Mudrolina 3. razred — OBOGAĆENI generatori
  */
 require("dotenv").config({path:require("path").join(__dirname,"../.env")});
 const{oznake}=require("./jasnoca");

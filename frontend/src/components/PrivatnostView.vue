@@ -4,13 +4,13 @@
     <p class="privatnost-verzija">Verzija od 2. 10. 2026. · za roditelje i skrbnike</p>
 
     <!--
-      Napomena za onoga tko postavlja Učilicu: u odjeljku „Tko obrađuje podatke”
+      Napomena za onoga tko postavlja Mudrolinu: u odjeljku „Tko obrađuje podatke”
       upiši svoje ime ili naziv i e-adresu za kontakt. Bez toga obavijest nije potpuna.
     -->
     <section>
       <h2>Ukratko</h2>
       <ul>
-        <li>Učilica čuva samo ono što treba za vježbu: korisničko ime, nadimak, avatar, razred i odgovore u kvizovima.</li>
+        <li>Mudrolina čuva samo ono što treba za vježbu: korisničko ime, nadimak, avatar, razred i odgovore u kvizovima.</li>
         <li>Ne tražimo ime i prezime, e-adresu, broj mobitela, adresu ni fotografiju.</li>
         <li>Nema oglasa, nema praćenja preko drugih stranica, ništa ne prodajemo i ne dijelimo.</li>
         <li>U svakom trenutku možete preuzeti sve podatke ili trajno obrisati račun u <router-link to="/profile">profilu</router-link>.</li>
@@ -19,7 +19,7 @@
 
     <section>
       <h2>Tko obrađuje podatke</h2>
-      <p>Voditelj obrade je osoba ili ustanova koja je postavila ovu Učilicu: <strong>From RIM, contact@fromrim.com</strong>.</p>
+      <p>Voditelj obrade je osoba ili ustanova koja je postavila ovu Mudrolinu: <strong>From RIM, contact@fromrim.com</strong>.</p>
     </section>
 
     <section>

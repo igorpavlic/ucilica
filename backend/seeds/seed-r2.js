@@ -1,5 +1,5 @@
 /**
- * seed-r2.js — Učilica 2. razred — OBOGAĆENI generatori
+ * seed-r2.js — Mudrolina 2. razred — OBOGAĆENI generatori
  * 200+ pitanja/tema, kombinatorika, template rotation, multi-format
  */
 require("dotenv").config({path:require("path").join(__dirname,"../.env")});

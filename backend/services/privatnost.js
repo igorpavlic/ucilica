@@ -38,7 +38,7 @@ async function izvoz(userId) {
   }
   return {
     izvezeno: new Date().toISOString(),
-    opis: 'Svi podatci koje Učilica čuva o ovom računu.',
+    opis: 'Svi podatci koje Mudrolina čuva o ovom računu.',
     korisnik,
     ...podatci,
   };

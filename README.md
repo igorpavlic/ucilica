@@ -1,4 +1,8 @@
-# Učilica
+# Mudrolina
+
+> Ranije **Učilica** — preimenovano jer na hrvatskom tržištu već postoje edukativni
+> proizvodi tog imena. Tehničke oznake (`ucilica_token`, zadana baza `ucilica`,
+> ime repozitorija) namjerno su ostale iste, da se korisnici ne odjave i baza ne promijeni.
 
 Interaktivna aplikacija za vježbanje gradiva hrvatske osnovne škole, razredi 1–4.
 Tri predmeta, ~6 200 proceduralno generiranih pitanja, gramatički ispravan hrvatski.
@@ -222,7 +226,7 @@ s 409, da FSRS upisuje rok ponavljanja i da spajanje parova ispravno broji veze.
 ## REST API
 
 ```
-POST   /api/auth/register      { username, password, displayName, avatar, grade, privolaRoditelja: true }
+POST   /api/auth/register      { username, password, displayName, avatar, grade (1–4), privolaRoditelja: true }
 POST   /api/auth/login         { username, password }
 GET    /api/auth/me            🔒
 PATCH  /api/auth/me            🔒 { displayName?, avatar?, grade? }

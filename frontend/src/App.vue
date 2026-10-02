@@ -26,7 +26,7 @@
   <header v-if="showTopbar" class="topbar">
     <div class="topbar-inner">
       <router-link to="/home" class="topbar-brand" style="text-decoration:none">
-        📚 Učilica
+        📚 Mudrolina
       </router-link>
 
       <div class="topbar-stats">

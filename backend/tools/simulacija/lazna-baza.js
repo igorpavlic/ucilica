@@ -1,6 +1,6 @@
 /**
  * Lažna MongoDB baza u memoriji za simulaciju pilota.
- * Podržava upravo ono što servisi Učilice koriste, s hash-indeksima na
+ * Podržava upravo ono što servisi Mudroline koriste, s hash-indeksima na
  * najčešćim poljima kako bi tisuće sesija prošle u razumnom vremenu.
  */
 const { ObjectId } = require('mongodb');

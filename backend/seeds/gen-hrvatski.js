@@ -1,5 +1,5 @@
 const {wrapGenerator}=require("../services/pedagogyReview");
-// generators.js — Question generators for Učilica V4
+// generators.js — Question generators for Mudrolina V4
 // Each function returns 200+ questions for its topic
 
 const { unos, oznake, FORMAT, dopuniFormat } = require("./jasnoca");

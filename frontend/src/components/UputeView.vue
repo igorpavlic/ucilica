@@ -13,7 +13,7 @@
     <section id="djeca">
       <h2>🧒 Za djecu</h2>
       <ol class="upute-koraci">
-        <li><strong>Prijavi se</strong> svojim korisničkim imenom. Tada Učilica pamti što si već riješio i daje ti nova pitanja.</li>
+        <li><strong>Prijavi se</strong> svojim korisničkim imenom. Tada Mudrolina pamti što si već riješio i daje ti nova pitanja.</li>
         <li><strong>Odaberi razred</strong> gore na početnoj stranici.</li>
         <li><strong>Riješi dnevni izazov ⭐</strong> — 10 pitanja iz svih predmeta. Možeš ga riješiti jednom na dan.</li>
         <li>Ili <strong>odaberi predmet</strong>, pa <strong>temu</strong>, i vježbaj samo nju.</li>
@@ -24,7 +24,7 @@
       <div class="upute-kartice">
         <div class="upute-kartica">
           <div class="upute-ikona">🔊</div>
-          <p><strong>Poslušaj pitanje.</strong> Ako ne znaš pročitati pitanje, klikni zvučnik pa ti ga Učilica pročita naglas.</p>
+          <p><strong>Poslušaj pitanje.</strong> Ako ne znaš pročitati pitanje, klikni zvučnik pa ti ga Mudrolina pročita naglas.</p>
         </div>
         <div class="upute-kartica">
           <div class="upute-ikona">⭐</div>
@@ -70,7 +70,7 @@
           Miješano ponavljanje i dnevni izazov tada uzimaju samo njih.</li>
         <li><strong>Napredak:</strong> klikom na ⭐ i 🔥 gore vidite točne i netočne odgovore.</li>
         <li><strong>Nova pitanja:</strong> pitanja koja je dijete vidjelo u zadnjih 30 dana nude se tek kad drugih nema.
-          Kad dijete prođe postojeće zadatke, Učilica sama stvara nove. Ono što dijete zaboravlja dolazi ranije na ponavljanje.</li>
+          Kad dijete prođe postojeće zadatke, Mudrolina sama stvara nove. Ono što dijete zaboravlja dolazi ranije na ponavljanje.</li>
         <li><strong>Koliko vježbati:</strong> bolje kratko i svaki dan nego dugo jednom tjedno. Dnevni izazov traje nekoliko minuta.</li>
         <li><strong>Podatci:</strong> u profilu možete preuzeti sve podatke ili trajno obrisati račun.</li>
       </ul>
@@ -81,7 +81,7 @@
       <h2>❓ Česta pitanja</h2>
       <details>
         <summary>Mogu li igrati bez prijave?</summary>
-        <p>Možeš, kao gost. Ali tada Učilica ne pamti što si riješio, pa se pitanja mogu ponavljati, a dnevni izazov nije dostupan.</p>
+        <p>Možeš, kao gost. Ali tada Mudrolina ne pamti što si riješio, pa se pitanja mogu ponavljati, a dnevni izazov nije dostupan.</p>
       </details>
       <details>
         <summary>Dnevni izazov kaže „Novi te čeka sutra”.</summary>
@@ -94,7 +94,7 @@
       </details>
       <details>
         <summary>Zaboravio sam lozinku.</summary>
-        <p>Javi se roditelju ili osobi koja je postavila Učilicu.</p>
+        <p>Javi se roditelju ili osobi koja je postavila Mudrolinu.</p>
       </details>
       <details>
         <summary>Zvučnik 🔊 se ne prikazuje.</summary>

@@ -2,7 +2,7 @@
   "name": "ucilica",
   "version": "1.0.0",
   "private": true,
-  "description": "Učilica - Interaktivna aplikacija za učenje",
+  "description": "Mudrolina - Interaktivna aplikacija za učenje",
   "scripts": {
     "install:all": "cd backend && npm install && cd ../frontend && npm install",
     "dev": "concurrently -k -n BE,FE -c blue,green \"cd backend && npm run dev\" \"wait-on http://localhost:3000/api/subjects && cd frontend && npm run dev\"",

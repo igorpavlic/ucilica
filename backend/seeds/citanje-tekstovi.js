@@ -1,7 +1,7 @@
 /**
  * citanje-tekstovi.js — izvorni kratki tekstovi za čitanje s razumijevanjem (2.–4. razred)
  *
- * Svi tekstovi napisani su za Učilicu; ništa nije preuzeto iz čitanki ni zbirki.
+ * Svi tekstovi napisani su za Mudrolinu; ništa nije preuzeto iz čitanki ni zbirki.
  * Činjenični tekstovi (Plitvička jezera, jež) provjereni su prema javno dostupnim
  * podatcima; prije objave ipak ih treba pregledati učitelj razredne nastave.
  *

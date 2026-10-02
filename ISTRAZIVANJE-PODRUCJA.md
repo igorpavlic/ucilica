@@ -81,24 +81,51 @@ vjeronauk** (NN 10/2019, izborni), **Informatika** (NN 22/2018, izborna od
 Za svako: **uporište** · **što je primjereno 1.–4. r.** · **vrsta zadataka u
 aplikaciji** · **rizici** · **napor** (M mali / S srednji / V velik).
 
-### 3.1. Snalaženje na tipkovnici
+### 3.1. Informatika (1.–4. razred) — umjesto „Snalaženja na tipkovnici”
 
-- **Uporište:** `ikt A.1.1` (uz pomoć učitelja odabire digitalnu tehnologiju za
-  jednostavne zadatke) i izborna Informatika (domena *Digitalna pismenost i
-  komunikacija*).
-- **Dob:** dlan stane na tipkovnicu i prsti mogu pratiti položaj tek oko 7.–8.
-  godine. Za 1.–2. r. samo **pronalaženje tipki** (slovo, razmak, Enter,
-  Backspace, velika slova), za 3.–4. r. **osnovni red** (ASDF–JKLČ) i kratke
-  riječi. Okvirni cilj: 8–9 g. oko 5–10 riječi u minuti, 9–10 g. 10–15.
-- **Prilika:** postoje engleske igre (BBC Dance Mat Typing, KidzType), ali nije
-  pronađena dječja vježba za **hrvatski raspored** sa Č, Ć, Ž, Š, Đ. To je
-  stvarna praznina.
-- **Zadatci:** novi tip `tipkanje` — prikaži slovo / slog / riječ, mjeri
-  točnost (ne brzinu u ocjeni, kao i dosad); prikaz tipkovnice s istaknutom
-  tipkom i prstom; riječi iz postojećeg rječnika `hr-imenice.js`.
-- **Rizik:** na tabletu nema fizičke tipkovnice — modul prikazati samo kad je
-  otkrivena tipkovnica. Ne ocjenjivati brzinu (isto načelo kao u ostatku).
-- **Napor:** S (novi tip zadatka na frontendu, generator je jednostavan).
+Tipkovnica je samo mali dio informatike, a uz to ne radi na tabletu. Zato je
+područje prošireno na cijeli predmet **Informatika** za razrednu nastavu.
+
+- **Uporište:** izborni predmet Informatika za 1.–4. r. od šk. god. 2020./21.,
+  70 sati godišnje (2 sata tjedno), kurikul NN 22/2018. Četiri domene:
+  **A** Informacije i digitalna tehnologija · **B** Računalno razmišljanje i
+  programiranje · **C** Digitalna pismenost i komunikacija · **D** e-Društvo.
+  Uz to međupredmetna tema `ikt` za sve učenike.
+- **Novo:** u eksperimentalnom programu *Osnovna škola kao cjelodnevna škola*
+  umjesto informatike je obvezni predmet **Informacijske i digitalne
+  kompetencije** (1.–8. r., 35 sati godišnje, u blokovima od dva sata). Gradivo
+  se preklapa s domenama A–D, pa ista pitanja služe objema skupinama učenika.
+
+| Razred | Ishodi (izbor) | Primjer zadatka u aplikaciji |
+|---|---|---|
+| 1. | `OŠ INF A.1.1` prepoznaje digitalnu tehnologiju i komunicira s poznatim osobama uz pomoć učitelja · `B.1.1` rješava jednostavan logički zadatak · `C.1.1` upoznaje jednostavne programe i digitalne obrazovne sadržaje · `D.1.1` pažljivo i odgovorno rukuje opremom i čuva osobne podatke | „Što od ovoga je računalo?” (slike: tablet, mobitel, lopta); poredaj sličice (pranje zubi u 3 koraka); „Smiješ li nepoznatoj osobi na internetu reći gdje stanuješ?” |
+| 2. | `B.2.1` analizira niz uputa i ispravlja pogrešan redoslijed · domena D: sigurna lozinka, kad pozvati odraslu osobu | **poredaj upute**; **pronađi grešku** u nizu („robot mora doći do sira — koji korak je kriv?”) |
+| 3. | `A.3.1` simbolima prikazuje podatke · `B.3.1` stvara program u vizualnom okruženju nizom koraka · digitalni trag | kodiranje bojama / znakovima; **put robota po mreži 3×3** (strelice ↑↓←→); „Što ostaje na internetu kad objaviš sliku?” |
+| 4. | `B.4.1` vizualno programiranje s **ponavljanjem, odlukom i ulaznim vrijednostima** (Scratch) | „Koliko puta se ponavlja?”; „ako je semafor crven, onda…”; što ispiše mali Scratch-isječak (kao slika) |
+
+- **Zašto kviz ima smisla:** računalno razmišljanje se dobro uči **bez
+  računala** (*unplugged*): meta-analize pokazuju da su takve aktivnosti
+  jednako korisne kao programiranje, a kod mlađih učenika čak i jače
+  (meta-analize u *Educ. Inf. Technol.* 2022 i *Int. J. STEM Educ.* 2023, vidi izvore). Upravo to su zadatci tipa
+  „poredaj”, „pronađi grešku”, „nastavi uzorak” i „put po mreži”.
+- **Gotovi uzori:** natjecanje **Dabar** (Bebras) ima kategorije
+  **MikroDabar** (1.–2. r.) i **MiliDabar** (3.–4. r.); zadatci su pod
+  licencom CC BY-SA, pa ih se smije prilagoditi uz navođenje izvora.
+- **Vrste zadataka (sve postoje ili gotovo postoje):**
+  1. *Poredaj upute* — postojeći tip `ordering`.
+  2. *Pronađi pogrešan korak* — `choice` s nizom koraka (kao `chart`/`passage`).
+  3. *Put po mreži* — ponovno upotrijebiti ideju plana 3×3 iz *Zavičaja i karte*;
+     generator nasumično postavlja robota, cilj i prepreke → beskonačno pitanja.
+  4. *Uzorci i kodovi* — nastavi niz simbola, dekodiraj riječ (A=1, B=2…).
+  5. *Sigurnost i osobni podatci* (domena D) — dijelom već postoji u
+     `gen-mediji.js`; proširiti na lozinke i digitalni trag.
+  6. *Dijelovi računala* (ulazni / izlazni uređaji, 2.–3. r.).
+- **Tipkovnica:** ostaje **mala, neobavezna** vježba (pronađi tipku, hrvatska
+  slova Č Ć Ž Š Đ), prikazana samo kad je otkrivena fizička tipkovnica.
+- **Rizik:** nizak. Paziti da se ne pitaju nazivi programa ili marki (brzo
+  zastarijevaju) — pitati o pojmovima (niz, ponavljanje, odluka, lozinka).
+- **Napor:** S. Generator „put po mreži” i „poredaj upute” je parametriziran
+  pa daje mnogo zadataka; nova tema **„Informatika”** u svakom razredu.
 
 ### 3.2. Prometna kultura
 
@@ -326,7 +353,7 @@ pripada roditeljima. Blagdani i običaji ostaju samo kao **kulturna baština**
 | 10 | Učenje | uku | FSRS, objašnjenja | M/S | nizak | 2 |
 | 11 | Interdisciplinarnost | tematska nastava | podatci, vozni red | M | nizak | 2 |
 | 12 | Emocionalna inteligencija | osr A/B, zdr B | — | S | srednji | 3 |
-| 13 | Snalaženje na tipkovnici | ikt, Informatika | — | S | srednji (tablet) | 3 |
+| 13 | Informatika (računalno razmišljanje, sigurnost; tipkovnica kao dodatak) | Informatika A–D, ikt | dio sigurnosti u R4 *Medijska kultura* | S | nizak | **1** |
 
 ### Tehničke posljedice
 
@@ -335,7 +362,7 @@ pripada roditeljima. Blagdani i običaji ostaju samo kao **kulturna baština**
   (`osr A.1.2`) u `gikEngine.js`.
 - **Pitanja bez točnog odgovora** (osjećaji, samoprocjena): tip koji se ne
   boduje i ne ulazi u FSRS.
-- **Novi prikazi:** `grid` (brojevno polje), `tipkovnica`.
+- **Novi prikazi:** `grid` (brojevno polje i put robota), `tipkovnica` (neobavezno).
 - **Recenzija:** `tools/recenzija-ucitelj.js` vrijedi i za nova područja.
 
 ---
@@ -344,8 +371,8 @@ pripada roditeljima. Blagdani i običaji ostaju samo kao **kulturna baština**
 
 Analiza postojeće banke (2. 10. 2026.: obitelji pitanja po temi, pregled
 stvarnih pitanja). Od 13 preostalih područja **devet se može uklopiti u
-postojeće teme**, tri traže malu novu temu, a samo tipkovnica traži zaseban
-modul.
+postojeće teme**, a četiri traže malu novu temu (uključujući Informatiku, koja
+je zamijenila tipkovnicu; tipkovnica ostaje neobavezan dodatak).
 
 ### 5.1. Karta preklapanja
 
@@ -363,14 +390,15 @@ modul.
 | **Učenje** | sustav: ponavljanje po krivulji zaboravljanja, objašnjenja, `/upute`; R4 *Medijska kultura* (rječnik, enciklopedija = `uku A.1.1`) | većina je već **funkcija aplikacije**, ne kviz | samoprocjena „koliko si siguran”, savjeti o učenju | bez nove teme: savjeti u uputama i objašnjenjima, kasnije samoprocjena |
 | **Interdisciplinarnost** | *Vozni red* (HJ + MAT), *Podatci i grafovi* (PID konteksti), *Plakat* (HJ + MAT), pokusi (PID + čitanje), miješano ponavljanje i dnevni izazov | zadatci iz dva predmeta i kvizovi iz cijelog razreda | tematski kviz („Jesen”, „Voda”, „Promet”) | oznake `tags` na temama i filtar u miješanom ponavljanju — bez novih pitanja |
 | **Brojevno polje** | R1 *Brojevi do 20*, R2 *Brojevi do 100*, R3 *Brojevi do 10 000* | brojenje, usporedba, prethodnik / sljedbenik | mreža brojeva i kretanje po njoj | **novi tip zadatka `mreza`** u postojećim temama brojeva, ne nova tema |
-| **Snalaženje na tipkovnici** | — | — | sve | zaseban modul (nije kviz; samo s fizičkom tipkovnicom) |
+| **Informatika** | R4 *Medijska kultura* (sigurnost na internetu, osobni podatci), *Zavičaj i karta* (plan 3×3, strane svijeta) | domena D djelomično; ideja mreže | niz uputa, pronalaženje greške, ponavljanje, odluka, kodovi, dijelovi računala | **nova tema „Informatika” u 1.–4. r.** (generator mreže i uputa); tipkovnica kao neobavezni dodatak |
 
-### 5.2. Prijedlog: tri nove teme umjesto deset
+### 5.2. Prijedlog: četiri nove teme umjesto deset
 
 | Nova tema | Razredi | Spaja | Uporište |
 |---|---|---|---|
 | **Ja i drugi** | 1.–4. | lijepo ponašanje, humane vrednote, emocionalna inteligencija, dječja prava | `osr A.1.2`, `osr B.1.1`, `osr B.1.2`, `goo A` |
 | **Promet i bicikl** | 3.–4. | prometna kultura za stariju djecu (R1–R2 ostaju u postojećim temama) | PID, `zdr C`, `osr C.1.1` |
+| **Informatika** | 1.–4. | računalno razmišljanje, digitalna sigurnost, tipkovnica | `OŠ INF A–D`, `ikt` |
 | **Novac i kupovina** | 3.–4. | potrošačka prava, financijska pismenost (R2 ostaje u *Mjerenje i novac*) | `pod C`, `goo`, MAT (novac) |
 
 Sve ostalo — ekologija, zdravlje, sport, učenje, interdisciplinarnost,
@@ -413,6 +441,11 @@ brojevno polje — ulazi u postojeće teme ili u mehanizme aplikacije.
 - Tjelesna i zdravstvena kultura (NN 27/2019): https://narodne-novine.nn.hr/clanci/sluzbeni/2019_03_27_558.html
 - Katolički vjeronauk (NN 10/2019): https://narodne-novine.nn.hr/clanci/sluzbeni/2019_01_10_216.html
 - Informatika (NN 22/2018): https://narodne-novine.nn.hr/clanci/sluzbeni/2018_03_22_436.html
+- Eksperimentalni kurikulum *Informacijske i digitalne kompetencije*: https://mzo.gov.hr/UserDocsImages/dokumenti/Obrazovanje/OsnovneSkole/Eksperimentalni-kurikulum-nastavnog-predmeta-Informacijske-i-digitalne-kompetencije-za-osnovne-skole.pdf
+- Smjernice za predmet *Informacijske i digitalne kompetencije*: https://mzo.gov.hr/UserDocsImages//dokumenti/Obrazovanje/OsnovneSkole/Cjelodnevna-skola//Smjernice-za-nastavni-predmet-Informacijske-i-digitalne-kompetencije.pdf
+- Unplugged vs. programiranje, meta-analiza (Educ. Inf. Technol. 2022): https://link.springer.com/doi/10.1007/s10639-022-10915-x
+- Unplugged aktivnosti, meta-analiza (Int. J. STEM Educ. 2023): https://link.springer.com/10.1186/s40594-023-00434-7
+- Dabar — kategorije MikroDabar i MiliDabar: https://os-mejasi-st.skole.hr/dabar-natjecanje-2024-16-zlatnih-diploma-za-os-mejasi/
 - Izborna informatika u razrednoj nastavi: https://mzom.gov.hr/vijesti/izborna-informatika-od-iduce-skolske-godine-za-ucenike-razredne-nastave/3726
 - Kurikulum zdravstvenog odgoja (NN 17/2013): https://narodne-novine.nn.hr/clanci/sluzbeni/2013_02_17_291.html
 - Nacionalni strateški okvir financijske pismenosti 2021.–2026.: https://narodne-novine.nn.hr/clanci/sluzbeni/2021_06_68_1316.html

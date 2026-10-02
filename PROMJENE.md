@@ -4,6 +4,19 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −7. Ime Mudrolina, razredi 1.–4., istraživanje Informatike
+
+- **Preimenovano u Mudrolina** u sučelju, obavijesti o privatnosti, uputama, opisima
+  paketa i README-u; izvoz podataka sada je `mudrolina-<korisnik>.json`. Namjerno
+  nepromijenjeno: ključ `ucilica_token` (korisnici ostaju prijavljeni), zadana baza
+  `ucilica`, imena paketa i repozitorija.
+- **Razred pri registraciji i u profilu: samo 1.–4.** (`MAX_RAZRED` u `routes/auth.js`,
+  `quiz.validators.js`, izbornik u `RegisterView.vue`). Gradivo 5.–8. još ne postoji.
+- `ISTRAZIVANJE-PODRUCJA.md` §3.1: „Snalaženje na tipkovnici” zamijenjeno
+  istraživanjem **Informatike za 1.–4. r.** (domene A–D, ishodi po razredu, predmet
+  *Informacijske i digitalne kompetencije*, unplugged zadatci, Dabar); prijedlog nove
+  teme „Informatika”.
+
 ## −6. Objava: trust proxy, 30 dana bez ponavljanja, dnevni izazov, privatnost djece
 
 - **`trust proxy`** (`server.js`, `TRUST_PROXY`, zadano 1 u produkciji) — iza Caddyja ili
