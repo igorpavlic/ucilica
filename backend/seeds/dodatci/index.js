@@ -18,6 +18,7 @@ const IZVORI = [
   require('./nove'),
   require('./dopuna'),
   require('./raznolikost'),
+  require('./medjunarodno'),
 ];
 /** ime generatora → funkcija koja vraća dodatna pitanja (više izvora se spaja). */
 const DODATCI = {};
