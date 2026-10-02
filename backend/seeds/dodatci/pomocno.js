@@ -59,6 +59,22 @@ function tvrdnje(tablica, recenica, { tezina = 2, objasni = () => '' } = {}) {
   });
 }
 
+/**
+ * Sve tvrdnje Da/Ne iz tablice parova: za svaki par točna tvrdnja i `lazni`
+ * netočnih (s tuđim b koji za taj a nije točan). Netočni se biraju nasumično,
+ * pa se kroz više generiranja skupi cijela tablica uparivanja.
+ */
+function sveTvrdnje(tablica, recenica, { lazni = 2, tezina = 2, objasni = () => '' } = {}) {
+  const sviB = [...new Set(tablica.map((x) => x[1]))];
+  const q = [];
+  for (const [a, b] of tablica) {
+    q.push(tocnoNetocno(recenica(a, b), true, tezina, objasni(a, b)));
+    const krivi = sviB.filter((x) => !tablica.some(([a2, b2]) => a2 === a && b2 === x));
+    for (const k of uzmi(krivi, lazni)) q.push(tocnoNetocno(recenica(a, k), false, tezina, objasni(a, b)));
+  }
+  return q;
+}
+
 /** Spajanje: nasumično `komada` zadataka po `koliko` parova iz tablice (jedinstveni lijevi i desni). */
 function spajanja(tablica, pitanje, { koliko = 4, komada = 3, tezina = 2, objasnjenje = '' } = {}) {
   const q = [];
@@ -81,5 +97,5 @@ const daNe = (redovi, tezina = 2) => redovi.map(([p, t, o]) => tocnoNetocno(p, t
 
 module.exports = {
   promijesaj, uzmi, jedan, cijeli, izbor, tocnoNetocno, spoji, poredaj, upisBroja, vel,
-  oblik, sOblikom, fmt, blizu, obaSmjera, tvrdnje, spajanja, izTablice, daNe,
+  oblik, sOblikom, fmt, blizu, obaSmjera, tvrdnje, sveTvrdnje, spajanja, izTablice, daNe,
 };

@@ -2,7 +2,7 @@
  * dodatci/nove.js — dodatna pitanja za nove teme: Ja i drugi (1.–4.),
  * Računalo i sigurnost (1.–4.), Promet i bicikl (3.–4.).
  */
-const { izbor, tocnoNetocno, poredaj, obaSmjera, spajanja, izTablice, uzmi } = require('./pomocno');
+const { izbor, tocnoNetocno, poredaj, obaSmjera, sveTvrdnje, spajanja, izTablice, uzmi } = require('./pomocno');
 
 // ═══ Ja i drugi ═══
 const OSJECAJI = ['veselo', 'tužno', 'ljuto', 'uplašeno', 'ponosno', 'zabrinuto', 'iznenađeno', 'razočarano', 'sramežljivo'];
@@ -142,8 +142,55 @@ function promet() {
   return q;
 }
 
+// ── dodatne tablice i tvrdnje Da/Ne (sva uparivanja) ──
+const OSJ_PRIDJEV = { veselo: 'veselo', tužno: 'tužno', ljuto: 'ljuto', uplašeno: 'uplašeno', ponosno: 'ponosno', zabrinuto: 'zabrinuto', iznenađeno: 'iznenađeno', razočarano: 'razočarano', sramežljivo: 'sramežljivo' };
+const RIJECI_PRILIKE = [['kad nešto dobiješ', 'hvala'], ['kad nešto tražiš', 'molim'], ['kad nekoga slučajno gurneš', 'oprosti'], ['kad ujutro sretneš susjeda', 'dobro jutro'],
+  ['kad odlaziš iz posjeta', 'doviđenja'], ['kad netko kihne', 'nazdravlje'], ['prije jela', 'dobar tek'], ['kad netko ima rođendan', 'sretan rođendan'],
+  ['kad ideš spavati', 'laku noć'], ['kad netko kreće na put', 'sretan put']];
+const UREDJAJ_SLUZI = [['mikrofon', 'snimanje glasa'], ['kamera', 'snimanje slike i videa'], ['zvučnici', 'puštanje zvuka'], ['slušalice', 'slušanje bez ometanja drugih'],
+  ['pisač', 'ispisivanje na papir'], ['punjač', 'punjenje baterije'], ['tipkovnica', 'pisanje slova i brojeva'], ['miš', 'pomicanje strelice na zaslonu'], ['zaslon', 'prikazivanje slike i teksta']];
+const ZDRAVO_UZ_ZASLON = [['Je li dobro nakon igranja na tabletu izaći van i igrati se?', true], ['Trebaš li tablet koristiti dok jedeš ručak s obitelji?', false],
+  ['Je li u redu da roditelji odrede koliko dugo smiješ igrati igrice?', true], ['Smiješ li uzeti mamin mobitel i kupiti nešto u igrici?', false],
+  ['Trebaš li prekinuti igru ako te boli glava ili oči?', true], ['Je li dobro gledati crtiće cijeli dan?', false], ['Treba li uređaj puniti samo uz pomoć odrasle osobe?', true],
+  ['Smiješ li fotografirati druge bez njihova dopuštenja?', false]];
+function jidTvrdnje12() {
+  return [
+    ...sveTvrdnje(SITUACIJE_OSJ, (a, b) => `${a} Osjećaš li se vjerojatno ${OSJ_PRIDJEV[b]}?`, { lazni: 1, tezina: 1 }),
+    ...obaSmjera(RIJECI_PRILIKE, { pitajB: (a) => `Što kažeš ${a}?`, tezina: 1 }),
+    ...sveTvrdnje(RIJECI_PRILIKE, (a, b) => `Kažemo li „${b}” ${a}?`, { lazni: 1, tezina: 1 }),
+  ];
+}
+function jidTvrdnje34() {
+  return [
+    ...sveTvrdnje(SITUACIJE_OSJ, (a, b) => `${a} Osjećaš li se vjerojatno ${OSJ_PRIDJEV[b]}?`, { lazni: 1, tezina: 1 }),
+    ...sveTvrdnje(PRAVA, (a, b) => `Je li „${b}” primjer za ${a}?`, { lazni: 2 }),
+  ];
+}
+function digTvrdnje12() {
+  return [
+    ...obaSmjera(UREDJAJ_SLUZI, { pitajB: (a) => `Čemu služi ${a}?`, pitajA: (b) => `Koji uređaj koristimo kad nam treba ovo: ${b}?`, tezina: 1 }),
+    ...sveTvrdnje(UREDJAJ_SLUZI, (a, b) => `Služi li ${a} za ${b}?`.replace(/^Služi li (zvučnici|slušalice) /, 'Služe li $1 '), { lazni: 2, tezina: 1 }),
+    ...ZDRAVO_UZ_ZASLON.map(([p, t]) => tocnoNetocno(p, t, 1)),
+  ];
+}
+function digTvrdnje34() {
+  return [
+    ...sveTvrdnje(ULAZ_IZLAZ, (a, b) => `Je li ${a} ${b} uređaj?`.replace(/^Je li (zvučnici|slušalice) (\S+) uređaj\?$/, (m, x, y) => `Jesu li ${x} ${y.replace(/i$/, 'i')} uređaji?`), { lazni: 1 }),
+    ...sveTvrdnje(TIPKE, (a, b) => `Je li točno da tipka ${a} ${b}?`, { lazni: 2 }),
+    ...sveTvrdnje(NAREDBE, (a, b) => `Je li točno da naredba ${a} ${b}?`, { lazni: 2 }),
+  ];
+}
+function prometTvrdnje() {
+  return [
+    ...sveTvrdnje(ZNAKOVI, (a, b) => `Znači li prometni znak „${a}” ovo: ${b}?`, { lazni: 2 }),
+    ...sveTvrdnje(BICIKL.filter(([a]) => !['kočnice', 'katadiopteri (reflektori)'].includes(a)), (a, b) => `Je li točno da ${a} ${b}?`, { lazni: 2 }),
+  ];
+}
+
 module.exports = {
-  genJaIDrugi1: jaIDrugi12, genJaIDrugi2: jaIDrugi12, genJaIDrugi3: jaIDrugi34, genJaIDrugi4: jaIDrugi34,
-  genDigitalniSvijet1: digitalni12, genDigitalniSvijet2: digitalni12, genDigitalniSvijet3: digitalni34, genDigitalniSvijet4: digitalni34,
-  genPromet3: promet, genPromet4: promet,
+  genJaIDrugi1: () => [...jaIDrugi12(), ...jidTvrdnje12()], genJaIDrugi2: () => [...jaIDrugi12(), ...jidTvrdnje12()],
+  genJaIDrugi3: () => [...jaIDrugi34(), ...jidTvrdnje34()], genJaIDrugi4: () => [...jaIDrugi34(), ...jidTvrdnje34()],
+  genDigitalniSvijet1: () => [...digitalni12(), ...digTvrdnje12()], genDigitalniSvijet2: () => [...digitalni12(), ...digTvrdnje12()],
+  genDigitalniSvijet3: () => [...digitalni34(), ...digTvrdnje34()], genDigitalniSvijet4: () => [...digitalni34(), ...digTvrdnje34()],
+  genPromet3: () => [...promet(), ...prometTvrdnje()], genPromet4: () => [...promet(), ...prometTvrdnje()],
 };

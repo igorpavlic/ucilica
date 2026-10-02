@@ -3,7 +3,7 @@
  * biljke i životinje (prehrana, skupine, ekosustavi, prilagodbe), uvjeti
  * života, ljudsko tijelo.
  */
-const { izbor, tocnoNetocno, poredaj, obaSmjera, spajanja, izTablice, daNe, uzmi, jedan } = require('./pomocno');
+const { izbor, tocnoNetocno, poredaj, obaSmjera, sveTvrdnje, spajanja, izTablice, daNe, uzmi, jedan } = require('./pomocno');
 const { _tablice: { DRVECE, DIO_BILJKE, STANJA } } = require('./priroda-a');
 
 // ═══ 3. razred: tlo, voda, zrak ═══
@@ -86,7 +86,7 @@ function biljkeZivotinje4Dodatak() {
 
 // ═══ 4. razred: uvjeti života ═══
 const PRILAGODBE_2 = [['listopadno drvo', 'u jesen odbacuje lišće'], ['jež', 'zimi spava zimskim snom'], ['vjeverica', 'u jesen sprema hranu za zimu'], ['roda', 'zimi odlazi u toplije krajeve'],
-  ['zec', 'zimi mu naraste gušće krzno'], ['bor', 'ima uske iglice koje zimi ne otpadaju'], ['medvjed', 'prije zime nakupi mnogo sala']];
+  ['zec', 'zimi dobiva gušće krzno'], ['bor', 'ima uske iglice koje zimi ne otpadaju'], ['medvjed', 'prije zime nakupi mnogo sala']];
 const UVJETI = [['Bez čega biljka uvene?', 'bez vode', ['bez glazbe', 'bez vjetra', 'bez kamenja']], ['Što biljci daje Sunce?', 'svjetlost i toplinu', ['vodu', 'tlo', 'hranu iz trgovine']],
   ['Zašto živim bićima treba zrak?', 'za disanje', ['za igru', 'za spavanje', 'za plivanje']], ['Što je biljkama tlo?', 'oslonac i izvor vode i hranjivih tvari', ['samo ukras', 'mjesto za igru', 'izvor svjetlosti']],
   ['Što se dogodi s biljkom koja dugo stoji u mraku?', 'blijedi i slabo raste', ['brže raste', 'postane zelenija', 'procvjeta']],
@@ -129,7 +129,47 @@ function ljudskoTijeloDodatak() {
   return q;
 }
 
+// ── tvrdnje Da/Ne iz tablica (sva uparivanja) ──
+const JEDNINA = { sisavci: 'sisavac', ptice: 'ptica', ribe: 'riba', gmazovi: 'gmaz', vodozemci: 'vodozemac', kukci: 'kukac' };
+const GDJE = { šuma: 'u šumi', livada: 'na livadi', rijeka: 'u rijeci', more: 'u moru', bara: 'u bari' };
+const STANJE_7 = { čvrsto: 'čvrstom', kruto: 'čvrstom', tekuće: 'tekućem', plinovito: 'plinovitom' };
+function bz4Tvrdnje() {
+  return [
+    ...sveTvrdnje(SKUPINE, (a, b) => `Je li ${a} ${JEDINA_ILI(b)}?`, { objasni: (a, b) => `${a} pripada skupini: ${b}.` }),
+    ...sveTvrdnje(EKOSUSTAVI, (a, b) => `Živi li ${a} najčešće ${GDJE[b]}?`, { objasni: (a, b) => `${a} najčešće živi ${GDJE[b]}.`, lazni: 1 }),
+    ...sveTvrdnje(PRILAGODBE, (a, b) => `Je li točno da ${a} ${b}?`, { lazni: 1 }),
+  ];
+}
+const JEDINA_ILI = (b) => JEDNINA[b];
+function bz3Tvrdnje() {
+  return [
+    ...sveTvrdnje(PREHRANA, (a, b) => `Je li ${a} ${b}?`, { lazni: 1, objasni: (a, b) => `${a} je ${b}.` }),
+    ...sveTvrdnje(VRSTE_BILJAKA, (a, b) => `Je li ${a} ${b}?`, { lazni: 1, objasni: (a, b) => `${a} je ${b}.` }),
+  ];
+}
+function ltTvrdnje() {
+  // tvrdnja mora slagati broj: jednina s jedninom, množina s množinom
+  const MNOZINA = ['pluća', 'kosti', 'mišići', 'bubrezi', 'crijeva'];
+  const r = (a, b) => `Je li točno da ${a} ${b}?`;
+  return [
+    ...sveTvrdnje(ORGANI.filter(([a]) => !MNOZINA.includes(a)), r, { lazni: 2 }),
+    ...sveTvrdnje(ORGANI.filter(([a]) => MNOZINA.includes(a)), r, { lazni: 2 }),
+    ...sveTvrdnje(KOSTUR.filter(([a]) => a !== 'rebra'), r, { lazni: 2 }),
+  ];
+}
+function tvzTvrdnje() {
+  return [
+    ...sveTvrdnje(INSTRUMENTI, (a, b) => `Mjeri li ili određuje ${a} ${b}?`, { lazni: 2, objasni: (a, b) => `${a}: ${b}.` }),
+    ...sveTvrdnje(PROMJENE, (a, b) => `Je li ${b} ono što se događa u primjeru: ${a.replace(/\.$/, '')}?`, { lazni: 1, objasni: (a, b) => `To je ${b}.` }),
+    ...sveTvrdnje(STANJA, (a, b) => `Je li voda u primjeru „${a}” u ${STANJE_7[b]} stanju?`, { lazni: 1 }),
+  ];
+}
+function uvjetiTvrdnje() {
+  return sveTvrdnje(PRILAGODBE_2, (a, b) => `Je li točno da ${a} ${b}?`, { lazni: 2 });
+}
+
 module.exports = {
-  genTloVodaZrak: tloVodaZrakDodatak, genBiljkeZivotinje3: biljkeZivotinje3Dodatak, genBiljkeZivotinje4: biljkeZivotinje4Dodatak,
-  genUvjetiZivota: uvjetiZivotaDodatak, genLjudskoTijelo: ljudskoTijeloDodatak,
+  genTloVodaZrak: () => [...tloVodaZrakDodatak(), ...tvzTvrdnje()], genBiljkeZivotinje3: () => [...biljkeZivotinje3Dodatak(), ...bz3Tvrdnje()],
+  genBiljkeZivotinje4: () => [...biljkeZivotinje4Dodatak(), ...bz4Tvrdnje()],
+  genUvjetiZivota: () => [...uvjetiZivotaDodatak(), ...uvjetiTvrdnje()], genLjudskoTijelo: () => [...ljudskoTijeloDodatak(), ...ltTvrdnje()],
 };

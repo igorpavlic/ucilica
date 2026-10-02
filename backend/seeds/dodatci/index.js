@@ -16,6 +16,7 @@ const IZVORI = [
   require('./priroda-b'),
   require('./drustvo'),
   require('./nove'),
+  require('./dopuna'),
 ];
 /** ime generatora → funkcija koja vraća dodatna pitanja (više izvora se spaja). */
 const DODATCI = {};

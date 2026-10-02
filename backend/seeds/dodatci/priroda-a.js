@@ -3,7 +3,7 @@
  * tijelo, sigurnost i zdravlje, ekologija, obitelj i dom, vrijeme, voda i tlo,
  * zavičaj. Tablice činjenica daju pitanja u više smjerova.
  */
-const { izbor, tocnoNetocno, upisBroja, poredaj, obaSmjera, tvrdnje, spajanja, izTablice, daNe, uzmi, jedan, cijeli, promijesaj } = require('./pomocno');
+const { izbor, tocnoNetocno, upisBroja, poredaj, obaSmjera, tvrdnje, sveTvrdnje, spajanja, izTablice, daNe, uzmi, jedan, cijeli, promijesaj } = require('./pomocno');
 const HR = require('../hr-gramatika');
 
 // ── zajedničke tablice ──
@@ -243,10 +243,31 @@ function zavicajDodatak() {
   return q;
 }
 
+// ── tvrdnje Da/Ne iz tablica (sva uparivanja) ──
+const INSTR = { oči: 'očima', uši: 'ušima', nos: 'nosom', jezik: 'jezikom', zubi: 'zubima', noge: 'nogama', ruke: 'rukama', pluća: 'plućima', koža: 'kožom' };
+const U_PROSTORIJI = { kuhinja: 'u kuhinji', kupaonica: 'u kupaonici', 'spavaća soba': 'u spavaćoj sobi', 'dnevni boravak': 'u dnevnom boravku', ostava: 'u ostavi', hodnik: 'u hodniku' };
+const SPREMNIK = { papir: 'papir', plastika: 'plastiku', metal: 'metal', staklo: 'staklo', biootpad: 'biootpad', 'posebni otpad': 'posebni otpad' };
+const tijeloTvrdnje = () => sveTvrdnje(DIJELOVI, (a, b) => `Je li točno da ${INSTR[a]} ${b}?`, { lazni: 2, tezina: 1 });
+const obiteljTvrdnje = () => [
+  ...sveTvrdnje(PROSTORIJE, (a, b) => `Je li točno da ${U_PROSTORIJI[a]} ${b}?`, { lazni: 2, tezina: 1 }),
+  ...sveTvrdnje(PREDMETI_SOBA, (a, b) => `Nalazi li se ${a} najčešće ${U_PROSTORIJI[b]}?`, { lazni: 2, tezina: 1 }),
+];
+const ekologijaTvrdnje = () => sveTvrdnje(OTPAD, (a, b) => `Ide li ${a} u spremnik za ${SPREMNIK[b]}?`, { lazni: 2, tezina: 1 });
+const biljkeTvrdnje = () => [
+  ...sveTvrdnje(BILJKE, (a, b) => `Je li ${a} ${b}?`, { lazni: 1, tezina: 1 }),
+  ...sveTvrdnje(DIO_BILJKE, (a, b) => `Je li točno da ${a} ${b}?`, { lazni: 2 }),
+];
+const vodaTvrdnje = () => [
+  ...sveTvrdnje(HR_VODE.filter(([, b]) => b !== 'jezera'), (a, b) => `Je li ${a} ${b}?`, { lazni: 1, tezina: 1 }),
+  ...sveTvrdnje(VODE, (a, b) => `Je li ${a} ${b}?`, { lazni: 1 }),
+];
+const zavicajTvrdnje = () => sveTvrdnje(USTANOVE.map(([m, , z]) => [z, m]), (a, b) => `Radi li ${a} u ustanovi koja se zove ${b}?`, { lazni: 2, tezina: 1 });
+
 module.exports = {
-  genZivotinje: zivotinjeDodatak, genTijelo: tijeloDodatak, genSigurnost: sigurnostDodatak, genEkologija: ekologijaDodatak, genObitelj: obiteljDodatak,
-  genDobaVrijeme: dobaVrijemeDodatak, genBiljkeZivotinje: biljkeZivotinjeDodatak, genVodaTlo: vodaTloDodatak, genZdravljeSigurnost2: zdravljeSigurnost2Dodatak,
-  genZavicaj: zavicajDodatak,
+  genZivotinje: zivotinjeDodatak, genTijelo: () => [...tijeloDodatak(), ...tijeloTvrdnje()], genSigurnost: sigurnostDodatak,
+  genEkologija: () => [...ekologijaDodatak(), ...ekologijaTvrdnje()], genObitelj: () => [...obiteljDodatak(), ...obiteljTvrdnje()],
+  genDobaVrijeme: dobaVrijemeDodatak, genBiljkeZivotinje: () => [...biljkeZivotinjeDodatak(), ...biljkeTvrdnje()], genVodaTlo: () => [...vodaTloDodatak(), ...vodaTvrdnje()],
+  genZdravljeSigurnost2: zdravljeSigurnost2Dodatak, genZavicaj: () => [...zavicajDodatak(), ...zavicajTvrdnje()],
   // za R3/R4 (priroda-b.js)
   _tablice: { ZIVOTINJE, BILJKE, DRVECE, DIO_BILJKE, STANJA, VODE, HR_VODE, OTPAD, DIJELOVI },
 };

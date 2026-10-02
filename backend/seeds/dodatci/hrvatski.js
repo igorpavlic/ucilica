@@ -5,7 +5,7 @@
  */
 const {
   promijesaj, uzmi, jedan, cijeli, izbor, tocnoNetocno, upisBroja, poredaj, spoji,
-  oblik, obaSmjera, tvrdnje, spajanja, izTablice, daNe,
+  oblik, obaSmjera, tvrdnje, sveTvrdnje, spajanja, izTablice, daNe,
 } = require('./pomocno');
 const { brojSlogova, rastavi } = require('../slogovi');
 
@@ -447,9 +447,31 @@ function medijskaKulturaDodatak() {
   return q;
 }
 
+// ── tvrdnje Da/Ne iz tablica (sva uparivanja) ──
+const glagoli2Tvrdnje = () => [
+  ...sveTvrdnje(ZVUKOVI, (a, b) => `Kaže li se da ${a} ${b}?`, { lazni: 2, tezina: 1 }),
+  ...sveTvrdnje(SUPROTNO_2, (a, b) => `Imaju li riječi ${a} i ${b} suprotno značenje?`, { lazni: 1 }),
+];
+const jezicnoTvrdnje = () => [
+  ...sveTvrdnje(SLICNO, (a, b) => `Imaju li riječi ${a} i ${b} slično značenje?`, { lazni: 1 }),
+  ...sveTvrdnje(SUPROTNO_3, (a, b) => `Imaju li riječi ${a} i ${b} suprotno značenje?`, { lazni: 1 }),
+];
+const knjizevniTvrdnje = () => [
+  ...sveTvrdnje(VRSTE_3, (a, b) => `Je li ${b} ${a}?`, { lazni: 2 }),
+  ...sveTvrdnje(POJMOVI_3, (a, b) => `Znači li pojam ${b} ovo: ${a}?`, { lazni: 2 }),
+];
+const knjizevnost4Tvrdnje = () => [
+  ...sveTvrdnje(DJELA, (a, b) => `Je li ${a} djelo koje potpisuje ${b}?`, { lazni: 1 }),
+  ...sveTvrdnje(POJMOVI_4, (a, b) => `Odgovara li pojam ${b} opisu: ${a}?`, { lazni: 2 }),
+  ...sveTvrdnje(SREDSTVA, (a, b) => `Krije li se u stihu „${a}” ${b}?`, { lazni: 1 }),
+];
+const medijskaTvrdnje = () => sveTvrdnje(MEDIJI_POJMOVI, (a, b) => `Odgovara li pojam ${b} opisu: ${a}?`, { lazni: 2 });
+
 module.exports = {
   genGlasovi: glasoviDodatak, genRijeci: rijeciDodatak, genSlova: slovaDodatak, genRecenice: receniceDodatak,
-  genGlagoli2: glagoli2Dodatak, genImeniceRod: imeniceRodDodatak, genRecenice2: recenice2Dodatak,
-  genVrsteRijeci: vrsteRijeciDodatak, genGramatikaPravopis: gramatikaPravopisDodatak, genKnjizevniTekst: knjizevniTekstDodatak, genJezicnoIzrazavanje: jezicnoIzrazavanjeDodatak,
-  genPravopis4: pravopis4Dodatak, genKnjizevnost4: knjizevnost4Dodatak, genVrsteRijeci4: vrsteRijeci4Dodatak, genMedijskaKultura: medijskaKulturaDodatak,
+  genGlagoli2: () => [...glagoli2Dodatak(), ...glagoli2Tvrdnje()], genImeniceRod: imeniceRodDodatak, genRecenice2: recenice2Dodatak,
+  genVrsteRijeci: vrsteRijeciDodatak, genGramatikaPravopis: gramatikaPravopisDodatak, genKnjizevniTekst: () => [...knjizevniTekstDodatak(), ...knjizevniTvrdnje()],
+  genJezicnoIzrazavanje: () => [...jezicnoIzrazavanjeDodatak(), ...jezicnoTvrdnje()],
+  genPravopis4: pravopis4Dodatak, genKnjizevnost4: () => [...knjizevnost4Dodatak(), ...knjizevnost4Tvrdnje()], genVrsteRijeci4: vrsteRijeci4Dodatak,
+  genMedijskaKultura: () => [...medijskaKulturaDodatak(), ...medijskaTvrdnje()],
 };

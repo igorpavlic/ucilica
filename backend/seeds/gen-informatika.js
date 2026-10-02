@@ -28,7 +28,11 @@ const ish = (kod) => `OŠ INF ${kod}`;
 const SMJER = { '→': [0, 1], '←': [0, -1], '↑': [-1, 0], '↓': [1, 0] };
 const SMJEROVI = Object.keys(SMJER);
 const IME_SMJERA = { '→': 'desno', '←': 'lijevo', '↑': 'gore', '↓': 'dolje' };
-const PRAZNO = '⬜', ROBOT = '🤖', CILJ = '⭐', STIJENA = '🪨';
+const PRAZNO = '⬜', ROBOT = '🤖', STIJENA = '🪨';
+// Cilj robota mijenja se od zadatka do zadatka, pa se ni tekst pitanja ne ponavlja
+// („do zvjezdice”, „do kućice”…). [znak, genitiv (do …), akuzativ (na …)]
+const CILJEVI = [['⭐', 'zvjezdice', 'zvjezdicu'], ['🏠', 'kućice', 'kućicu'], ['⚽', 'lopte', 'loptu'], ['🎁', 'poklona', 'poklon'],
+  ['🌸', 'cvijeta', 'cvijet'], ['🔑', 'ključa', 'ključ'], ['🧀', 'sira', 'sir'], ['🚩', 'zastavice', 'zastavicu']];
 const VOCE = [['🍎', 'jabuka'], ['🍌', 'banana'], ['🍓', 'jagoda'], ['🍐', 'kruška'], ['🍇', 'grožđe']];
 
 const zapis = (niz) => niz.join(' ');
@@ -132,9 +136,10 @@ function zadatciMreza(razred) {
     if (!c) continue;
     const krivi = pogresniNizovi(m, c.put, c.cilj);
     if (krivi.length < 3) continue;
-    q.push(izbor('Koje naredbe dovode robota do zvjezdice?', zapis(c.put), krivi, razred === 1 ? 2 : 3,
-      `Robot ide ${c.put.map((s) => IME_SMJERA[s]).join(', ')} i stane na zvjezdicu. Provjeri tako da prstom slijediš svaku strelicu.`,
-      ishodB, { mreza: slika(m, { [kljucPolja(c.cilj)]: CILJ }), passage: opis }));
+    const [znak, doCilja, naCilj] = jedan(CILJEVI);
+    q.push(izbor(`Koje naredbe dovode robota do ${doCilja} ${znak}?`, zapis(c.put), krivi, razred === 1 ? 2 : 3,
+      `Robot ide ${c.put.map((s) => IME_SMJERA[s]).join(', ')} i stane na ${naCilj}. Provjeri tako da prstom slijediš svaku strelicu.`,
+      ishodB, { mreza: slika(m, { [kljucPolja(c.cilj)]: znak }), passage: opis }));
   }
 
   // 2) Kod kojeg voća robot stane?
@@ -159,9 +164,10 @@ function zadatciMreza(razred) {
   {
     const m = novaMreza(n, stijena);
     const c = ciljNaUdaljenosti(m, minK, maxK + 1);
-    if (c) q.push(upisBroja('Koliko najmanje koraka treba robotu do zvjezdice?', c.put.length, razred <= 2 ? 2 : 3,
+    const [znak, doCilja] = jedan(CILJEVI);
+    if (c) q.push(upisBroja(`Koliko najmanje koraka treba robotu do ${doCilja} ${znak}?`, c.put.length, razred <= 2 ? 2 : 3,
       `Najkraći put je ${zapis(c.put)}, a to je ${c.put.length} koraka.${stijena ? ' Stijene treba zaobići.' : ''}`,
-      razred === 1 ? ish('B.1.1') : ishodB, { mreza: slika(m, { [kljucPolja(c.cilj)]: CILJ }), passage: opis }));
+      razred === 1 ? ish('B.1.1') : ishodB, { mreza: slika(m, { [kljucPolja(c.cilj)]: znak }), passage: opis }));
   }
 
   // 4) Pronađi pogrešnu naredbu (od 2. razreda): samo jedna zamjena popravlja niz
@@ -184,10 +190,11 @@ function zadatciMreza(razred) {
       }));
       if (popravci.size !== 1 || !popravci.has(k)) continue;
       const redni = ['prva', 'druga', 'treća', 'četvrta', 'peta', 'šesta'];
-      q.push(izbor(`Robot treba doći do zvjezdice naredbama ${zapis(krivi)}, ali jedna je naredba pogrešna. Koja?`,
+      const [znak, doCilja] = jedan(CILJEVI);
+      q.push(izbor(`Robot treba doći do ${doCilja} ${znak} naredbama ${zapis(krivi)}, ali jedna je naredba pogrešna. Koja?`,
         `${redni[k]} naredba`, redni.slice(0, krivi.length).map((r) => `${r} naredba`), 3,
         `Ispravno je ${zapis(c.put)}: ${redni[k]} naredba treba biti ${c.put[k]} (${IME_SMJERA[c.put[k]]}), a ne ${krivi[k]}.`,
-        razred === 2 ? ish('B.2.1') : ishodB, { mreza: slika(m, { [kljucPolja(c.cilj)]: CILJ }), passage: opis }));
+        razred === 2 ? ish('B.2.1') : ishodB, { mreza: slika(m, { [kljucPolja(c.cilj)]: znak }), passage: opis }));
       break;
     }
   }

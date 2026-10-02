@@ -2,7 +2,7 @@
  * dodatci/hrvatski-2.js — drugi skup dodatnih pitanja za Hrvatski jezik
  * (teme koje ni nakon prvoga skupa nisu imale ~150 različitih tekstova).
  */
-const { izbor, tocnoNetocno, obaSmjera, izTablice, daNe, uzmi } = require('./pomocno');
+const { izbor, tocnoNetocno, obaSmjera, sveTvrdnje, izTablice, daNe, uzmi } = require('./pomocno');
 
 // ── 2. razred: riječi i značenje ──
 const DOVRSI_RADNJU = [
@@ -124,7 +124,21 @@ function medijskaKulturaDodatak2() {
   return q;
 }
 
+// ── tvrdnje Da/Ne iz tablica (sva uparivanja) ──
+const knjizevniTvrdnje2 = () => [
+  ...sveTvrdnje(BAJKE, (a, b) => `Pojavljuje li se u bajci ${a} ovo: ${b}?`, { lazni: 1 }),
+  ...sveTvrdnje(BASNE, (a, b) => `Je li pouka basne ${a}: ${b.replace(/\.$/, '')}?`, { lazni: 1 }),
+];
+const knjizevnost4Tvrdnje2 = () => sveTvrdnje(OSOBINE, (a, b) => `Pokazuje li ovaj opis osobinu ${b}: ${a.replace(/\.$/, '')}?`, { lazni: 1 });
+const medijskaTvrdnje2 = () => [
+  ...sveTvrdnje(KNJIZNICA, (a, b) => `Odgovara li pojam ${b} opisu: ${a}?`, { lazni: 1 }),
+  ...sveTvrdnje(KAZALISTE, (a, b) => `Odgovara li kazališni pojam ${b} opisu: ${a}?`, { lazni: 1 }),
+];
+const glagoli2Tvrdnje2 = () => sveTvrdnje(SLICNO_2, (a, b) => `Znače li riječi ${a} i ${b} isto ili gotovo isto?`, { lazni: 1 });
+const jezicnoTvrdnje2 = () => sveTvrdnje(SLICNO_3B, (a, b) => `Možemo li riječ ${a} zamijeniti izrazom ${b}?`, { lazni: 1 });
+
 module.exports = {
-  genGlagoli2: glagoli2Dodatak2, genGramatikaPravopis: gramatikaPravopisDodatak2, genKnjizevniTekst: knjizevniTekstDodatak2,
-  genJezicnoIzrazavanje: jezicnoIzrazavanjeDodatak2, genKnjizevnost4: knjizevnost4Dodatak2, genMedijskaKultura: medijskaKulturaDodatak2,
+  genGlagoli2: () => [...glagoli2Dodatak2(), ...glagoli2Tvrdnje2()], genGramatikaPravopis: gramatikaPravopisDodatak2,
+  genKnjizevniTekst: () => [...knjizevniTekstDodatak2(), ...knjizevniTvrdnje2()], genJezicnoIzrazavanje: () => [...jezicnoIzrazavanjeDodatak2(), ...jezicnoTvrdnje2()],
+  genKnjizevnost4: () => [...knjizevnost4Dodatak2(), ...knjizevnost4Tvrdnje2()], genMedijskaKultura: () => [...medijskaKulturaDodatak2(), ...medijskaTvrdnje2()],
 };

@@ -3,7 +3,7 @@
  * zavičaj i karta, gospodarske djelatnosti, kulturna baština, krajevi
  * Hrvatske, Hrvatska — moja domovina.
  */
-const { izbor, tocnoNetocno, obaSmjera, spajanja, izTablice, daNe, uzmi } = require('./pomocno');
+const { izbor, tocnoNetocno, obaSmjera, sveTvrdnje, spajanja, izTablice, daNe, uzmi } = require('./pomocno');
 
 const KRAJEVI = ['nizinski', 'brežuljkasti', 'gorski', 'primorski'];
 
@@ -159,7 +159,39 @@ function zavicajKartaDodatak() {
   return q;
 }
 
+// ── tvrdnje Da/Ne iz tablica (sva uparivanja) ──
+const U_KRAJU = { nizinski: 'nizinskom', brežuljkasti: 'brežuljkastom', gorski: 'gorskom', primorski: 'primorskom' };
+const DATIV_DJ = { poljoprivreda: 'poljoprivredi', ribarstvo: 'ribarstvu', šumarstvo: 'šumarstvu', industrija: 'industriji', obrt: 'obrtu',
+  trgovina: 'trgovini', promet: 'prometu', turizam: 'turizmu', građevinarstvo: 'građevinarstvu' };
+const genitivZupanije = (z) => z.replace(/a$/, 'e');
+function krajeviTvrdnje() {
+  const objasni = (a, b) => `${a}: ${b} kraj.`;
+  return [
+    ...sveTvrdnje(GRADOVI, (a, b) => `Nalazi li se grad ${a} u ${U_KRAJU[b]} kraju?`, { objasni }),
+    ...sveTvrdnje(REGIJE, (a, b) => `Pripada li ${a} ${U_KRAJU[b]} kraju Hrvatske?`, { objasni }),
+    ...sveTvrdnje(RIJEKE, (a, b) => `Teče li rijeka ${a} kroz ${b} kraj?`, { objasni, lazni: 1 }),
+    ...sveTvrdnje(OBILJEZJA, (a, b) => `Opisuje li ${b} kraj ovo: ${a}?`, { objasni: (a, b) => `To opisuje ${b} kraj.`, lazni: 1 }),
+  ];
+}
+function domovinaTvrdnje() {
+  return [
+    ...sveTvrdnje(ZUPANIJE, (a, b) => `Je li ${b} sjedište ${genitivZupanije(a)} županije?`, { objasni: (a, b) => `Sjedište ${genitivZupanije(a)} županije je ${b}.` }),
+    ...sveTvrdnje(NP, (a, b) => `Pripada li nacionalnom parku ${a} ovo obilježje: ${b}?`, { objasni: (a, b) => `${a}: ${b}.`, lazni: 1 }),
+  ];
+}
+function gospodarskeTvrdnje() {
+  return [
+    ...sveTvrdnje(ZANIMANJE_DJ, (a, b) => `Pripada li zanimanje ${a} ${DATIV_DJ[b]}?`, { objasni: (a, b) => `${a}: ${b}.` }),
+    ...sveTvrdnje(PROIZVOD_DJ, (a, b) => `Daje li ${b} ovo: ${a}?`, { objasni: (a, b) => `To daje ${b}.` }),
+  ];
+}
+function kulturnaTvrdnje() {
+  return sveTvrdnje(BASTINA, (a, b) => `Pripada li ${a} ${b === 'materijalna' ? 'materijalnoj' : 'nematerijalnoj'} kulturnoj baštini?`, { lazni: 1,
+    objasni: (a, b) => (b === 'materijalna' ? 'Materijalnu baštinu možemo dotaknuti.' : 'Nematerijalna baština su pjesme, plesovi, običaji i umijeća.') });
+}
+
 module.exports = {
-  genKrajeviHR: krajeviDodatak, genHrvatskaDomovina: domovinaDodatak, genGospodarskeDjelatnosti: gospodarskeDodatak,
-  genKulturnaBastina: kulturnaDodatak, genZavicajKarta: zavicajKartaDodatak,
+  genKrajeviHR: () => [...krajeviDodatak(), ...krajeviTvrdnje()], genHrvatskaDomovina: () => [...domovinaDodatak(), ...domovinaTvrdnje()],
+  genGospodarskeDjelatnosti: () => [...gospodarskeDodatak(), ...gospodarskeTvrdnje()],
+  genKulturnaBastina: () => [...kulturnaDodatak(), ...kulturnaTvrdnje()], genZavicajKarta: zavicajKartaDodatak,
 };

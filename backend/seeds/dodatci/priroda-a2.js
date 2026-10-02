@@ -2,7 +2,7 @@
  * dodatci/priroda-a2.js — drugi skup za Prirodu i društvo 1. i 2. razreda
  * (teme koje ni nakon priroda-a.js nisu imale ~150 različitih tekstova).
  */
-const { izbor, tocnoNetocno, poredaj, obaSmjera, izTablice, daNe, uzmi } = require('./pomocno');
+const { izbor, tocnoNetocno, poredaj, obaSmjera, sveTvrdnje, izTablice, daNe, uzmi } = require('./pomocno');
 
 // ── promet i sigurnost pješaka ──
 const PROMET_PJESAK = [
@@ -174,7 +174,22 @@ function dobaVrijemeDodatak() {
   return q;
 }
 
+// ── tvrdnje Da/Ne iz tablica (sva uparivanja) ──
+const SLUZBE = [['112', 'hitne službe'], ['193', 'vatrogasci'], ['192', 'policija'], ['194', 'hitna medicinska pomoć']];
+const zdravljeTvrdnje = () => [
+  ...sveTvrdnje(NAMIRNICE, (a, b) => `Je li dobro jesti ili piti ovo ${b}: ${a}?`, { lazni: 1 }),
+  ...sveTvrdnje(SLUZBE, (a, b) => `Javljaju li se na broj ${a} ${b}?`.replace('Javljaju li se na broj 192 policija', 'Javlja li se na broj 192 policija').replace(/Javljaju li se na broj (\d+) hitna medicinska pomoć/, 'Javlja li se na broj $1 hitna medicinska pomoć').replace(/Javljaju li se na broj (\d+) policija/, 'Javlja li se na broj $1 policija'), { lazni: 2 }),
+];
+const vodaTvrdnje2 = () => sveTvrdnje(PADALINE, (a, b) => `Je li ${a} ${b}?`, { lazni: 2 });
+const zavicajTvrdnje2 = () => sveTvrdnje(ZANIMANJA, (a, b) => `Je li točno da ${a} ${b}?`, { lazni: 2, tezina: 1 });
+const bz2Tvrdnje = () => [
+  ...sveTvrdnje(ZIMA, (a, b) => `Je li točno da ${a} zimi ${b.replace(/^zimi /, '')}?`, { lazni: 1 }),
+  ...sveTvrdnje(JESTIVI_DIO, (a, b) => `Kad jedemo biljku ${a}, jedemo li njezin ${b}?`, { lazni: 1 }),
+];
+const sigurnostTvrdnje = () => sveTvrdnje(SLUZBE, (a, b) => `Je li ${a} broj na koji zovemo: ${b}?`, { lazni: 2, tezina: 1 });
+
 module.exports = {
-  genZdravljeSigurnost2: zdravljeSigurnost2Dodatak, genVodaTlo: vodaTloDodatak, genZavicaj: zavicajDodatak, genBiljkeZivotinje: biljkeZivotinje2Dodatak,
-  genEkologija: ekologijaDodatak, genSigurnost: sigurnostDodatak, genTijelo: tijeloDodatak, genDobaVrijeme: dobaVrijemeDodatak,
+  genZdravljeSigurnost2: () => [...zdravljeSigurnost2Dodatak(), ...zdravljeTvrdnje()], genVodaTlo: () => [...vodaTloDodatak(), ...vodaTvrdnje2()],
+  genZavicaj: () => [...zavicajDodatak(), ...zavicajTvrdnje2()], genBiljkeZivotinje: () => [...biljkeZivotinje2Dodatak(), ...bz2Tvrdnje()],
+  genEkologija: ekologijaDodatak, genSigurnost: () => [...sigurnostDodatak(), ...sigurnostTvrdnje()], genTijelo: tijeloDodatak, genDobaVrijeme: dobaVrijemeDodatak,
 };
