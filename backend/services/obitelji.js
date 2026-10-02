@@ -47,4 +47,30 @@ async function dopuniObitelji({ ponavljanjaGeneratora = 5, log = console.log } =
   return ukupno;
 }
 
-module.exports = { dopuniObitelji };
+/**
+ * Isključi (isActive: false) pitanja iz postojeće baze koja se vežu uz strana
+ * mjesta i pojmove ili spominju tropsko voće (seeds/lokalno.js). Generator
+ * teme poslije daje zamjenska, lokalizirana pitanja. Napredak djece ostaje
+ * (odgovori su vezani uz _id, koji se ne briše).
+ */
+async function iskljuciStrano({ log = console.log } = {}) {
+  const { GENERATORS } = require('./questionGenerator');
+  const { straniPojam } = require('../seeds/lokalno');
+  const db = getDb();
+  const teme = await db.collection('topics').find({}).project({ _id: 1, slug: 1 }).toArray();
+  let ukupno = 0;
+  for (const tema of teme) {
+    const ime = GENERATORS[tema.slug]?.name || '';
+    const sva = await db.collection('questions').find({ topic_id: tema._id, isActive: true })
+      .project({ question: 1, answers: 1, correctAnswer: 1, pairs: 1, items: 1, visual: 1 }).toArray();
+    const lose = sva.filter((q) => straniPojam(q, ime) || (!q.visual && /\b(banan|naranč)/i.test([q.question, ...(q.answers || []), ...(q.items || [])].join(' ')) && !/glas|slog|slov/i.test(q.question || '')));
+    if (!lose.length) continue;
+    await db.collection('questions').updateMany({ _id: { $in: lose.map((q) => q._id) } },
+      { $set: { isActive: false, iskljucenoRazlog: 'strani pojam ili tropsko voće (seeds/lokalno.js)', iskljucenoAt: new Date() } });
+    ukupno += lose.length;
+  }
+  if (ukupno) log(`🇭🇷 Isključeno ${ukupno} pitanja vezanih uz strane pojmove.`);
+  return ukupno;
+}
+
+module.exports = { dopuniObitelji, iskljuciStrano };

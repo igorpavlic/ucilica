@@ -244,7 +244,7 @@ function poslovice() {
 
 const PLIVA = [['drvena žlica', true], ['kamenčić', false], ['jabuka', true], ['željezni čavao', false], ['plastična lopta', true], ['ključ', false],
   ['suhi list', true], ['kovanica', false], ['čep od pluta', true], ['staklena kuglica', false], ['spužva', true], ['spajalica', false]];
-const MAGNET = [['željezni čavao', true], ['spajalica', true], ['čelična žlica', true], ['drvena olovka', false], ['staklena čaša', false], ['papir', false],
+const MAGNET = [['željezni čavao', true], ['spajalica', true], ['željezna pločica', true], ['drvena olovka', false], ['staklena čaša', false], ['papir', false],
   ['gumica', false], ['plastični čep', false], ['vunena čarapa', false], ['željezna matica', true]];
 const MATERIJALI = [['prozor', 'staklo'], ['školska klupa', 'drvo'], ['čavao', 'metal'], ['boca za vodu', 'plastika'], ['čarape', 'vuna'], ['bilježnica', 'papir'],
   ['lonac', 'metal'], ['gumica za brisanje', 'guma'], ['majica', 'pamuk'], ['vrata ormara', 'drvo']];

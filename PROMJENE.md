@@ -4,6 +4,43 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −16. Međunarodni oblici zadataka u hrvatskom okviru
+
+Detaljno: `ISTRAZIVANJE-MEDJUNARODNI-ZADATCI.md`.
+
+**Istraženo:**
+- Klokan bez granica;
+- Dabar (Bebras);
+- singapurska matematika;
+- njemački „dobri zadatci” (Zahlenmauer, Zahlenhaus, Rechendreieck);
+- TIMSS i PIRLS za 4. razred;
+- njemački Sachunterricht;
+- engleski KS1/KS2;
+- hrvatski kurikuli PID i MAT.
+
+**Novi oblici zadataka** (`seeds/dodatci/medjunarodno.js`, svaki je svoja tema, najviše dva u kvizu):
+- **Matematika:** rastav broja i kućica brojeva, vaga, stroj za brojeve, zid brojeva, čarobni kvadrat, zadatci u dva koraka, položaj u redu, rast uzorka, zamišljeni broj, kalendar, kombinacije, zbroj i razlika, logika redoslijeda, euro kovanice i novčanice.
+- **Hrvatski:**
+  - abecedni red po hrvatskoj abecedi (c < č < ć, d < dž < đ, l < lj, n < nj);
+  - glasovi i znakovi (dž, lj, nj);
+  - umanjenice i uvećanice, srodne riječi;
+  - narodne zagonetke i poslovice.
+- **Priroda i društvo:** pliva ili tone, magnet, materijali i svojstva, pošten pokus, sjena.
+- **Informatika (Dabar):** binarni zapis, stablo odlučivanja, najkraći put, šifra s pomakom po hrvatskoj abecedi.
+
+**Hrvatski okvir** (`seeds/lokalno.js`):
+- **Zamjena voća:** banana postaje šljiva, naranča mandarina, sa svim padežima.
+- **Filtar stranih pojmova:** pitanja vezana uz egzotične životinje i biljke, pustinje, strane gradove, države, valute i mjere te strane bajke i autore ispadaju.
+- **Iznimke:** susjedi i kontinenti u temi o domovini, „hrvatski Andersen”, Brijuni.
+- **Vlastite tablice** prepravljene su na domaće životinje (medvjed, ris, poskok, hobotnica, čovječja ribica), domaće biljke (smilje, jablan), hrvatske bajke (Priče iz davnine, Hlapić), hrvatsku lektiru i pridjeve od hrvatskih mjesta.
+- **Tekstovi za čitanje:** iz teksta o Tesli izbačeni su Graz i New York; predstava je „Šegrt Hlapić”.
+
+**Postojeća baza:** `services/obitelji.js → iskljuciStrano()` pri pokretanju servera isključi takva pitanja, a generator daje zamjenska. Napredak djece ostaje.
+
+**Provjera:** novi `npm run test:lokalno` (dio `test:sve`) i svi dosadašnji testovi prolaze.
+
+---
+
 ## −15. Isti problem u svim predmetima (pregled i popravak)
 
 **Pregled:** simulacija svih 83 tema po 20 kvizova, uz brojanje kvizova u kojima 3 ili više pitanja počinje istim riječima. Nađeni su ovi uzroci.
