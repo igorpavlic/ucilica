@@ -19,7 +19,7 @@
 
     <section>
       <h2>Tko obrađuje podatke</h2>
-      <p>Voditelj obrade je osoba ili ustanova koja je postavila ovu Učilicu: <strong>[ime ili naziv, e-adresa za kontakt]</strong>.</p>
+      <p>Voditelj obrade je osoba ili ustanova koja je postavila ovu Učilicu: <strong>From RIM, contact@fromrim.com</strong>.</p>
     </section>
 
     <section>
