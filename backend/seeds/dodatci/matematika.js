@@ -309,7 +309,7 @@ function mjerenjeNovacDodatak() {
     return upisBroja(`Kupuješ: ${s1} za ${a} € i ${s2} za ${b} €. Koliko eura platiš ukupno?`, a + b, 2, `${a} + ${b} = ${a + b}`);
   }).forEach((x) => q.push(x));
   ponovi(5, () => {
-    const imam = cijeli(20, 90), nedostaje = cijeli(2, 20);
+    const imam = cijeli(20, 80), nedostaje = cijeli(2, 20);
     return upisBroja(`Ana ima ${imam} €. Lopta stoji ${imam + nedostaje} €. Koliko joj eura nedostaje?`, nedostaje, 3, `${imam + nedostaje} − ${imam} = ${nedostaje}`);
   }).forEach((x) => q.push(x));
   ponovi(5, () => {
