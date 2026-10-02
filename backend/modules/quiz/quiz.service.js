@@ -1,4 +1,5 @@
-const { getQuizQuestions, generateAndStore } = require('../../services/questionGenerator');
+const { getQuizQuestions, generateAndStore, nedavnoVidjeno } = require('../../services/questionGenerator');
+const dnevni = require('../../services/dnevni');
 const { quizRepository } = require('./quiz.repository');
 const vjestine = require('../../services/vjestine');
 const tezina = require('../../services/tezina');
@@ -270,11 +271,11 @@ function createQuizService() {
     };
   }
 
-  async function createReviewSession({ grade, userId, count }) {
+  async function createReviewSession({ grade, userId, count, dnevniIzazov = false }) {
     const db = getDb();
-    const recent = userId ? await db.collection('progress')
-      .find({ user_id: userId, grade }).sort({ completedAt: -1 }).limit(10).toArray() : [];
-    const seen = new Set(recent.flatMap(p => (p.answers || []).map(a => String(a.question_id))));
+    // Isti prozor kao u temi: viđeno u zadnjih 30 dana (najmanje zadnjih 10 kvizova razreda).
+    const vidjeno = await nedavnoVidjeno(userId, { grade });
+    const seen = new Set(vidjeno.ids);
 
     // Opseg: samo obrađeno (označeno ili već vježbano) gradivo, ne cijeli razred.
     const opseg = await obradjeno.opsegZaPonavljanje(userId, grade);
@@ -292,7 +293,13 @@ function createQuizService() {
       ]).toArray();
       pool.push(...uzorak);
     }
-    const fresh = pool.filter(q => !seen.has(String(q._id)));
+    let fresh = pool.filter(q => !seen.has(String(q._id)));
+    // Premalo neviđenoga (dijete je prošlo cijelo gradivo razreda)? Dopuni
+    // pitanjima koja nisu bila u zadnja tri kviza, umjesto praznog izazova.
+    if (fresh.length < count) {
+      const dopuna = pool.filter(q => seen.has(String(q._id)) && !vidjeno.svjeze.has(String(q._id)));
+      fresh = [...fresh, ...dopuna];
+    }
     const skills = [...new Set(fresh.map(q => skillKeyOf(q)).filter(Boolean))];
     let due = new Set();
     if (userId && skills.length) due = await vjestine.dospjele(userId, skills);
@@ -346,12 +353,29 @@ function createQuizService() {
     const { answerOrders, matchTokens } = buildSessionMaps(chosen);
     const { insertedId } = await repo.createAttempt({ user_id: userId || null,
       topic_id: null, subject_id: null, grade, review: true,
+      ...(dnevniIzazov ? { dnevni: true, dan: dnevni.dan() } : {}),
       question_ids: chosen.map(q => q._id), answer_orders: answerOrders,
       match_tokens: matchTokens, checks: {},
       createdAt: new Date(), completedAt: null });
-    return { attemptId: insertedId, topic: { name: 'Miješano ponavljanje', icon: '🔄' }, opseg: opsegInfo,
+    const naslov = dnevniIzazov ? { name: 'Dnevni izazov', icon: '⭐' } : { name: 'Miješano ponavljanje', icon: '🔄' };
+    return { attemptId: insertedId, topic: naslov, opseg: opsegInfo,
       questions: chosen.map(q => mapSafeQuestion(q, answerOrders[String(q._id)], matchTokens[String(q._id)])),
       totalAvailable: fresh.length, exhausted: false };
+  }
+
+  /**
+   * Dnevni izazov: jedan miješani kviz dnevno iz cijelog (obrađenog) gradiva
+   * razreda, s prednošću vještina dospjelih za ponavljanje. Samo za prijavljene,
+   * jer se niz dana pamti po korisniku.
+   */
+  async function createDailySession({ grade, userId }) {
+    const stanje = await dnevni.stanje(userId);
+    if (stanje.odigranoDanas) {
+      return { questions: [], odigrano: true, dnevni: stanje, topic: { name: 'Dnevni izazov', icon: '⭐' },
+        message: 'Današnji izazov je riješen. Novi te čeka sutra!' };
+    }
+    const sesija = await createReviewSession({ grade, userId, count: dnevni.BROJ_PITANJA, dnevniIzazov: true });
+    return { ...sesija, dnevni: stanje };
   }
 
   async function checkAnswer({ attemptId, questionId, answer, userId = null }) {
@@ -530,7 +554,8 @@ function createQuizService() {
           topic_id: group.topic_id, grade: attempt.grade, attempt_id: attempt._id,
           totalQuestions: group.total, answeredQuestions: group.answers.length,
           correctAnswers: correct, complete: group.answers.length === group.total,
-          score: correct * 10, answers: group.answers, completedAt: sada });
+          score: correct * 10, answers: group.answers, completedAt: sada,
+          ...(attempt.dnevni ? { dnevni: true, dan: attempt.dan } : {}) });
         written = true;
       }
 
@@ -573,8 +598,17 @@ function createQuizService() {
 
     const updatedUser = await repo.findSafeUserById(userId);
 
+    // Dnevni izazov: novi niz dana zaredom za ekran rezultata.
+    let dnevniStanje = null;
+    if (attempt.dnevni) {
+      try { dnevniStanje = await dnevni.stanje(userId); } catch (err) {
+        console.error('⚠️  Stanje dnevnog izazova nije izračunato:', err.message);
+      }
+    }
+
     return {
       ...(tezinaIshod ? { tezina: tezinaIshod } : {}),
+      ...(dnevniStanje ? { dnevni: dnevniStanje } : {}),
       progress: {
         totalQuestions,
         answeredQuestions,
@@ -646,6 +680,7 @@ function createQuizService() {
   return {
     createSession,
     createReviewSession,
+    createDailySession,
     checkAnswer,
     submitQuiz,
     generateForTopic,

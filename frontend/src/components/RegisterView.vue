@@ -8,7 +8,8 @@
 
       <div class="form-group">
         <label>Korisničko ime</label>
-        <input class="form-input" v-model="form.username" placeholder="npr. marko123">
+        <input class="form-input" v-model="form.username" placeholder="npr. zeleni_zmaj">
+        <small class="form-hint">Ne upisuj pravo ime i prezime — dovoljan je nadimak.</small>
       </div>
 
       <div class="form-group">
@@ -41,9 +42,22 @@
         </div>
       </div>
 
+      <!--
+        Djeca mlađa od 16 godina ne mogu sama dati privolu (ZPOU čl. 19),
+        pa registraciju potvrđuje roditelj ili skrbnik.
+      -->
+      <label class="privola">
+        <input type="checkbox" v-model="form.privolaRoditelja">
+        <span>
+          Kao roditelj ili skrbnik potvrđujem da je pročitana
+          <router-link to="/privatnost" target="_blank">obavijest o privatnosti</router-link>
+          i dajem privolu za obradu podataka djeteta.
+        </span>
+      </label>
+
       <button
         class="btn btn-primary mt-md"
-        :disabled="!form.username || !form.password || loading"
+        :disabled="!form.username || !form.password || !form.privolaRoditelja || loading"
         @click="handleRegister"
       >
         {{ loading ? 'Registracija...' : 'Registriraj se 🎉' }}
@@ -73,7 +87,8 @@ const form = reactive({
   password: '',
   displayName: '',
   grade: 1,
-  avatar: '🧒'
+  avatar: '🧒',
+  privolaRoditelja: false
 })
 
 async function handleRegister() {

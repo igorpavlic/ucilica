@@ -25,6 +25,17 @@ const progressRoutes = require('./routes/progress');
 
 const app = express();
 
+// Iza reverse proxyja (Caddy, nginx, Render, Railway) svi zahtjevi dolaze s
+// adrese proxyja. Bez ovoga rate limiter vidi jedan IP za sve korisnike, pa
+// jedno dijete može „potrošiti” ograničenje svima. Broj = koliko proxyja stoji
+// ispred aplikacije. U produkciji je zadano 1; TRUST_PROXY=0 ga isključuje
+// (npr. kad je Node izravno izložen internetu — tada bi zaglavlje
+// X-Forwarded-For mogao lažirati svatko).
+const trustProxy = process.env.TRUST_PROXY ?? (process.env.NODE_ENV === 'production' ? '1' : '0');
+if (trustProxy !== '0' && trustProxy !== 'false') {
+  app.set('trust proxy', /^\d+$/.test(trustProxy) ? Number(trustProxy) : trustProxy);
+}
+
 // ═══════════════════════════════════════════════════════════
 // Middleware
 // ═══════════════════════════════════════════════════════════

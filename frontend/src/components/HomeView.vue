@@ -19,6 +19,26 @@
       </div>
     </div>
 
+    <!--
+      Dnevni izazov: jedan miješani kviz dnevno (10 pitanja iz cijelog razreda,
+      najprije vještine koje treba ponoviti) i niz dana zaredom. Traži prijavu
+      jer se niz pamti po djetetu.
+    -->
+    <section v-if="subjects.length" class="dnevni-kartica" :class="{ gotovo: dnevno?.odigranoDanas }">
+      <div class="dnevni-naslov">⭐ Dnevni izazov</div>
+      <template v-if="isLoggedIn">
+        <p v-if="!dnevno?.odigranoDanas" class="dnevni-opis">
+          10 pitanja iz svih predmeta {{ aktivniRazred }}. razreda — najprije ono što treba ponoviti.
+        </p>
+        <p v-else class="dnevni-opis">Današnji izazov je riješen. Novi te čeka sutra!</p>
+        <div v-if="dnevno?.niz" class="dnevni-niz">🔥 {{ daniRijecju(dnevno.niz) }} zaredom</div>
+        <button v-if="!dnevno?.odigranoDanas" class="btn btn-primary" @click="startDaily">Kreni ⭐</button>
+      </template>
+      <p v-else class="dnevni-opis">
+        <router-link to="/login">Prijavi se</router-link> pa svaki dan rješavaj 10 novih pitanja i skupljaj dane zaredom.
+      </p>
+    </section>
+
     <h1 class="page-title">Odaberi <span>predmet</span></h1>
     <button v-if="subjects.length" class="btn btn-secondary review-button" @click="startReview">
       🔄 Miješano ponavljanje gradiva {{ aktivniRazred }}. razreda
@@ -58,6 +78,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApi } from '../composables/useApi'
 import { useAuth } from '../composables/useAuth'
+import { daniRijecju } from '../composables/mijesano'
 
 const emit = defineEmits(['error'])
 const router = useRouter()
@@ -70,6 +91,13 @@ const razredi = ref([])
 // Razred iz upita (povratak iz teme/kviza) ima prednost pred razredom iz profila.
 const aktivniRazred = ref(Number.parseInt(route.query.grade, 10) || grade.value || 1)
 const spremam = ref(null)
+const dnevno = ref(null)
+
+// Stanje dnevnog izazova; ako zapne, kartica samo ne pokaže niz.
+async function ucitajDnevno () {
+  if (!isLoggedIn.value) return
+  try { dnevno.value = await get('/progress/dnevni') } catch { dnevno.value = null }
+}
 
 async function ucitajPredmete (g) {
   const data = await get(`/subjects?grade=${g}`)
@@ -88,6 +116,7 @@ onMounted(async () => {
     }
 
     await ucitajPredmete(aktivniRazred.value)
+    await ucitajDnevno()
   } catch (e) {
     emit('error', e.message)
   }
@@ -120,6 +149,11 @@ function goToTopics (subj) {
     params: { slug: subj.slug },
     query: { name: subj.name, icon: subj.icon, grade: aktivniRazred.value }
   })
+}
+
+function startDaily () {
+  router.push({ name: 'quiz', params: { topicId: `dnevni-${aktivniRazred.value}` },
+    query: { topicName: 'Dnevni izazov', topicIcon: '⭐', subjectSlug: '', subjectName: '' } })
 }
 
 function startReview () {

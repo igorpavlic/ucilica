@@ -12,6 +12,7 @@ import QuizView from './components/QuizView.vue'
 import ResultsView from './components/ResultsView.vue'
 import AnswerHistoryView from './components/AnswerHistoryView.vue'
 import ProfileView from './components/ProfileView.vue'
+import PrivatnostView from './components/PrivatnostView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -24,7 +25,8 @@ const router = createRouter({
     { path: '/quiz/:topicId', name: 'quiz', component: QuizView, props: true },
     { path: '/results', name: 'results', component: ResultsView },
     { path: '/answers', name: 'answers', component: AnswerHistoryView },
-    { path: '/profile', name: 'profile', component: ProfileView }
+    { path: '/profile', name: 'profile', component: ProfileView },
+    { path: '/privatnost', name: 'privatnost', component: PrivatnostView }
   ]
 })
 

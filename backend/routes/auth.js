@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const { getDb } = require('../db/mongo');
 const { auth } = require('../middleware/auth');
+const privatnost = require('../services/privatnost');
 
 const router = express.Router();
 
@@ -32,7 +33,11 @@ router.post('/register', [
   body('password').isLength({ min: 4 }).withMessage('Lozinka: minimalno 4 znaka'),
   body('displayName').optional().trim().isLength({ min: 1, max: 50 }).withMessage('Ime za prikaz: 1-50 znakova'),
   body('avatar').optional().isString().isLength({ min: 1, max: 10 }).withMessage('Avatar nije valjan'),
-  body('grade').optional().isInt({ min: 1, max: 8 }).withMessage('Razred: 1-8')
+  body('grade').optional().isInt({ min: 1, max: 8 }).withMessage('Razred: 1-8'),
+  // Dijete mlađe od 16 godina ne može samo dati privolu (ZPOU čl. 19) —
+  // registraciju potvrđuje roditelj ili skrbnik.
+  body('privolaRoditelja').custom((v) => v === true)
+    .withMessage('Registraciju mora potvrditi roditelj ili skrbnik (privola za obradu podataka).')
 ], async (req, res) => {
   try {
     if (!validate(req, res)) return;
@@ -55,6 +60,7 @@ router.post('/register', [
       role: 'student',
       totalScore: 0,
       streak: 0,
+      privola: privatnost.zapisPrivole(),
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -133,6 +139,37 @@ router.patch('/me', auth, [
   } catch (err) {
     console.error('Profile update error:', err);
     res.status(400).json({ error: 'Greška pri ažuriranju profila.' });
+  }
+});
+
+// GET /api/auth/me/izvoz — svi podatci o djetetu kao JSON (GDPR čl. 15 i 20)
+router.get('/me/izvoz', auth, async (req, res) => {
+  try {
+    const podatci = await privatnost.izvoz(req.user._id);
+    res.setHeader('Content-Disposition', `attachment; filename="ucilica-${req.user.username}.json"`);
+    res.json(podatci);
+  } catch (err) {
+    console.error('Export error:', err);
+    res.status(500).json({ error: 'Greška pri izvozu podataka.' });
+  }
+});
+
+// DELETE /api/auth/me { password } — trajno briše račun i sve podatke (GDPR čl. 17).
+// Traži lozinku, da dijete ne obriše račun slučajnim klikom.
+router.delete('/me', auth, [
+  body('password').isString().isLength({ min: 1 }).withMessage('Za brisanje računa upiši lozinku.')
+], async (req, res) => {
+  try {
+    if (!validate(req, res)) return;
+    const korisnik = await getDb().collection('users').findOne({ _id: req.user._id });
+    if (!korisnik || !(await bcrypt.compare(req.body.password, korisnik.password))) {
+      return res.status(401).json({ error: 'Lozinka nije točna.' });
+    }
+    const obrisano = await privatnost.obrisi(req.user._id);
+    res.json({ message: 'Račun i svi podatci su obrisani.', obrisano });
+  } catch (err) {
+    console.error('Delete account error:', err);
+    res.status(500).json({ error: 'Greška pri brisanju računa.' });
   }
 });
 

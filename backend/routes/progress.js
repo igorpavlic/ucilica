@@ -4,6 +4,7 @@ const { getDb } = require('../db/mongo');
 const { auth } = require('../middleware/auth');
 const vjestine = require('../services/vjestine');
 const obradjeno = require('../services/obradjeno');
+const dnevni = require('../services/dnevni');
 
 const router = express.Router();
 
@@ -232,6 +233,13 @@ router.get('/vjestine', auth, async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+// Stanje dnevnog izazova za početnu stranicu: je li danas odigran i niz dana zaredom.
+router.get('/dnevni', auth, async (req, res, next) => {
+  try {
+    res.json(await dnevni.stanje(req.user._id));
+  } catch (err) { next(err); }
 });
 
 /**

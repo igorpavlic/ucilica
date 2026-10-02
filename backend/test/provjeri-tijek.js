@@ -53,7 +53,13 @@ const podudara = (doc, upit) => Object.entries(upit).every(([k, v]) => {
 function kolekcija(ime) {
   const red = kolekcije[ime] || (kolekcije[ime] = []);
   const kursor = (docs) => ({
-    sort() { return this; },
+    // Stvarno sortiranje po prvom ključu: prozor viđenih pitanja ovisi o
+    // redoslijedu kvizova (najnoviji prvi).
+    sort(spec = {}) {
+      const [k, smjer] = Object.entries(spec)[0] || [];
+      if (!k) return this;
+      return kursor([...docs].sort((a, b) => (dohvati(a, k) > dohvati(b, k) ? 1 : dohvati(a, k) < dohvati(b, k) ? -1 : 0) * smjer));
+    },
     limit(n) { return kursor(docs.slice(0, n)); },
     project() { return this; },
     toArray: async () => docs,
@@ -76,6 +82,8 @@ function kolekcija(ime) {
       if (op.$inc) for (const [k, v] of Object.entries(op.$inc)) postavi(d, k, (dohvati(d, k) || 0) + v);
       return { matchedCount: 1, modifiedCount: 1 };
     },
+    deleteOne: async (u) => { const i = red.findIndex((d) => podudara(d, u)); if (i >= 0) red.splice(i, 1); return { deletedCount: i >= 0 ? 1 : 0 }; },
+    deleteMany: async (u) => { const prije = red.length; for (let i = red.length - 1; i >= 0; i--) if (podudara(red[i], u)) red.splice(i, 1); return { deletedCount: prije - red.length }; },
     createIndex: async () => 'ok',
     aggregate: (cjevovod) => {
       let docs = red.slice();
@@ -363,6 +371,67 @@ const tvrdi = (uvjet, opis, detalj = '') => {
       attemptId: review.attemptId, answers });
     tvrdi(result.progress.correctAnswers === answers.length,
       'miješano ponavljanje sprema točne odgovore', JSON.stringify(result.progress));
+  }
+
+  // ── dnevni izazov, prozor viđenih pitanja, privatnost (2026-10-02) ──
+  console.log('\n── dnevni izazov, viđena pitanja, privatnost ──\n');
+  {
+    const tocniOdgovori = (sesija) => sesija.questions.map((q) => {
+      const original = kolekcije.questions.find((x) => String(x._id) === String(q._id));
+      const pokusaj = kolekcije.quiz_attempts.find((a) => String(a._id) === String(sesija.attemptId));
+      const userAnswer = original.type === 'choice' ? q.answers.indexOf(original.answers[original.correctIndex])
+        : original.type === 'match' ? Object.fromEntries(original.pairs.map((_, i) => [i, pokusaj.match_tokens[String(q._id)][i]]))
+        : original.type === 'ordering' ? original.items
+        : original.type === 'true-false' ? original.correct : original.correctAnswer;
+      return { questionId: q._id, userAnswer, timeTaken: 900 };
+    });
+
+    const D = require('../services/dnevni');
+    tvrdi(D.dan(new Date('2026-10-01T22:30:00Z')) === '2026-10-02', 'dnevni izazov broji dane po zagrebačkom vremenu (00:30 je već novi dan)');
+    const n = D.izracunajNiz(['2026-09-29', '2026-09-30', '2026-10-01'], '2026-10-02');
+    tvrdi(n.niz === 3, 'niz nije prekinut dok današnji dan ne prođe', JSON.stringify(n));
+    tvrdi(D.izracunajNiz(['2026-09-28'], '2026-10-02').niz === 0, 'propušten dan prekida niz');
+
+    const prije = await D.stanje(ID.user);
+    tvrdi(!prije.odigranoDanas, 'prije izazova: danas nije odigrano');
+    const dnevna = await service.createDailySession({ grade: 1, userId: ID.user });
+    tvrdi(dnevna.questions.length > 0 && dnevna.topic.name === 'Dnevni izazov', 'dnevni izazov otvara miješanu sesiju', `${dnevna.questions.length}`);
+    const pokusaj = kolekcije.quiz_attempts.find((a) => String(a._id) === String(dnevna.attemptId));
+    tvrdi(pokusaj.dnevni === true && pokusaj.dan === D.dan(), 'sesija je označena kao dnevna, s današnjim datumom');
+    const r = await service.submitQuiz({ userId: ID.user, topicId: null, reviewGrade: 1, attemptId: dnevna.attemptId, answers: tocniOdgovori(dnevna) });
+    tvrdi(r.dnevni && r.dnevni.odigranoDanas && r.dnevni.niz === 1, 'predaja vraća niz od 1 dana', JSON.stringify(r.dnevni));
+    const opet = await service.createDailySession({ grade: 1, userId: ID.user });
+    tvrdi(opet.odigrano === true && opet.questions.length === 0, 'drugi dnevni izazov istoga dana se ne otvara');
+
+    // Prozor viđenih pitanja: kviz star 40 dana ne skriva pitanja ako ima 10+ novijih kvizova.
+    const QG = require('../services/questionGenerator');
+    const staroId = oid(), novoId = oid(), tema = oid(), korisnik = oid();
+    const daniUnatrag = (d) => new Date(Date.now() - d * 86400000);
+    kolekcije.progress.push({ user_id: korisnik, topic_id: tema, completedAt: daniUnatrag(40), answers: [{ question_id: staroId }] });
+    for (let i = 0; i < 10; i++) kolekcije.progress.push({ user_id: korisnik, topic_id: tema, completedAt: daniUnatrag(39 - i), answers: [] });
+    kolekcije.progress.push({ user_id: korisnik, topic_id: tema, completedAt: daniUnatrag(2), answers: [{ question_id: novoId }] });
+    const v = await QG.nedavnoVidjeno(korisnik, { topic_id: tema });
+    tvrdi(v.ids.includes(String(novoId)) && !v.ids.includes(String(staroId)), 'pitanje od prije 2 dana je viđeno, ono od prije 40 dana (iza 10 kvizova) nije', JSON.stringify(v.ids));
+    tvrdi(v.svjeze.has(String(novoId)), 'pitanje iz zadnja 3 kviza se ne vraća ni u nuždi');
+    // Ista igra pet puta istoga dana: unutar 30 dana ostaje „viđeno” i nakon 10 kvizova.
+    const k2 = oid(), t2 = oid(), jutros = oid();
+    kolekcije.progress.push({ user_id: k2, topic_id: t2, completedAt: daniUnatrag(5), answers: [{ question_id: jutros }] });
+    for (let i = 0; i < 12; i++) kolekcije.progress.push({ user_id: k2, topic_id: t2, completedAt: daniUnatrag(1), answers: [] });
+    tvrdi((await QG.nedavnoVidjeno(k2, { topic_id: t2 })).ids.includes(String(jutros)), 'pitanje od prije 5 dana ostaje viđeno i nakon 12 novijih kvizova');
+
+    // Privatnost: izvoz bez lozinke, brisanje svega što pripada djetetu.
+    const P = require('../services/privatnost');
+    const izvoz = await P.izvoz(ID.user);
+    tvrdi(izvoz.korisnik && !('password' in izvoz.korisnik) && izvoz.progress.length > 0, 'izvoz sadrži napredak, a ne sadrži lozinku');
+    kolekcije.skill_states = kolekcije.skill_states || [];
+    kolekcije.skill_states.push({ user_id: ID.user, skill: 'x' });
+    const obrisano = await P.obrisi(ID.user);
+    const ostalo = P.KORISNICKE_ZBIRKE.reduce((n, z) => n + (kolekcije[z] || []).filter((d) => String(d.user_id) === String(ID.user)).length, 0);
+    tvrdi(obrisano.users === 1 && ostalo === 0 && !kolekcije.users.some((u) => String(u._id) === String(ID.user)),
+      'brisanje računa uklanja korisnika i sve njegove zapise', JSON.stringify(obrisano));
+    tvrdi(P.zapisPrivole().daje === 'roditelj ili skrbnik' && !!P.zapisPrivole().verzijaObavijesti, 'privola bilježi tko ju je dao i na koju verziju obavijesti');
+    // Vrati korisnika za ostale provjere.
+    kolekcije.users.push({ _id: ID.user, username: 'test', displayName: 'Test', totalScore: 0, streak: 0, password: 'tajna' });
   }
 
   {
