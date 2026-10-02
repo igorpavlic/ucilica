@@ -49,6 +49,9 @@
           <span class="icon">🔥</span>
           {{ streak }}
         </router-link>
+        <router-link to="/upute" class="topbar-upute" title="Upute" aria-label="Upute">
+          <span aria-hidden="true">❓</span><span class="topbar-upute-tekst">Upute</span>
+        </router-link>
         <button v-if="isLoggedIn" class="btn-logout" @click="handleLogout">Odjava</button>
         <router-link v-else to="/login" class="btn-logout" style="text-decoration:none">Prijava</router-link>
       </div>
