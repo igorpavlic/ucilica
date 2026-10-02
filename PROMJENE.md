@@ -4,6 +4,44 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −14. Kviz bez niza istih pitanja („koji grad pripada kojem kraju” 7×)
+
+**Prijava:** u temi Krajevi Hrvatske svih 7 pitanja kviza bilo je oblika „Kojem kraju pripada grad …?”.
+
+**Uzrok:**
+- Obitelj pitanja (po kojoj izbor izbjegava isti oblik u kvizu) računala se tako da se iz teksta uklanjaju samo navodnici i brojevi.
+- Dodatna pitanja imaju imena bez navodnika („…grad Vukovar?”, „…grad Pula?”), pa je svako bilo zasebna obitelj.
+- Uz to, tvrdnje iz jedne tablice (npr. 104 o županijama) u kasnijim su kvizovima nadvladale male obitelji.
+
+**Popravak:**
+- **Obitelj se zapisuje uz pitanje** (`obitelj`):
+  - kod tablica je obitelj sama tablica: oba smjera i tvrdnje Da/Ne iste vrste činjenica jedna su obitelj;
+  - inače se prepoznaje predložak, tj. zajedničke riječi pitanja (`questionFamily.prepoznajObitelji`);
+  - sve iza dvotočke je podatak;
+  - predložak samo od „Smiješ li …” smatra se preopćenitim, pa takva pitanja ostaju zasebna.
+- **Izbor kviza** (`questionGenerator.js`):
+  - bazen se slaže naizmjence po obiteljima, najprije iz najvećih;
+  - u kvizu su najviše dva pitanja iste vrste;
+  - računski drill („7 + 5 = ?”) izuzet je od toga pravila;
+  - kad neviđenih iz drugih obitelji nema, granica je tri pitanja, a višak se zamjenjuje najdavnije viđenim pitanjem (nikad iz zadnja tri kviza);
+  - novo generiranje pokreće se i kad neviđena pitanja dolaze iz premalo vrsta.
+- **Ograničenje 10 po obitelji** u pregledu generatora sada zadržava nasumičan podskup, pa se kroz više generiranja pojave sva pitanja.
+- **Novi sadržaj:**
+  - Krajevi Hrvatske: 18 pitanja o klimi, gospodarstvu i znamenitostima;
+  - nekoliko tema siromašnih vrstama (Računalo 1.–2. r., kutovi, kocka i kvadar, uvjeti života, domovina, Ja i drugi, promet): pojedinačno napisana pitanja.
+- **Postojeća baza:** pri pokretanju servera `services/obitelji.js` jednom dopuni obitelj starim pitanjima, a kasnije ne radi ništa.
+
+**Rezultat simulacije** (83 teme × 20 kvizova × 7 pitanja):
+- treće ili kasnije pitanje iste vrste u istom kvizu: 121 od 11 340, i to samo u nekoliko tema s malo sadržaja;
+- isti tekst: 113.
+
+**Provjera:** `npm run test:sve`. Novi testovi provjeravaju:
+- prepoznavanje predloška;
+- da svako pitanje generatora ima obitelj;
+- da 8 kvizova Krajeva Hrvatske ima najviše dva pitanja iste vrste.
+
+---
+
 ## −13. Dvadeset kvizova bez ponovljenog pitanja
 
 **Zahtjev:** dijete koje istu temu odigra 20 puta (140 pitanja) ne smije vidjeti ponovljeno pitanje.

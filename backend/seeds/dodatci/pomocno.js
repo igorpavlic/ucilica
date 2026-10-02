@@ -7,6 +7,18 @@
  */
 const { promijesaj, uzmi, jedan, cijeli, izbor, tocnoNetocno, spoji, poredaj, upisBroja, vel } = require('../gen-pomocno');
 
+/**
+ * Obitelj (predložak) pitanja iz funkcije koja ga gradi: predložak s „□” umjesto
+ * podataka. Pitanja iz istoga predloška ista su obitelj, pa ih kviz ne slaže
+ * jedno za drugim ni sedam puta u istom kvizu.
+ */
+const predlozak = (f) => String(f('□', '□')).toLowerCase().replace(/\s+/g, ' ').trim();
+/**
+ * Obitelj tablice: sva pitanja iz iste tablice (oba smjera i tvrdnje Da/Ne)
+ * jedna su obitelj, pa kviz ima najviše jedno pitanje o istoj vrsti činjenica.
+ */
+const obiteljTablice = (tablica) => `tablica:${JSON.stringify(tablica[0]).slice(0, 60)}`;
+
 /** Pravilan oblik imenice uz broj: oblik(5, ['jabuka','jabuke','jabuka']). */
 function oblik(n, [jd, pauk, mn]) {
   const d = n % 10, s = n % 100;
@@ -32,15 +44,15 @@ function blizu(tocno, koraci = [1, -1, 10, -10, 2, -2]) {
  * Jedan zapis iz tablice parova [a, b] → pitanja u oba smjera.
  * `pitajB(a)` traži b (ponude su ostali b-ovi), `pitajA(b)` traži a.
  */
-function obaSmjera(tablica, { pitajB, pitajA, tezina = 2, objasni = () => '' }) {
+function obaSmjera(tablica, { pitajB, pitajA, tezina = 2, objasni = () => '', obitelj } = {}) {
   const sviA = [...new Set(tablica.map((x) => x[0]))], sviB = [...new Set(tablica.map((x) => x[1]))];
   const q = [];
   for (const [a, b] of tablica) {
     // ometač ne smije biti drugi točan odgovor (isti a s više b-ova)
     const drugiB = sviB.filter((x) => !tablica.some(([a2, b2]) => a2 === a && b2 === x));
     const drugiA = sviA.filter((x) => !tablica.some(([a2, b2]) => b2 === b && a2 === x));
-    if (pitajB && drugiB.length >= 2) q.push(izbor(pitajB(a, b), b, drugiB, tezina, objasni(a, b)));
-    if (pitajA && drugiA.length >= 2) q.push(izbor(pitajA(b, a), a, drugiA, tezina, objasni(a, b)));
+    if (pitajB && drugiB.length >= 2) q.push({ ...izbor(pitajB(a, b), b, drugiB, tezina, objasni(a, b)), obitelj: obitelj || obiteljTablice(tablica) });
+    if (pitajA && drugiA.length >= 2) q.push({ ...izbor(pitajA(b, a), a, drugiA, tezina, objasni(a, b)), obitelj: obitelj || obiteljTablice(tablica) });
   }
   return q;
 }
@@ -64,16 +76,20 @@ function tvrdnje(tablica, recenica, { tezina = 2, objasni = () => '' } = {}) {
  * netočnih (s tuđim b koji za taj a nije točan). Netočni se biraju nasumično,
  * pa se kroz više generiranja skupi cijela tablica uparivanja.
  */
-function sveTvrdnje(tablica, recenica, { lazni = 2, tezina = 2, objasni = () => '' } = {}) {
+function sveTvrdnje(tablica, recenica, { lazni = 2, tezina = 2, objasni = () => '', obitelj } = {}) {
   const sviB = [...new Set(tablica.map((x) => x[1]))];
+  const ob = obitelj || obiteljTablice(tablica);
   const q = [];
   for (const [a, b] of tablica) {
-    q.push(tocnoNetocno(recenica(a, b), true, tezina, objasni(a, b)));
+    q.push({ ...tocnoNetocno(recenica(a, b), true, tezina, objasni(a, b)), obitelj: ob });
     const krivi = sviB.filter((x) => !tablica.some(([a2, b2]) => a2 === a && b2 === x));
-    for (const k of uzmi(krivi, lazni)) q.push(tocnoNetocno(recenica(a, k), false, tezina, objasni(a, b)));
+    for (const k of uzmi(krivi, lazni)) q.push({ ...tocnoNetocno(recenica(a, k), false, tezina, objasni(a, b)), obitelj: ob });
   }
   return q;
 }
+
+/** Svim pitanjima zadaj istu obitelj (npr. sva pitanja „kojem kraju pripada…”). */
+const uObitelj = (obitelj, qs) => qs.map((q) => ({ ...q, obitelj }));
 
 /** Spajanje: nasumično `komada` zadataka po `koliko` parova iz tablice (jedinstveni lijevi i desni). */
 function spajanja(tablica, pitanje, { koliko = 4, komada = 3, tezina = 2, objasnjenje = '' } = {}) {
@@ -97,5 +113,5 @@ const daNe = (redovi, tezina = 2) => redovi.map(([p, t, o]) => tocnoNetocno(p, t
 
 module.exports = {
   promijesaj, uzmi, jedan, cijeli, izbor, tocnoNetocno, spoji, poredaj, upisBroja, vel,
-  oblik, sOblikom, fmt, blizu, obaSmjera, tvrdnje, sveTvrdnje, spajanja, izTablice, daNe,
+  oblik, sOblikom, fmt, blizu, obaSmjera, tvrdnje, sveTvrdnje, uObitelj, obiteljTablice, spajanja, izTablice, daNe,
 };

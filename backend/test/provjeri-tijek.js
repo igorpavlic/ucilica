@@ -692,6 +692,40 @@ const tvrdi = (uvjet, opis, detalj = '') => {
     tvrdi(nepoznata.outcome === null && nepoznata.curriculumAlignment === 'none', 'nepoznata tema ne dobiva izmišljeni ishod');
   }
 
+  // ── raznolikost kviza: ista vrsta pitanja (obitelj) ──
+  {
+    console.log('\n── raznolikost kviza (prijava 2026-10-02: 7× „koji grad pripada kojem kraju”) ──\n');
+    const QF = require('../services/questionFamily');
+    const pit = (t) => ({ question: t });
+    const ob = QF.prepoznajObitelji(['U kojem se kraju Hrvatske nalazi grad Vukovar?', 'U kojem se kraju Hrvatske nalazi grad Pula?',
+      'U kojem se kraju Hrvatske nalazi grad Senj?', 'Smiješ li otvoriti privitak od nepoznate osobe?', 'Smiješ li dirati uređaj mokrim rukama?',
+      'Smiješ li prijatelju reći lozinku?'].map(pit));
+    tvrdi(ob[0] === ob[1] && ob[1] === ob[2], 'isti predložak s drugim imenom bez navodnika je ista obitelj', ob[0]);
+    tvrdi(new Set(ob.slice(3)).size === 3, 'samo „Smiješ li …” nije zajednički predložak', JSON.stringify(ob.slice(3)));
+
+    const { GENERATORS } = require('../services/questionGenerator');
+    const kr = GENERATORS['krajevi-hr']();
+    tvrdi(kr.filter((q) => !q.passage).every((q) => q.obitelj), 'generator upisuje obitelj svakom pitanju');
+
+    const TKR = oid();
+    kolekcije.topics.push({ _id: TKR, slug: 'krajevi-hr', name: 'Krajevi', icon: '🗺️', grade: 4, subject_id: ID.subject, isActive: true });
+    const KOR = oid();
+    kolekcije.users.push({ _id: KOR, username: 'raznolikost', grade: 4, totalScore: 0, streak: 0 });
+    let najvise = 0;
+    for (let k = 0; k < 8; k++) {
+      const ses = await service.createSession({ topicId: TKR, userId: KOR, count: 7 });
+      const broj = new Map();
+      for (const q of ses.questions) {
+        const f = QF.questionFamilyKey(kolekcije.questions.find((x) => String(x._id) === String(q._id)));
+        broj.set(f, (broj.get(f) || 0) + 1);
+      }
+      najvise = Math.max(najvise, ...broj.values());
+      await service.submitQuiz({ userId: KOR, topicId: TKR, attemptId: ses.attemptId,
+        answers: ses.questions.map((q) => ({ questionId: q._id, userAnswer: null, timeTaken: 1000 })) });
+    }
+    tvrdi(najvise <= 2, 'u 8 kvizova „Krajevi Hrvatske” najviše dva pitanja iste vrste po kvizu', `najviše ${najvise}`);
+  }
+
   console.log('');
   if (pao) { console.log('PALO.\n'); process.exit(1); }
   console.log('Tijek kviza radi.\n');

@@ -3,9 +3,11 @@
  * zavičaj i karta, gospodarske djelatnosti, kulturna baština, krajevi
  * Hrvatske, Hrvatska — moja domovina.
  */
-const { izbor, tocnoNetocno, obaSmjera, sveTvrdnje, spajanja, izTablice, daNe, uzmi } = require('./pomocno');
+const { izbor, tocnoNetocno, obaSmjera, sveTvrdnje, uObitelj, spajanja, izTablice, daNe, uzmi } = require('./pomocno');
 
 const KRAJEVI = ['nizinski', 'brežuljkasti', 'gorski', 'primorski'];
+const KRAJ_PRIPADNOST = 'kraj-pripadnost';
+const KRAJ_TVRDNJA = 'kraj-pripadnost-da-ne';
 
 // ═══ 4. razred: krajevi Hrvatske ═══
 const GRADOVI = [['Vukovar', 'nizinski'], ['Vinkovci', 'nizinski'], ['Đakovo', 'nizinski'], ['Koprivnica', 'nizinski'], ['Sisak', 'nizinski'], ['Virovitica', 'nizinski'],
@@ -23,13 +25,38 @@ const PLANINE = [['Risnjak', 'gorski'], ['Bjelolasica', 'gorski'], ['Učka', 'pr
 const KR_DA_NE = [['Je li Slavonija nizinski kraj?', true], ['Ima li u gorskom kraju mnogo snijega zimi?', true], ['Je li Istra gorski kraj?', false], ['Teče li Dunav kroz primorski kraj?', false],
   ['Uzgajaju li se masline u primorskom kraju?', true], ['Je li Hrvatsko zagorje brežuljkasti kraj?', true], ['Nalazi li se Gospić u nizinskom kraju?', false], ['Ima li nizinski kraj velike plodne ravnice?', true],
   ['Nalaze li se otoci u primorskom kraju?', true], ['Je li Lika primorski kraj?', false]];
+// Znanje o krajevima osim „koji grad je u kojem kraju”: klima, gospodarstvo, znamenitosti.
+const KRAJ_ZNANJE = [
+  ['Zašto je u nizinskom kraju razvijena poljoprivreda?', 'ima plodnoga tla i velikih ravnica', ['ima mnogo stijena', 'ondje je uvijek snijeg', 'ondje nema rijeka']],
+  ['Zašto su u gorskom kraju ljeta svježa, a zime duge i snježne?', 'kraj je visoko iznad mora', ['kraj je uz more', 'ondje nema šuma', 'ondje su velike ravnice']],
+  ['Koja je gospodarska djelatnost najvažnija u primorskom kraju?', 'turizam', ['rudarstvo', 'uzgoj riže', 'skijanje']],
+  ['Koja je djelatnost važna u gorskom kraju zbog velikih šuma?', 'drvna industrija', ['ribarstvo', 'uzgoj maslina', 'brodogradnja']],
+  ['Koji se park prirode nalazi na planini iznad Zagreba?', 'Park prirode Medvednica', ['Nacionalni park Kornati', 'Nacionalni park Mljet', 'Nacionalni park Brijuni']],
+  ['Koji je nacionalni park u Gorskom kotaru?', 'Risnjak', ['Kornati', 'Mljet', 'Brijuni']],
+  ['Koja je močvara u nizinskom kraju poznata po pticama?', 'Kopački rit', ['Plitvička jezera', 'Vransko jezero kod Cresa', 'Paklenica']],
+  ['Kakva je klima u primorskom kraju?', 'vruća suha ljeta i blage kišovite zime', ['hladna ljeta i snježne zime', 'cijele godine snijeg', 'cijele godine hladno']],
+  ['Kakva je klima u nizinskom kraju?', 'vruća ljeta i hladne zime', ['blage zime i suha ljeta uz more', 'cijele godine toplo', 'cijele godine hladno']],
+  ['Što se najčešće uzgaja na brežuljcima Hrvatskog zagorja?', 'vinova loza', ['masline', 'riža', 'banane']],
+  ['Koja voćka je tipična za primorski kraj?', 'maslina', ['šljiva', 'jabuka', 'kruška']],
+  ['Koja rijeka čini dio granice Hrvatske na istoku, uz Vukovar?', 'Dunav', ['Krka', 'Cetina', 'Kupa']],
+  ['Po čemu je poznat grad Varaždin?', 'po baroknim građevinama i Starom gradu', ['po rimskoj areni', 'po otocima', 'po skijalištima']],
+  ['Koja je velika rimska građevina u Puli?', 'Arena (amfiteatar)', ['Dioklecijanova palača', 'Trakošćan', 'Eufrazijeva bazilika']],
+  ['Kako se zovu kućice u vinogradima Hrvatskog zagorja?', 'klijeti', ['kažuni', 'brvnare', 'svjetionici']],
+  ['Kako se zovu kamene kućice u Istri?', 'kažuni', ['klijeti', 'čardaci', 'kule']],
+  ['Koji je planinski prijevoj važan za put iz unutrašnjosti prema moru?', 'Vratnik iznad Senja', ['Kopački rit', 'Arena', 'Krka']],
+  ['Zašto se u gorskom kraju razvija zimski turizam?', 'ima snijega i planina', ['ima toplog mora', 'ima velikih ravnica', 'ima maslinika']],
+];
 function krajeviDodatak() {
-  const q = [];
-  q.push(...GRADOVI.map(([g, k]) => izbor(`U kojem se kraju Hrvatske nalazi grad ${g}?`, k, KRAJEVI.filter((x) => x !== k), 2)));
-  q.push(...REGIJE.map(([r, k]) => izbor(`Koji je kraj Hrvatske ${r}?`, k, KRAJEVI.filter((x) => x !== k), 2)));
+  const q = [...izTablice(KRAJ_ZNANJE, 2)];
+  // Sva pitanja „koji kraj?” (grad, područje, rijeka, planina) jedna su obitelj:
+  // u kvizu najviše jedno takvo pitanje, ostalo su drugi oblici.
+  q.push(...uObitelj(KRAJ_PRIPADNOST, [
+    ...GRADOVI.map(([g, k]) => izbor(`U kojem se kraju Hrvatske nalazi grad ${g}?`, k, KRAJEVI.filter((x) => x !== k), 2)),
+    ...REGIJE.map(([r, k]) => izbor(`Koji je kraj Hrvatske ${r}?`, k, KRAJEVI.filter((x) => x !== k), 2)),
+    ...RIJEKE.map(([r, k]) => izbor(`Kroz koji kraj Hrvatske teče rijeka ${r}?`, k, KRAJEVI.filter((x) => x !== k), 3)),
+    ...PLANINE.map(([p, k]) => izbor(`U kojem se kraju Hrvatske nalazi planina ${p}?`, k, KRAJEVI.filter((x) => x !== k), 3)),
+  ]));
   q.push(...OBILJEZJA.map(([o, k]) => izbor(`Koji kraj Hrvatske opisuje: ${o}?`, k, KRAJEVI.filter((x) => x !== k), 2)));
-  q.push(...RIJEKE.map(([r, k]) => izbor(`Kroz koji kraj Hrvatske teče rijeka ${r}?`, k, KRAJEVI.filter((x) => x !== k), 3)));
-  q.push(...PLANINE.map(([p, k]) => izbor(`U kojem se kraju Hrvatske nalazi planina ${p}?`, k, KRAJEVI.filter((x) => x !== k), 3)));
   q.push(...spajanja(REGIJE, 'Spoji područje s krajem Hrvatske:', { koliko: 4, komada: 3 }));
   q.push(...KR_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2)));
   return q;
@@ -167,9 +194,9 @@ const genitivZupanije = (z) => z.replace(/a$/, 'e');
 function krajeviTvrdnje() {
   const objasni = (a, b) => `${a}: ${b} kraj.`;
   return [
-    ...sveTvrdnje(GRADOVI, (a, b) => `Nalazi li se grad ${a} u ${U_KRAJU[b]} kraju?`, { objasni }),
-    ...sveTvrdnje(REGIJE, (a, b) => `Pripada li ${a} ${U_KRAJU[b]} kraju Hrvatske?`, { objasni }),
-    ...sveTvrdnje(RIJEKE, (a, b) => `Teče li rijeka ${a} kroz ${b} kraj?`, { objasni, lazni: 1 }),
+    ...sveTvrdnje(GRADOVI, (a, b) => `Nalazi li se grad ${a} u ${U_KRAJU[b]} kraju?`, { obitelj: KRAJ_TVRDNJA, objasni }),
+    ...sveTvrdnje(REGIJE, (a, b) => `Pripada li ${a} ${U_KRAJU[b]} kraju Hrvatske?`, { obitelj: KRAJ_TVRDNJA, objasni }),
+    ...sveTvrdnje(RIJEKE, (a, b) => `Teče li rijeka ${a} kroz ${b} kraj?`, { obitelj: KRAJ_TVRDNJA, objasni, lazni: 1 }),
     ...sveTvrdnje(OBILJEZJA, (a, b) => `Opisuje li ${b} kraj ovo: ${a}?`, { objasni: (a, b) => `To opisuje ${b} kraj.`, lazni: 1 }),
   ];
 }
