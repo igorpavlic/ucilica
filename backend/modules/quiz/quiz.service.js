@@ -101,6 +101,15 @@ function sessionContext(attempt, questionId) {
   };
 }
 
+/**
+ * Oznake za tip točno/netočno. Na pitanje („Smiješ li…?”, „Je li…?”) odgovara
+ * se s „Da” ili „Ne”; „Točno/Netočno” vrijedi samo za tvrdnju. Isto pravilo
+ * ima i klijent (QuizView.vue, AnswerHistoryView.vue).
+ */
+function oznakeDaNe(question) {
+  return /\?\s*$/.test(String(question?.question || '')) ? ['Da', 'Ne'] : ['Točno', 'Netočno'];
+}
+
 function evaluateQuestion(question, rawAnswer, context = {}) {
   // Stariji pozivi predaju samo raspored odgovora (niz).
   const { answerOrder = null, matchTokens = null } = Array.isArray(context) ? { answerOrder: context } : (context || {});
@@ -120,7 +129,7 @@ function evaluateQuestion(question, rawAnswer, context = {}) {
     const chosen = rawAnswer === true || rawAnswer === 'true' ? true
       : rawAnswer === false || rawAnswer === 'false' ? false : null;
     return { normalizedAnswer: chosen, isCorrect: chosen !== null && chosen === question.correct,
-      correctAnswer: question.correct ? 'Točno' : 'Netočno', correctIndex: null };
+      correctAnswer: oznakeDaNe(question)[question.correct ? 0 : 1], correctIndex: null };
   }
   // Spajanje parova: odgovor je { lijeviId: desniId, ... }.
   // Točno je kad je svaki lijevi spojen sa svojim izvornim parom.
@@ -690,4 +699,4 @@ function createQuizService() {
   };
 }
 
-module.exports = { createQuizService, createHttpError, evaluateQuestion, mapSafeQuestion };
+module.exports = { createQuizService, createHttpError, evaluateQuestion, mapSafeQuestion, oznakeDaNe };

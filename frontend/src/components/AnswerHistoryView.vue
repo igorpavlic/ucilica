@@ -75,6 +75,7 @@
 </template>
 
 <script setup>
+import { oznakeDaNe } from '../composables/daNe'
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApi } from '../composables/useApi'
@@ -110,6 +111,14 @@ watch(() => route.query.filter, (newFilter) => {
 })
 
 function formatUserAnswer(item) {
+  // Točno/netočno se sprema kao true/false; prikaži ga riječima.
+  if (item.type === 'true-false') {
+    const [da, ne] = oznakeDaNe(item.question)
+    const v = item.userAnswer
+    if (v === true || v === 'true') return da
+    if (v === false || v === 'false') return ne
+  }
+  if (item.type === 'ordering' && Array.isArray(item.userAnswer)) return item.userAnswer.join(' → ')
   if (item.type === 'choice' && item.answers.length > 0) {
     const idx = parseInt(item.userAnswer)
     if (!isNaN(idx) && item.answers[idx]) {

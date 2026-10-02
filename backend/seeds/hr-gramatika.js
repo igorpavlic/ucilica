@@ -160,7 +160,28 @@ function kontekst(a, b, filtar = {}) {
   };
 }
 
+/**
+ * Genitiv vremenskih imenica — iza „nakon”, „prije”, „poslije”, „do”, „od”:
+ * „nakon četvrtka”, „prije siječnja”, „nakon jeseni” (ne „nakon četvrtak”).
+ * Vrsta služi za prirodno pitanje („Koji mjesec…”, „Koji dan…”).
+ */
+const VREMENSKE = {
+  siječanj: ['siječnja', 'mjesec'], veljača: ['veljače', 'mjesec'], ožujak: ['ožujka', 'mjesec'], travanj: ['travnja', 'mjesec'],
+  svibanj: ['svibnja', 'mjesec'], lipanj: ['lipnja', 'mjesec'], srpanj: ['srpnja', 'mjesec'], kolovoz: ['kolovoza', 'mjesec'],
+  rujan: ['rujna', 'mjesec'], listopad: ['listopada', 'mjesec'], studeni: ['studenoga', 'mjesec'], prosinac: ['prosinca', 'mjesec'],
+  ponedjeljak: ['ponedjeljka', 'dan'], utorak: ['utorka', 'dan'], srijeda: ['srijede', 'dan'], četvrtak: ['četvrtka', 'dan'],
+  petak: ['petka', 'dan'], subota: ['subote', 'dan'], nedjelja: ['nedjelje', 'dan'],
+  proljeće: ['proljeća', 'godišnje doba'], ljeto: ['ljeta', 'godišnje doba'], jesen: ['jeseni', 'godišnje doba'], zima: ['zime', 'godišnje doba'],
+  jutro: ['jutra', 'doba dana'], prijepodne: ['prijepodneva', 'doba dana'], poslijepodne: ['poslijepodneva', 'doba dana'],
+  večer: ['večeri', 'doba dana'], noć: ['noći', 'doba dana'],
+};
+/** Genitiv vremenske imenice; nepoznata riječ ostaje kakva jest. */
+const genitivVremena = (rijec) => VREMENSKE[String(rijec).toLowerCase()]?.[0] || rijec;
+/** 'mjesec' | 'dan' | 'godišnje doba' | 'doba dana' | null */
+const vrstaVremena = (rijec) => VREMENSKE[String(rijec).toLowerCase()]?.[1] || null;
+
 module.exports = {
+  VREMENSKE, genitivVremena, vrstaVremena,
   IMENICE, IMENA, SKUPINE,
   oblikZa, imeZa, brojIme, akuzativJd,
   radni, zamjenicaD, posvojni, rodImena, vel, biti, glagolBroj,

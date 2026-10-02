@@ -4,6 +4,42 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −9. Padeži, Da/Ne, povlačenje i šarene spojnice
+
+**Prijavljeno:**
+- „Koji dan dolazi nakon: četvrtak?” i „Tko radi u "polje"?”;
+- „Točno/Netočno” uz pitanje „Smiješ li…?”;
+- poredavanje bez povlačenja;
+- spajanje bez crta.
+
+**Što je ispravljeno:**
+- **Padeži — analiza cijele banke.** Kod je pregledan prema obrascu prijedlog + dvotočka ili navodnik. Ispravljeno:
+  - „nakon: četvrtak / zima” → „nakon četvrtka / zime” (R1, a dvostruka pitanja o godišnjim dobima su uklonjena);
+  - „Tko radi u "polje"?” → „Tko radi na polju?”; svih 9 mjesta rada je u lokativu, a odgovori na „Gdje radi…?” su „u školi”, „na gradilištu”…;
+  - „Nakon "siječanj"?” se prepisivao u „Koji mjesec ili dan dolazi nakon siječanj?” — sada je „Koji mjesec dolazi nakon siječnja?”.
+    Pravilo „nakon + genitiv” uzima tablicu `VREMENSKE` (mjeseci, dani, godišnja doba, doba dana) u `hr-gramatika.js`;
+  - „Koja dva godišnja doba dolaze nakon proljeće?” (s jednim točnim odgovorom) → „Koje godišnje doba dolazi nakon proljeća i ljeta?”;
+  - „Umanjenica od "kuća"?” → „Koja je umanjenica riječi "kuća"?”; „suprotno od "x"” → „suprotno od riječi "x"”; „zadužen za "vid"” → „zadužen za vid”;
+  - „vježbao/la” u opisu ponavljanja → „teme koje su već vježbane”.
+- **Novi test** „Prijedlog s pogrešnim padežom” (`seeds/padezi.js`): ista provjera služi testu i popravku baze.
+- **Da/Ne.** Na pitanje („…li…?”) gumbi su „Da” i „Ne”, na tvrdnju „Točno” i „Netočno”. Isto pravilo vrijedi na backendu (`oznakeDaNe`), u kvizu i u povijesti odgovora.
+  - Odabrani gumb i točan odgovor sada se označe bojom.
+  - Svih 92 pitanja tipa točno/netočno u banci su pitanja, pa sada imaju Da/Ne.
+  - Novi test: izbor „Točno/Netočno” uz pitanje.
+- **Poredaj povlačenjem** (`PoredajPovlacenjem.vue`). Radi mišem, prstom i olovkom preko Pointer Events, bez nove biblioteke.
+  - Strelice ↑↓ ostaju, jer svaka radnja povlačenjem mora imati zamjenu jednim dodirom (WCAG 2.2, kriterij 2.5.7).
+  - Čitaču zaslona javlja se „… je sada na 2. mjestu od 4”.
+- **Spajanje s crtama** (`SpajanjeParova.vue`). Svaki par dobiva svoju boju (5 boja) i zakrivljenu crtu; broj u kružiću ostaje za djecu koja slabije razlikuju boje.
+  - Par se spaja klikom ili povlačenjem od lijevog do desnog člana. Dok se povlači, vidi se isprekidana crta.
+  - Nakon provjere točne crte su zelene, a pogrešne crvene i isprekidane.
+- **Povijest odgovora** prikazuje točan odgovor i za tipove točno/netočno, poredaj i spajanje (prije je bio prazan).
+- Informatika: kod „Koji je prvi korak…” ometači su samo koraci iste upute.
+- **`npm run popravi:pitanja`** ispisuje pitanja u bazi koja imaju stari tekst; `-- --primijeni` ih isključi (`isActive: false`) i generira ispravljena. Napredak djece ostaje.
+
+**Provjera:**
+- `npm run test:sve` prolazi, pokrenut tri puta.
+- Kviz s lažnim API-jem isproban je u Chromiumu na širinama 900 i 390 px: spajanje klikom i povlačenjem, provjera, poredavanje povlačenjem, Da/Ne.
+
 ## −8. Nove teme: Informatika, Ja i drugi, Promet i bicikl, Novac i kupovina
 
 - **Novi predmet Informatika** (1.–4. r.), dvije teme po razredu, prema kurikulu NN 22/2018:

@@ -207,8 +207,12 @@ function rewriteKnown(generatorName,q){
   text=text.replace(/^Stranice ([^?]+)\?$/u,'Koliko stranica ima $1?');
   // Screenshot 3: do not use the undefined shorthand "Simetrija X?".
   text=text.replace(/^Simetrija "([^"]+)"\?$/u,'Ima li prikazano veliko tiskano slovo "$1" os simetrije?');
-  text=text.replace(/^Nakon "([^"]+)"\?$/u,'Koji mjesec ili dan dolazi nakon $1?');
-  text=text.replace(/^Prije "([^"]+)"\?$/u,'Koji mjesec ili dan dolazi prije $1?');
+  // „Nakon "četvrtak"?” → „Koji dan dolazi nakon četvrtka?” (genitiv i prava vrsta).
+  text=text.replace(/^(Nakon|Prije) "([^"]+)"\?$/u,(_,p,w)=>{
+    const vrsta=HR.vrstaVremena(w)||'mjesec ili dan';
+    const koji=vrsta==='godišnje doba'||vrsta==='doba dana'?'Koje':'Koji';
+    return `${koji} ${vrsta} dolazi ${p.toLowerCase()} ${HR.genitivVremena(w)}?`;
+  });
   text=text.replace(/^"([^"]+)" je _\. mjesec\?$/u,'Koji je po redu u godini mjesec $1?');
   text=text.replace(/^Slogovi "([^"]+)"\?$/u,'Koliko slogova ima riječ "$1"?');
   text=text.replace(/^Slično "([^"]+)"\?$/u,'Koja riječ ima slično značenje kao "$1"?');

@@ -450,7 +450,13 @@ const tvrdi = (uvjet, opis, detalj = '') => {
     tvrdi(!invalidOrder.isCorrect, 'duplicirane stavke ne prolaze');
     const correctFalse = await service.checkAnswer({ userId: ID.user, attemptId: structuredAttempt,
       questionId: tfId, answer: false });
-    tvrdi(correctFalse.isCorrect && correctFalse.correctAnswer === 'Netočno', 'točno/netočno ocjenjuje boolean');
+    tvrdi(correctFalse.isCorrect && correctFalse.correctAnswer === 'Ne', 'točno/netočno ocjenjuje boolean (pitanje → „Ne”)');
+    {
+      const { evaluateQuestion } = require('../modules/quiz/quiz.service');
+      const pitanje = evaluateQuestion({ type: 'true-false', question: 'Smiješ li prijatelju reći lozinku?', correct: false }, false);
+      const tvrdnja = evaluateQuestion({ type: 'true-false', question: 'Zimi pada snijeg.', correct: true }, true);
+      tvrdi(pitanje.correctAnswer === 'Ne' && tvrdnja.correctAnswer === 'Točno', 'na pitanje se odgovara s Da/Ne, na tvrdnju s Točno/Netočno');
+    }
     const absent = await service.checkAnswer({ userId: ID.user, attemptId: structuredAttempt,
       questionId: tfId, answer: 'nešto' });
     tvrdi(!absent.isCorrect, 'nevaljana tvrdnja ne prolazi');

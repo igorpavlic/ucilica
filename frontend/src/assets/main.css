@@ -965,7 +965,7 @@ select.form-input {
   .grade-chip { min-width: 40px; padding: 6px 10px; font-size: 0.92rem; }
 
   .match-item { font-size: 0.92rem; min-height: 48px; padding: 10px 12px; }
-  .match-cols { gap: 8px; }
+  .match-cols { row-gap: 8px; }
 
   .input-group { flex-direction: column; }
   .input-group .form-input { flex: 1 1 auto; width: 100%; }
@@ -992,11 +992,26 @@ select.form-input {
 .match-wrap { margin-top: var(--space-sm); }
 
 .match-cols {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-sm);
+  /* Razmak između stupaca je prostor za zakrivljene crte */
+  column-gap: clamp(28px, 9vw, 72px);
+  row-gap: var(--space-sm);
   align-items: start;
 }
+.match-col { position: relative; z-index: 1; }
+
+/* Crte veza: SVG ispod gumba, preko cijelog područja spajanja */
+.match-crte { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 0; }
+.match-crta path, .match-crta.privremena { fill: none; stroke-width: 3.5; stroke-linecap: round; }
+.match-crta.privremena { stroke-dasharray: 6 6; opacity: .85; }
+.match-crta.no path { stroke: var(--wrong); stroke-dasharray: 7 6; }
+.match-crta.no circle { fill: var(--wrong); }
+.match-crta.ok path { stroke: var(--correct); }
+.match-crta.ok circle { fill: var(--correct); }
+/* Lijevi član se može povući do para; bez touch-action prst bi pomicao stranicu */
+.match-lijevi:not(:disabled) { touch-action: none; }
 
 .match-col { display: flex; flex-direction: column; gap: var(--space-sm); }
 
@@ -1017,7 +1032,10 @@ select.form-input {
   text-align: left;
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
-  word-break: break-word;
+  /* Riječ se lomi na slogove (lang="hr"), a ne usred sloga */
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .match-item:hover:not(:disabled) { border-color: var(--coral); background: var(--coral-light); }
@@ -1038,7 +1056,7 @@ select.form-input {
 
 .match-tekst { flex: 1 1 auto; }
 
-/* Brojčana oznaka umjesto crtanja linija — radi na svakoj širini */
+/* Brojčana oznaka uz crtu i boju — veza se vidi i bez razlikovanja boja */
 .match-veza {
   flex: 0 0 auto;
   display: inline-flex;
@@ -1064,6 +1082,12 @@ select.form-input {
 }
 
 .match-check { width: 100%; margin-top: var(--space-md); }
+/* Uži zasloni: ova pravila moraju doći NAKON osnovnih, inače ih osnovna nadjačaju */
+@media (max-width: 600px) {
+  .match-cols { column-gap: 22px; }
+  .match-item { font-size: .9rem; min-height: 46px; padding: 8px 10px; gap: 6px; }
+  .match-veza { width: 20px; height: 20px; font-size: .72rem; }
+}
 .match-check:disabled { opacity: 0.5; cursor: default; }
 
 
@@ -1213,10 +1237,28 @@ select.form-input {
 .explanation-card { margin-top: 1rem; border-left: 4px solid var(--coral); }
 .explanation-card .btn-slusaj { margin-left: .5rem; }
 .ordering-list { display: grid; gap: .6rem; margin-top: 1rem; }
+.ordering-uputa { margin: 0; color: var(--text-tertiary); font-size: .9rem; }
 .ordering-item {
-  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  position: relative;
+  display: flex; justify-content: space-between; align-items: center; gap: .75rem;
   padding: .7rem 1rem; border: 1px solid var(--text-tertiary);
   border-radius: var(--r-md); background: var(--surface);
+  cursor: grab; user-select: none; -webkit-user-select: none;
+  touch-action: none;            /* povlačenje prstom ne pomiče stranicu */
+}
+.ordering-item.onemoguceno { cursor: default; touch-action: auto; }
+.ordering-item.povlaci {
+  z-index: 2; cursor: grabbing;
+  border-color: var(--coral); box-shadow: var(--shadow-md);
+  background: var(--coral-light);
+}
+.ordering-hvat { color: var(--text-tertiary); font-size: 1.1rem; line-height: 1; }
+.ordering-tekst { flex: 1 1 auto; }
+.ordering-gumbi { display: flex; flex: 0 0 auto; }
+.ordering-check { margin-top: .75rem; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
 .ordering-item button { min-width: 2.5rem; min-height: 2.5rem; margin-left: .25rem; cursor: pointer; }
 .ordering-item button:disabled { opacity: .35; cursor: default; }

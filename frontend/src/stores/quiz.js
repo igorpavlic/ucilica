@@ -202,6 +202,22 @@ export const useQuizStore = defineStore('quiz', () => {
     return data
   }
 
+  /** Premještanje povlačenjem: stavka s mjesta `od` ide na mjesto `na`. */
+  function premjestiStavku (od, na) {
+    const n = redoslijed.value.length
+    if (answered.value || od === na || od < 0 || na < 0 || od >= n || na >= n) return
+    const items = [...redoslijed.value]
+    const [stavka] = items.splice(od, 1)
+    items.splice(na, 0, stavka)
+    redoslijed.value = items
+  }
+
+  /** Odabir lijevog člana povlačenjem (bez prebacivanja kao kod klika) */
+  function postaviLijevi (id) {
+    if (answered.value) return
+    odabranLijevi.value = id
+  }
+
   function pomakniStavku(index, delta) {
     const next = index + delta
     if (answered.value || next < 0 || next >= redoslijed.value.length) return
@@ -286,6 +302,8 @@ export const useQuizStore = defineStore('quiz', () => {
     checkMatch,
     checkStructured,
     pomakniStavku,
+    premjestiStavku,
+    postaviLijevi,
     odaberiLijevi,
     spoji,
     razvezi,

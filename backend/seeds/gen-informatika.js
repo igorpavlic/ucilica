@@ -237,8 +237,9 @@ function zadatciSlijeda(razred) {
   }
   {
     const [ime, koraci] = jedan(RUTINE);
-    const tudji = RUTINE.filter((r) => r[0] !== ime).flatMap((r) => r[1]);
-    q.push(izbor(`Koji je PRVI korak za „${ime}”?`, koraci[0], [...koraci.slice(1, 3), jedan(tudji)], 1,
+    // Ometači su samo koraci iste upute: korak iz druge upute („Spremi svoj rad.”
+    // uz sadnju cvijeta) dijete odbaci bez razmišljanja o redoslijedu.
+    q.push(izbor(`Koji je prvi korak za „${ime}”?`, koraci[0], koraci.slice(1), 1,
       `Prvo: ${koraci[0].toLowerCase()} Tek nakon toga dolaze ostali koraci.`, ishod));
   }
   if (razred >= 2) {

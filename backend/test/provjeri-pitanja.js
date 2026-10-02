@@ -135,6 +135,20 @@ test('Slaganje broja i imenice', losoSlaganje,
 test('Rodne kose crte (Dobio/la, mu/joj)',
   sva.filter((q) => /(\bDobio\/la|\bPojeo\/la|\bDao\/la|\bmu\/joj|o\/la\b)/.test(q.question || '')));
 
+// ── 2b. prijedlog i padež ──────────────────────────────────────────
+// Povod: „Koji dan dolazi nakon: četvrtak?” i „Tko radi u "polje"?”.
+// Iza „nakon, prije, poslije, do, od, iz, bez” ide genitiv, a iza „u, na”
+// za mjesto lokativ; dvotočka iza prijedloga i citat u nominativu to skrivaju.
+const { pogresanPadez, tocnoUzPitanje } = require('../seeds/padezi');
+test('Prijedlog s pogrešnim padežom (nakon četvrtak, u "polje", nakon: zima)',
+  sva.filter((q) => pogresanPadez(q.question)));
+
+// ── 2c. na pitanje se odgovara s Da/Ne ─────────────────────────────
+// „Smiješ li…?” s ponudama Točno/Netočno zbunjuje dijete. Tip true-false
+// to rješava sam (oznake prema upitniku); izbor s dvije ponude mora pratiti isto.
+test('Pitanje „…li…?” s ponudama Točno/Netočno',
+  sva.filter(tocnoUzPitanje));
+
 // ── 3. žensko ime + muški particip ─────────────────────────────────
 const zenska = Object.entries(HR.IMENA).filter(([, r]) => r === 'z').map(([i]) => i);
 const muskiParticip = /\b(pojeo|dobio|potrošio|dao|izgubio|skupio|kupio|nacrtao|pročitao|napravio|ubrao|popio|donio|stavio|podijelio)\b/;

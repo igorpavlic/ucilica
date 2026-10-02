@@ -84,6 +84,11 @@ function napraviBazu() {
         if (op.$inc) for (const [k, v] of Object.entries(op.$inc)) postavi(d, k, (dohvati(d, k) || 0) + v);
         return { matchedCount: 1, modifiedCount: 1 };
       },
+      updateMany: async (u, op) => {
+        const sve = nadji(u);
+        for (const d of sve) if (op.$set) for (const [k, v] of Object.entries(op.$set)) postavi(d, k, v);
+        return { matchedCount: sve.length, modifiedCount: sve.length };
+      },
       createIndex: async () => 'ok',
       aggregate: (cjevovod) => {
         let arr = docs;

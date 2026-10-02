@@ -50,9 +50,9 @@
         <tbody>
           <tr><td>Odaberi odgovor</td><td>Klikni jedan od ponuđenih odgovora.</td></tr>
           <tr><td>Upiši odgovor</td><td>Upiši broj ili riječ pa klikni <strong>„Provjeri”</strong>.</td></tr>
-          <tr><td>Točno ili netočno</td><td>Odluči je li tvrdnja <strong>Točno</strong> ili <strong>Netočno</strong>.</td></tr>
-          <tr><td>Spoji parove</td><td>Klikni nešto u lijevom stupcu, pa ono što mu pripada u desnom. Kad sve spojiš, klikni <strong>„Provjeri”</strong>.</td></tr>
-          <tr><td>Poredaj</td><td>Strelicama <strong>↑</strong> i <strong>↓</strong> pomakni rečenice u pravi red, pa klikni <strong>„Provjeri redoslijed”</strong>.</td></tr>
+          <tr><td>Da ili ne</td><td>Na pitanje odgovori s <strong>Da</strong> ili <strong>Ne</strong>. Ako je zadana tvrdnja, odluči je li <strong>Točno</strong> ili <strong>Netočno</strong>.</td></tr>
+          <tr><td>Spoji parove</td><td>Klikni nešto u lijevom stupcu, pa ono što mu pripada u desnom, ili ga povuci do para. Svaki par dobije svoju boju i crtu. Kad sve spojiš, klikni <strong>„Provjeri”</strong>.</td></tr>
+          <tr><td>Poredaj</td><td>Povuci rečenicu na pravo mjesto ili je pomakni strelicama <strong>↑</strong> i <strong>↓</strong>, pa klikni <strong>„Provjeri redoslijed”</strong>.</td></tr>
           <tr><td>Robot na mreži</td><td>Pogledaj gdje je robot 🤖 i kamo treba stići. Strelice ga pomiču za jedno polje.</td></tr>
           <tr><td>Tekst, tablica ili grafikon</td><td>Najprije pročitaj tekst ili pogledaj podatke, pa odgovori na pitanje.</td></tr>
         </tbody>
