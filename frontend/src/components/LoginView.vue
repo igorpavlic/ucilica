@@ -46,6 +46,7 @@
       <div class="auth-footer">
         Nemaš račun?
         <router-link to="/register">Registriraj se!</router-link>
+        <div class="auth-upute"><router-link to="/upute">❓ Kako se igra</router-link> · <router-link to="/privatnost">Privatnost</router-link></div>
       </div>
     </div>
   </div>

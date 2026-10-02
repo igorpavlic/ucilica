@@ -13,6 +13,7 @@ import ResultsView from './components/ResultsView.vue'
 import AnswerHistoryView from './components/AnswerHistoryView.vue'
 import ProfileView from './components/ProfileView.vue'
 import PrivatnostView from './components/PrivatnostView.vue'
+import UputeView from './components/UputeView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -26,7 +27,8 @@ const router = createRouter({
     { path: '/results', name: 'results', component: ResultsView },
     { path: '/answers', name: 'answers', component: AnswerHistoryView },
     { path: '/profile', name: 'profile', component: ProfileView },
-    { path: '/privatnost', name: 'privatnost', component: PrivatnostView }
+    { path: '/privatnost', name: 'privatnost', component: PrivatnostView },
+    { path: '/upute', name: 'upute', component: UputeView }
   ]
 })
 
