@@ -53,6 +53,9 @@ export function useApi() {
   const post = (path, body) => request(path, { method: 'POST', body: JSON.stringify(body) })
   const patch = (path, body) => request(path, { method: 'PATCH', body: JSON.stringify(body) })
   const put = (path, body) => request(path, { method: 'PUT', body: JSON.stringify(body) })
+  // Brisanje se ne ponavlja automatski: ponovni pokušaj nakon greške mogao bi
+  // obrisati nešto drugo ili zbuniti korisnika porukom „nije pronađeno”.
+  const del = (path, body) => request(path, { method: 'DELETE', body: JSON.stringify(body || {}) }, 0)
 
-  return { loading, error, get, post, patch, put }
+  return { loading, error, get, post, patch, put, del }
 }

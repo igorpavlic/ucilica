@@ -111,29 +111,48 @@ function shuffle(arr) {
   return a;
 }
 
-/**
- * Dohvati ID-eve pitanja koja je igrač vidio u zadnjih N kvizova za danu temu
- */
-async function getSeenQuestionIds(userId, topicId, rounds = 10) {
-  if (!userId) return [];
+// Pitanje je „nedavno viđeno” ako je bilo u kvizu u zadnjih N dana ili u
+// zadnjih MIN_KVIZOVA kvizova (što god pokriva više). Prije je vrijedilo samo
+// „zadnjih 10 kvizova”: dijete koje istu temu igra pet puta na dan potrošilo bi
+// taj prozor za dva dana i dobivalo pitanja od prošlog tjedna.
+const VIDJENO_DANA = Number(process.env.UCILICA_VIDJENO_DANA) || 30;
+const MIN_KVIZOVA = 10;
+const MAX_KVIZOVA = 300;          // gornja granica čitanja povijesti
+const NE_PONAVLJAJ_KVIZOVA = 3;   // čak ni u nuždi ne vraćaj pitanja iz zadnja 3 kviza
 
-  const db = getDb();
-  const recent = await db.collection('progress')
-    .find({ user_id: userId, topic_id: topicId })
+/**
+ * Nedavno viđena pitanja igrača u danom opsegu (tema ili razred).
+ * Vraća `ids` (nedavno viđeni ID-evi), `zadnjiPut` (ID → datum kad je zadnji
+ * put viđeno) i `svjeze` (ID-evi iz zadnjih NE_PONAVLJAJ_KVIZOVA kvizova).
+ */
+async function nedavnoVidjeno(userId, opseg, { dana = VIDJENO_DANA, sada = new Date() } = {}) {
+  const prazno = { ids: [], zadnjiPut: new Map(), svjeze: new Set() };
+  if (!userId) return prazno;
+  const granica = new Date(sada.getTime() - dana * 24 * 60 * 60 * 1000);
+  const kvizovi = await getDb().collection('progress')
+    .find({ user_id: userId, ...opseg })
     .sort({ completedAt: -1 })
-    .limit(rounds)
-    .project({ answers: 1 })
+    .limit(MAX_KVIZOVA)
+    .project({ answers: 1, completedAt: 1 })
     .toArray();
 
-  const ids = new Set();
-  for (const r of recent) {
-    if (Array.isArray(r.answers)) {
-      for (const a of r.answers) {
-        if (a.question_id) ids.add(a.question_id.toString());
-      }
+  const ids = new Set(), zadnjiPut = new Map(), svjeze = new Set();
+  kvizovi.forEach((k, i) => {
+    const nedavno = i < MIN_KVIZOVA || (k.completedAt && new Date(k.completedAt) >= granica);
+    for (const a of k.answers || []) {
+      if (!a.question_id) continue;
+      const id = a.question_id.toString();
+      if (!zadnjiPut.has(id)) zadnjiPut.set(id, k.completedAt ? new Date(k.completedAt) : new Date(0));
+      if (nedavno) ids.add(id);
+      if (i < NE_PONAVLJAJ_KVIZOVA) svjeze.add(id);
     }
-  }
-  return [...ids];
+  });
+  return { ids: [...ids], zadnjiPut, svjeze };
+}
+
+/** ID-evi pitanja koja je igrač nedavno vidio u temi (vidi `nedavnoVidjeno`). */
+async function getSeenQuestionIds(userId, topicId) {
+  return (await nedavnoVidjeno(userId, { topic_id: topicId })).ids;
 }
 
 /**
@@ -253,18 +272,19 @@ async function generateAndStore(topic, subjectId, grade, requestedCount = null) 
 /**
  * Glavni entry point.
  * 
- * 1. Dohvati viđena pitanja iz zadnjih 10 kvizova igrača
+ * 1. Dohvati pitanja viđena u zadnjih 30 dana (najmanje zadnjih 10 kvizova teme)
  * 2. Traži neviđena pitanja u bazi
  * 3. Ako nema dovoljno → generiraj nova, spremi, traži ponovo
- * 4. Ako JOŠ nema dovoljno (sva su viđena) → vrati prazan array
- *    Frontend prikazuje poruku da treba odigrati još kvizova
+ * 4. Ako JOŠ nema dovoljno → dopuni pitanjima koja dijete najdulje nije vidjelo
+ *    (osim onih iz zadnja 3 kviza); prazan kviz samo ako ni toga nema
  */
 async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) {
   const db = getDb();
   const topicId = topic._id;
 
-  // 1. Viđena pitanja
-  const seenIds = await getSeenQuestionIds(userId, topicId, 10);
+  // 1. Viđena pitanja (zadnjih 30 dana / najmanje zadnjih 10 kvizova teme)
+  const vidjeno = await nedavnoVidjeno(userId, { topic_id: topicId });
+  const seenIds = vidjeno.ids;
   const seenOids = seenIds.map(id => new ObjectId(id));
 
   // ID zaštita sprječava doslovno isto pitanje. Dodatno pratimo i obitelj
@@ -298,6 +318,23 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
       pool = await db.collection('questions')
         .aggregate([{ $match: matchFresh }, { $sample: { size: poolSize } }])
         .toArray();
+    }
+  }
+  // 3b. Ni generator nije dao dovoljno (mala tema s ručno pisanim pitanjima)?
+  //     Umjesto praznog kviza dopuni pitanjima koja dijete NAJDULJE nije
+  //     vidjelo — ali nikad onima iz zadnja tri kviza.
+  if (pool.length < count && seenOids.length > 0) {
+    const kandidati = seenIds
+      .filter((id) => !vidjeno.svjeze.has(id))
+      .sort((a, b) => vidjeno.zadnjiPut.get(a) - vidjeno.zadnjiPut.get(b))
+      .slice(0, poolSize);
+    if (kandidati.length) {
+      const stara = await db.collection('questions')
+        .find({ _id: { $in: kandidati.map((id) => new ObjectId(id)) }, topic_id: topicId, isActive: true })
+        .toArray();
+      const redoslijed = new Map(kandidati.map((id, i) => [id, i]));
+      stara.sort((a, b) => redoslijed.get(String(a._id)) - redoslijed.get(String(b._id)));
+      pool = [...pool, ...stara.slice(0, poolSize - pool.length)];
     }
   }
   if (pool.length === 0) return [];
@@ -349,8 +386,6 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
     questions = pickBalancedQuestions(pool, count, quotas, { avoidFamilies: recentFamilies });
   }
 
-  // 4. Još uvijek nedovoljno? Sva pitanja su viđena u zadnjih 10 rundi.
-  //    Ne vraćamo stara — korisnik mora odigrati druge teme pa se vratiti.
   return questions;
 }
 
@@ -359,7 +394,7 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
  */
 async function getFreshCount(userId, topicId) {
   const db = getDb();
-  const seenIds = await getSeenQuestionIds(userId, topicId, 10);
+  const seenIds = await getSeenQuestionIds(userId, topicId);
   const seenOids = seenIds.map(id => new ObjectId(id));
 
   return db.collection('questions').countDocuments({
@@ -369,4 +404,4 @@ async function getFreshCount(userId, topicId) {
   });
 }
 
-module.exports = { getQuizQuestions, getTopicStats, getFreshCount, generateAndStore, GENERATORS };
+module.exports = { getQuizQuestions, getTopicStats, getFreshCount, generateAndStore, nedavnoVidjeno, VIDJENO_DANA, GENERATORS };

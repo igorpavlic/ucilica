@@ -24,6 +24,12 @@ async function getReview(req, res, next) {
   } catch (error) { next(error); }
 }
 
+async function getDaily(req, res, next) {
+  try {
+    res.json(await service.createDailySession({ grade: Number(req.params.grade), userId: req.user._id }));
+  } catch (error) { next(error); }
+}
+
 async function checkAnswer(req, res, next) {
   try {
     const result = await service.checkAnswer({
@@ -83,6 +89,7 @@ async function generateAll(req, res, next) {
 module.exports = {
   getQuiz,
   getReview,
+  getDaily,
   checkAnswer,
   submitQuiz,
   generateTopic,

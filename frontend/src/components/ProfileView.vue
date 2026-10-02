@@ -81,6 +81,25 @@
           ❌ Pregledaj netočne odgovore
         </router-link>
       </div>
+
+      <!-- Prava iz GDPR-a: pristup/prenosivost i brisanje (za roditelja) -->
+      <div class="profil-privatnost">
+        <h3>Podatci i privatnost</h3>
+        <p class="profil-privatnost-opis">
+          Za roditelje: što Učilica čuva piše u <router-link to="/privatnost">obavijesti o privatnosti</router-link>.
+        </p>
+        <button class="btn btn-secondary" :disabled="izvozim" @click="preuzmiPodatke">
+          {{ izvozim ? 'Pripremam…' : '⬇️ Preuzmi moje podatke' }}
+        </button>
+        <details class="brisanje">
+          <summary>🗑️ Obriši račun</summary>
+          <p>Brisanje je trajno: nestaju račun, svi odgovori i napredak. Za potvrdu upiši lozinku.</p>
+          <input class="form-input" type="password" v-model="lozinkaZaBrisanje" placeholder="Lozinka" autocomplete="current-password">
+          <button class="btn btn-danger" :disabled="!lozinkaZaBrisanje || brisem" @click="obrisiRacun">
+            {{ brisem ? 'Brišem…' : 'Trajno obriši račun' }}
+          </button>
+        </details>
+      </div>
     </div>
 
     <div v-else class="empty-state">
@@ -92,12 +111,51 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useApi } from '../composables/useApi'
 import { useAuth } from '../composables/useAuth'
 
 const emit = defineEmits(['error'])
-const { get, patch, put } = useApi()
-const { user, updateUser } = useAuth()
+const { get, patch, put, del } = useApi()
+const { user, updateUser, logout } = useAuth()
+const router = useRouter()
+
+const izvozim = ref(false)
+const brisem = ref(false)
+const lozinkaZaBrisanje = ref('')
+
+// Izvoz svih podataka kao JSON datoteka (GDPR: pristup i prenosivost).
+async function preuzmiPodatke () {
+  izvozim.value = true
+  try {
+    const podatci = await get('/auth/me/izvoz')
+    const blob = new Blob([JSON.stringify(podatci, null, 2)], { type: 'application/json' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `ucilica-${user.value.username}.json`
+    a.click()
+    URL.revokeObjectURL(a.href)
+  } catch (e) {
+    emit('error', e.message)
+  } finally {
+    izvozim.value = false
+  }
+}
+
+async function obrisiRacun () {
+  if (!window.confirm('Sigurno trajno obrisati račun i sve podatke? Ovo se ne može poništiti.')) return
+  brisem.value = true
+  try {
+    await del('/auth/me', { password: lozinkaZaBrisanje.value })
+    logout()
+    router.push('/login')
+  } catch (e) {
+    emit('error', e.message)
+  } finally {
+    brisem.value = false
+    lozinkaZaBrisanje.value = ''
+  }
+}
 
 const avatars = ['🧒','👦','👧','🧒🏻','👦🏽','👧🏼','🦸','🧙','🐱','🐶','🦊','🐼','🦄','🐸']
 const savingGrade = ref(null)

@@ -4,6 +4,28 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −6. Objava: trust proxy, 30 dana bez ponavljanja, dnevni izazov, privatnost djece
+
+- **`trust proxy`** (`server.js`, `TRUST_PROXY`, zadano 1 u produkciji) — iza Caddyja ili
+  Rendera rate limiter inače vidi jedan IP za sve.
+- **Nedavno viđeno = 30 dana** (`UCILICA_VIDJENO_DANA`), najmanje zadnjih 10 kvizova;
+  vrijedi za teme i miješano ponavljanje. Kad ni generator ne dostaje, dopuna pitanjima
+  koja dijete najdulje nije vidjelo (nikad iz zadnja 3 kviza) umjesto praznog kviza.
+- **Dnevni izazov** (`services/dnevni.js`, `GET /api/quiz/dnevni/:grade`,
+  `GET /api/progress/dnevni`): 10 pitanja dnevno iz cijelog razreda, niz dana zaredom,
+  dan po zagrebačkom vremenu. Kartica na početnoj, niz na ekranu rezultata.
+- **Privatnost** (`services/privatnost.js`, `/privatnost`): privola roditelja pri
+  registraciji (ZPOU čl. 19), izvoz podataka i brisanje računa u profilu, savjet da se ne
+  upisuje pravo ime.
+- Novi indeksi na `progress` (tema/razred + datum, dnevni izazov).
+- `provjeri-tijek.js`: +14 provjera (dani po zagrebačkom vremenu, niz, jedan izazov
+  dnevno, prozor od 30 dana, izvoz bez lozinke, brisanje svih zapisa).
+
+**Prije objave:** upisati voditelja obrade i kontakt u obavijest o privatnosti.
+Postojeći računi nemaju zapis privole — zatražiti je od roditelja.
+
+---
+
 ## −5. Čitanje, medijska kultura i simulirana recenzija učitelja
 
 - **6 novih tekstova** (`citanje-tekstovi.js`): Pčele, Plakat, Hranilica (3. r.);

@@ -5,12 +5,16 @@
       <div class="results-title">{{ resultTitle }}</div>
       <div class="results-score">{{ correct }} / {{ total }}</div>
       <div class="results-message">{{ resultMessage }}</div>
+      <div v-if="dnevni" class="results-streak">
+        ⭐ Dnevni izazov riješen!
+        <span v-if="niz">🔥 {{ daniRijecju(niz) }} zaredom</span>
+      </div>
 
       <div class="results-actions">
-        <button class="btn btn-primary" @click="retry">
+        <button v-if="!dnevni" class="btn btn-primary" @click="retry">
           Pokušaj ponovo 🔄
         </button>
-        <button class="btn btn-secondary" @click="goTopics">
+        <button v-if="!dnevni" class="btn btn-secondary" @click="goTopics">
           Odaberi temu 📚
         </button>
         <button class="btn btn-secondary" @click="$router.push({ path: '/home', query: { grade: $route.query.grade } })">
@@ -25,6 +29,7 @@
 import { computed, inject, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import confetti from 'canvas-confetti'
+import { jeMijesano, jeDnevni, daniRijecju } from '../composables/mijesano'
 
 const router = useRouter()
 const route = useRoute()
@@ -33,6 +38,8 @@ const triggerStars = inject('triggerStars')
 const correct = computed(() => parseInt(route.query.correct) || 0)
 const total = computed(() => Math.max(1, parseInt(route.query.total) || 1))
 const pct = computed(() => correct.value / total.value)
+const dnevni = computed(() => jeDnevni(route.query.topicId))
+const niz = computed(() => Number.parseInt(route.query.niz, 10) || 0)
 
 const resultEmoji = computed(() => {
   if (pct.value === 1) return '🏆'
@@ -105,7 +112,7 @@ function retry() {
 }
 
 function goTopics() {
-  if (String(route.query.topicId).startsWith('review-')) { router.push({ path: '/home', query: { grade: route.query.grade } }); return }
+  if (jeMijesano(route.query.topicId)) { router.push({ path: '/home', query: { grade: route.query.grade } }); return }
   router.push({
     name: 'topics',
     params: { slug: route.query.subjectSlug || 'unknown' },

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useApi } from '../composables/useApi'
+import { jeMijesano, jeDnevni, razredIz } from '../composables/mijesano'
 
 export const useQuizStore = defineStore('quiz', () => {
   const api = useApi()
@@ -77,12 +78,15 @@ export const useQuizStore = defineStore('quiz', () => {
     resetSession()
     loadingQuiz.value = true
     try {
-      const endpoint = topicId.startsWith('review-')
-        ? `/quiz/review/${topicId.slice(7)}?count=${count}`
-        : `/quiz/${topicId}?count=${count}`
+      const endpoint = jeDnevni(topicId)
+        ? `/quiz/dnevni/${razredIz(topicId)}`
+        : topicId.startsWith('review-')
+          ? `/quiz/review/${razredIz(topicId)}?count=${count}`
+          : `/quiz/${topicId}?count=${count}`
       const data = await api.get(endpoint)
       attemptId.value = data.attemptId || ''
-      exhausted.value = !!data.exhausted
+      // Dnevni izazov koji je danas već riješen prikazuje se kao „nema pitanja”, s porukom.
+      exhausted.value = !!data.exhausted || !!data.odigrano
       exhaustedMsg.value = data.message || ''
       opseg.value = data.opseg || null
       questions.value = data.questions || []
@@ -246,8 +250,8 @@ export const useQuizStore = defineStore('quiz', () => {
   async function submitQuiz(topicId) {
     return api.post('/quiz/submit', {
       attemptId: attemptId.value,
-      ...(topicId.startsWith('review-')
-        ? { reviewGrade: Number(topicId.slice(7)) } : { topicId }),
+      ...(jeMijesano(topicId)
+        ? { reviewGrade: Number(razredIz(topicId)) } : { topicId }),
       answers: quizAnswers.value
     })
   }

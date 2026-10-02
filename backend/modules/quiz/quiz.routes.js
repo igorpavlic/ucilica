@@ -19,6 +19,9 @@ router.post('/generate-all', auth, aiLimiter, generateAllValidators, validateReq
 router.get('/review/:grade', optionalAuth,
   param('grade').isInt({ min: 1, max: 4 }), query('count').optional().isInt({ min: 1, max: 20 }),
   validateRequest, controller.getReview);
+// Dnevni izazov traži prijavu: niz dana zaredom pamti se po korisniku.
+router.get('/dnevni/:grade', auth,
+  param('grade').isInt({ min: 1, max: 4 }), validateRequest, controller.getDaily);
 router.get('/:topicId', optionalAuth, getQuizValidators, validateRequest, controller.getQuiz);
 router.post('/check', optionalAuth, checkAnswerValidators, validateRequest, controller.checkAnswer);
 router.post('/submit', auth, submitQuizValidators, validateRequest, controller.submitQuiz);

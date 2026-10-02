@@ -222,22 +222,58 @@ s 409, da FSRS upisuje rok ponavljanja i da spajanje parova ispravno broji veze.
 ## REST API
 
 ```
-POST   /api/auth/register      { username, password, displayName, avatar, grade }
+POST   /api/auth/register      { username, password, displayName, avatar, grade, privolaRoditelja: true }
 POST   /api/auth/login         { username, password }
 GET    /api/auth/me            🔒
 PATCH  /api/auth/me            🔒 { displayName?, avatar?, grade? }
+GET    /api/auth/me/izvoz      🔒   → svi podatci djeteta kao JSON (GDPR čl. 15, 20)
+DELETE /api/auth/me            🔒 { password }  → trajno briše račun i sve zapise (GDPR čl. 17)
 
 GET    /api/subjects?grade=1
 GET    /api/subjects/:slug/topics?grade=1
 
 GET    /api/quiz/:topicId?count=7     → attemptId + pitanja bez odgovora
+GET    /api/quiz/review/:grade?count=7 → miješano ponavljanje razreda
+GET    /api/quiz/dnevni/:grade 🔒     → dnevni izazov (10 pitanja; { odigrano: true } ako je danas riješen)
 POST   /api/quiz/check                { attemptId, questionId, answer }
-POST   /api/quiz/submit        🔒     { attemptId, topicId, answers[] }
+POST   /api/quiz/submit        🔒     { attemptId, topicId | reviewGrade, answers[] }
 
 GET    /api/progress           🔒
 GET    /api/progress/answers   🔒 ?filter=correct|wrong
 GET    /api/progress/vjestine  🔒 ?grade=2   → stanje po vještinama, najslabije prvo
+GET    /api/progress/dnevni    🔒   → { odigranoDanas, niz, najduljiNiz, ukupnoDana }
 ```
+
+## Svaki dan nova pitanja
+
+- **Nedavno viđeno** = pitanja iz kvizova u zadnjih 30 dana (`UCILICA_VIDJENO_DANA`),
+  a uvijek barem iz zadnjih 10 kvizova teme. Takva se pitanja ne nude.
+- Kad neviđenih ponestane, generator teme stvara nove zadatke (novi brojevi,
+  rasporedi, podatci) i preskače one koji već postoje (`itemKey`).
+- Ako ni to ne dostaje (mala ručno pisana tema), kviz se dopunjuje pitanjima koja
+  dijete **najdulje** nije vidjelo — nikad onima iz zadnja tri kviza.
+- **Dnevni izazov**: jedan kviz dnevno, 10 pitanja iz cijelog (obrađenog) gradiva
+  razreda, najprije vještine dospjele za ponavljanje. Dan se računa po
+  zagrebačkom vremenu; niz dana zaredom računa se iz `progress` (`dnevni`, `dan`).
+- Za sve ovo dijete mora biti **prijavljeno** — gost nema povijest.
+
+## Privatnost (djeca)
+
+- Registraciju potvrđuje roditelj ili skrbnik (`privolaRoditelja`); uz korisnika se
+  sprema `privola: { daje, verzijaObavijesti, datum }`. U RH dijete samo daje
+  privolu tek od 16. godine (ZPOU, NN 42/2018, čl. 19).
+- Ne traže se ime i prezime, e-adresa ni drugi kontakt.
+- Obavijest o privatnosti: `/privatnost` (frontend). **Prije objave upiši voditelja
+  obrade i kontakt** u `frontend/src/components/PrivatnostView.vue`.
+- U profilu: „Preuzmi moje podatke” (JSON) i „Obriši račun” (uz lozinku).
+  Brisanje obuhvaća `users` i sve zbirke iz `services/privatnost.js → KORISNICKE_ZBIRKE`.
+
+## Produkcija iza proxyja
+
+`TRUST_PROXY` (zadano 1 kad je `NODE_ENV=production`): broj reverse proxyja ispred
+aplikacije (Caddy, nginx, Render). Bez toga ograničenje broja zahtjeva vidi samo IP
+proxyja i svi korisnici dijele isto ograničenje. Postavi `TRUST_PROXY=0` ako je Node
+izravno na internetu.
 
 ## Kolekcije
 

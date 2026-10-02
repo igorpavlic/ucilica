@@ -1,6 +1,6 @@
 <template>
   <div class="shell">
-    <router-link v-if="props.topicId.startsWith('review-')" :to="{ path: '/home', query: { grade: props.topicId.slice(7) } }" class="back-link">← Natrag na predmete</router-link>
+    <router-link v-if="jeMijesano(props.topicId)" :to="{ path: '/home', query: { grade: razredIz(props.topicId) } }" class="back-link">← Natrag na predmete</router-link>
     <router-link v-else
       :to="{ name: 'topics', params: { slug: $route.query.subjectSlug || 'unknown' }, query: { name: $route.query.subjectName, icon: '', grade: $route.query.grade } }"
       class="back-link"
@@ -187,12 +187,12 @@
 
     <div v-else-if="exhausted" class="quiz-container">
       <div class="question-card" style="text-align:center">
-        <div class="question-visual">🔄</div>
+        <div class="question-visual">{{ jeDnevni(props.topicId) ? '⭐' : '🔄' }}</div>
         <div class="question-text">{{ exhaustedMsg }}</div>
-        <p style="color:var(--text-tertiary);margin-top:12px;font-size:0.95rem">
+        <p v-if="!jeDnevni(props.topicId)" style="color:var(--text-tertiary);margin-top:12px;font-size:0.95rem">
           Odigraj druge teme pa se vrati ovdje za nova pitanja.
         </p>
-        <button class="btn btn-primary mt-lg" @click="$router.back()">← Odaberi drugu temu</button>
+        <button class="btn btn-primary mt-lg" @click="$router.back()">{{ jeDnevni(props.topicId) ? '← Natrag na početnu' : '← Odaberi drugu temu' }}</button>
       </div>
     </div>
 
@@ -209,6 +209,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuth } from '../composables/useAuth'
 import { useQuizStore } from '../stores/quiz'
+import { jeMijesano, jeDnevni, razredIz } from '../composables/mijesano'
 import { useGovor } from '../composables/useGovor'
 
 const props = defineProps({ topicId: String })
@@ -422,6 +423,7 @@ async function nextQuestion() {
   // Rezultat prikazuje server (prvi pokušaji, cijela sesija); gost vidi lokalni zbroj.
   let correct = correctCount.value
   let total = questions.value.length
+  let niz = null
   if (isLoggedIn.value) {
     try {
       const data = await submitQuiz(props.topicId)
@@ -431,6 +433,7 @@ async function nextQuestion() {
       })
       correct = data.progress?.correctAnswers ?? correct
       total = data.progress?.totalQuestions ?? total
+      niz = data.dnevni?.niz ?? null
     } catch (error) {
       emit('error', error.message)
       return
@@ -442,7 +445,8 @@ async function nextQuestion() {
     query: {
       correct,
       total,
-      grade: props.topicId.startsWith('review-') ? props.topicId.slice(7) : route.query.grade,
+      grade: jeMijesano(props.topicId) ? razredIz(props.topicId) : route.query.grade,
+      ...(niz != null ? { niz } : {}),
       topicId: props.topicId,
       topicName: route.query.topicName,
       topicIcon: route.query.topicIcon,
