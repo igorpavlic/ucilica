@@ -25,7 +25,7 @@ function zivotinjeDodatak() {
   q.push(...obaSmjera(ZIVOTINJE.filter((z) => !/mlado/.test(z[2])).map((z) => [z[0], z[2]]), { pitajB: (a) => `Kako se zove mladunče životinje ${a}?`, pitajA: (b) => `Čije je mladunče ${b}?`, tezina: 1 }));
   for (const z of uzmi(ZIVOTINJE, 8)) q.push(upisBroja(`Koliko nogu ima ${z[0]}?`, z[3], 1));
   for (const z of uzmi(ZIVOTINJE.filter((x) => ['dlaka', 'perje'].includes(x[4])), 8)) q.push(izbor(`Što prekriva tijelo životinje: ${z[0]}?`, z[4], ['dlaka', 'perje', 'ljuske', 'oklop'].filter((x) => x !== z[4]), 1));
-  q.push(...obaSmjera(KORIST, { pitajB: (a) => `Kako nam pomaže ${a}?`, pitajA: (b) => `Koja nam životinja daje ili radi ovo: ${b}?`, tezina: 1 }));
+  q.push(...obaSmjera(KORIST, { pitajB: (a) => `Što nam daje ili kako nam pomaže ${a}?`, pitajA: (b) => `Koja nam životinja daje ili radi ovo: ${b}?`, tezina: 1 }));
   q.push(izbor('Koja je od ovih životinja domaća?', jedan(dom), uzmi(div, 3), 1), izbor('Koja je od ovih životinja divlja?', jedan(div), uzmi(dom, 3), 1));
   q.push(...daNe([['Ima li riba škrge?', true], ['Može li kokoš letjeti visoko kao orao?', false], ['Spava li jež zimi?', true], ['Ima li pauk šest nogu?', false],
     ['Daje li ovca vunu?', true], ['Živi li riba na drvetu?', false], ['Ima li ptica kljun?', true], ['Ima li zmija noge?', false]], 1));
@@ -60,8 +60,8 @@ function tijeloDodatak() {
 
 const SITUACIJE = [
   ['Nepoznata osoba nudi ti slatkiše i poziva te u auto. Što ćeš učiniti?', 'reći ne, otići i reći odrasloj osobi od povjerenja', ['ući u auto', 'uzeti slatkiše i šutjeti', 'otići s njom']],
-  ['Na podu si pronašao tablete. Što ćeš učiniti?', 'ne dirati ih i reći odrasloj osobi', ['pojesti jednu', 'dati ih prijatelju', 'staviti ih u džep']],
-  ['Izgubio si se u trgovini. Što ćeš učiniti?', 'obratiti se prodavaču ili zaštitaru', ['izaći sam na ulicu', 'sakriti se', 'otići s nepoznatom osobom']],
+  ['Na podu pronađeš tablete. Što ćeš učiniti?', 'ne dirati ih i reći odrasloj osobi', ['pojesti jednu', 'dati ih prijatelju', 'staviti ih u džep']],
+  ['U trgovini se izgubiš od roditelja. Što ćeš učiniti?', 'obratiti se prodavaču ili zaštitaru', ['izaći sam na ulicu', 'sakriti se', 'otići s nepoznatom osobom']],
   ['Što trebaš učiniti prije nego prijeđeš cestu?', 'stati i pogledati lijevo, desno pa opet lijevo', ['potrčati bez gledanja', 'zatvoriti oči', 'gledati u mobitel']],
   ['Gdje je najsigurnije prijeći cestu?', 'na pješačkom prijelazu', ['između parkiranih automobila', 'iza zavoja', 'bilo gdje']],
   ['Kakvu odjeću nosimo kad hodamo po mraku?', 'svijetlu odjeću ili prsluk s reflektirajućim trakama', ['tamnu odjeću', 'samo crnu jaknu', 'nije važno']],
@@ -247,9 +247,10 @@ function zavicajDodatak() {
 const INSTR = { oči: 'očima', uši: 'ušima', nos: 'nosom', jezik: 'jezikom', zubi: 'zubima', noge: 'nogama', ruke: 'rukama', pluća: 'plućima', koža: 'kožom' };
 const U_PROSTORIJI = { kuhinja: 'u kuhinji', kupaonica: 'u kupaonici', 'spavaća soba': 'u spavaćoj sobi', 'dnevni boravak': 'u dnevnom boravku', ostava: 'u ostavi', hodnik: 'u hodniku' };
 const SPREMNIK = { papir: 'papir', plastika: 'plastiku', metal: 'metal', staklo: 'staklo', biootpad: 'biootpad', 'posebni otpad': 'posebni otpad' };
+const PROSTORIJA_TVRDNJA = { 'peremo se': 'se peremo', 'odmaramo se i družimo': 'se odmaramo i družimo' };
 const tijeloTvrdnje = () => sveTvrdnje(DIJELOVI, (a, b) => `Je li točno da ${INSTR[a]} ${b}?`, { lazni: 2, tezina: 1 });
 const obiteljTvrdnje = () => [
-  ...sveTvrdnje(PROSTORIJE, (a, b) => `Je li točno da ${U_PROSTORIJI[a]} ${b}?`, { lazni: 2, tezina: 1 }),
+  ...sveTvrdnje(PROSTORIJE, (a, b) => `Je li točno da ${U_PROSTORIJI[a]} ${PROSTORIJA_TVRDNJA[b] || b}?`, { lazni: 2, tezina: 1 }),
   ...sveTvrdnje(PREDMETI_SOBA, (a, b) => `Nalazi li se ${a} najčešće ${U_PROSTORIJI[b]}?`, { lazni: 2, tezina: 1 }),
 ];
 const ekologijaTvrdnje = () => sveTvrdnje(OTPAD, (a, b) => `Ide li ${a} u spremnik za ${SPREMNIK[b]}?`, { lazni: 2, tezina: 1 });

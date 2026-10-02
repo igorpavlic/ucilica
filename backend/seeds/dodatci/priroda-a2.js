@@ -18,7 +18,7 @@ const PROMET_PJESAK = [
   ['Zašto ne prelazimo cestu između parkiranih automobila?', 'vozači nas ne vide, a ni mi njih', ['jer je ondje prljavo', 'jer je ondje predaleko', 'jer je ondje zabranjeno trčati']],
 ];
 const PRVA_POMOC = [
-  ['Ogrebao si koljeno. Što je najprije dobro učiniti?', 'isprati ranu čistom vodom i reći odraslom', ['staviti zemlju na ranu', 'ništa ne reći', 'trljati ranu prstima']],
+  ['Ogrebeš koljeno. Što je najprije dobro učiniti?', 'isprati ranu čistom vodom i reći odraslom', ['staviti zemlju na ranu', 'ništa ne reći', 'trljati ranu prstima']],
   ['Prijatelju krvari iz nosa. Kako mu treba držati glavu?', 'lagano nagnutu prema naprijed', ['jako zabačenu unatrag', 'okrenutu prema dolje između koljena', 'naslonjenu na pod']],
   ['Ubola te pčela. Što trebaš učiniti?', 'reći odraslom i staviti hladan oblog', ['češati ubod', 'pojesti med', 'potrčati za pčelom']],
   ['Prijatelj je pao i ne može ustati. Što trebaš učiniti?', 'pozvati odraslu osobu', ['otići kući', 'smijati se', 'vući ga za ruke']],
@@ -126,7 +126,7 @@ const SITUACIJE_2 = [
   ['Vidiš kabel iz kojega izlaze iskre. Što ćeš učiniti?', 'udaljiti se i reći odrasloj osobi', ['dotaknuti ga', 'polijevati ga vodom', 'skakati preko njega']],
   ['Kod kuće si sam i netko zvoni na vrata. Što ćeš učiniti?', 'ne otvarati vrata i nazvati roditelje', ['otvoriti širom', 'pustiti nepoznatog unutra', 'izaći van']],
   ['Prijatelj te nagovara da se popnete na krov garaže. Što ćeš učiniti?', 'odbiti, jer je opasno', ['popeti se prvi', 'skočiti s krova', 'gurati prijatelja']],
-  ['Na plaži si se odvojio od roditelja. Što ćeš učiniti?', 'ostati na mjestu i potražiti spasioca ili prodavača', ['otići u more', 'sakriti se u grm', 'otići s nepoznatima']],
+  ['Na plaži se odvojiš od roditelja. Što ćeš učiniti?', 'ostati na mjestu i potražiti spasioca ili prodavača', ['otići u more', 'sakriti se u grm', 'otići s nepoznatima']],
   ['Kako se ponašaš u autobusu?', 'sjedim ili se čvrsto držim i ne guram se', ['trčim po autobusu', 'naginjem se kroz prozor', 'smetam vozaču']],
   ['Što trebaš znati napamet za slučaj da se izgubiš?', 'svoje ime, prezime i adresu', ['ime omiljenog crtića', 'boju svojeg ruksaka', 'broj prijatelja iz razreda']],
 ];

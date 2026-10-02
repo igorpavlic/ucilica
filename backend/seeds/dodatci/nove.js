@@ -7,22 +7,22 @@ const { izbor, tocnoNetocno, poredaj, obaSmjera, sveTvrdnje, spajanja, izTablice
 // ═══ Ja i drugi ═══
 const OSJECAJI = ['veselo', 'tužno', 'ljuto', 'uplašeno', 'ponosno', 'zabrinuto', 'iznenađeno', 'razočarano', 'sramežljivo'];
 const SITUACIJE_OSJ = [
-  ['Dobio si psića za rođendan.', 'veselo'], ['Izgubio si omiljenu igračku.', 'tužno'], ['Netko ti je prolio sok po crtežu i nasmijao se.', 'ljuto'],
-  ['U mraku ne možeš pronaći prekidač za svjetlo.', 'uplašeno'], ['Naučio si plivati bez pomagala.', 'ponosno'], ['Mama kasni po tebe u školu, a već je mrak.', 'zabrinuto'],
-  ['Baka te neočekivano dočeka ispred škole.', 'iznenađeno'], ['Nisi izabran u ekipu, a jako si želio igrati.', 'razočarano'], ['Moraš pjevati sam pred cijelom školom.', 'sramežljivo'],
+  ['Za rođendan dobiješ psića.', 'veselo'], ['Nigdje ne možeš pronaći omiljenu igračku.', 'tužno'], ['Netko ti je prolio sok po crtežu i nasmijao se.', 'ljuto'],
+  ['U mraku ne možeš pronaći prekidač za svjetlo.', 'uplašeno'], ['Napokon plivaš bez pomagala.', 'ponosno'], ['Mama kasni po tebe u školu, a već je mrak.', 'zabrinuto'],
+  ['Baka te neočekivano dočeka ispred škole.', 'iznenađeno'], ['Ne biraju te u ekipu, a jako želiš igrati.', 'razočarano'], ['Moraš pjevati sam pred cijelom školom.', 'sramežljivo'],
   ['Tvoja je pjesma pobijedila na školskom natjecanju.', 'ponosno'], ['Kućni ljubimac ti se razbolio.', 'zabrinuto'], ['Prijatelj ti je pokvario igračku i nije se ispričao.', 'ljuto'],
   ['Na izletu ste vidjeli srnu iz blizine.', 'iznenađeno'], ['Djed ti je otišao živjeti daleko.', 'tužno'], ['Tijekom oluje grmi vrlo glasno.', 'uplašeno'],
-  ['Završila je škola i počinju praznici.', 'veselo'], ['Obećani posjet zoološkom vrtu je otkazan.', 'razočarano'], ['Riješio si težak zadatak sam.', 'ponosno'],
+  ['Završila je škola i počinju praznici.', 'veselo'], ['Obećani posjet zoološkom vrtu je otkazan.', 'razočarano'], ['Težak zadatak riješiš bez ičije pomoći.', 'ponosno'],
 ];
 const PONASANJE = [
   ['Prijatelj ti je posudio olovku. Što ćeš reći?', 'hvala', ['ništa', 'odlazi', 'daj još']],
   ['Kako ćeš zamoliti sestru da ti doda kruh?', 'Molim te, dodaj mi kruh.', ['Kruh, odmah!', 'Daj to!', 'Ništa ne kažem.']],
-  ['Slučajno si nekome stao na nogu. Što ćeš reći?', 'Oprosti!', ['Hvala!', 'Bravo!', 'Laku noć!']],
+  ['Slučajno nekome staneš na nogu. Što ćeš reći?', 'Oprosti!', ['Hvala!', 'Bravo!', 'Laku noć!']],
   ['Ulaziš u učionicu u kojoj je nastava. Što ćeš učiniti?', 'pokucati i pozdraviti', ['ući vičući', 'zalupiti vratima', 'ući bez riječi i trčati']],
   ['Odrasla osoba razgovara, a ti nešto trebaš. Što ćeš učiniti?', 'pričekati da završi i reći „oprostite”', ['vući je za rukav', 'vikati', 'prekinuti je']],
   ['Prijatelj ti priča nešto važno. Kako ćeš ga slušati?', 'pažljivo, gledajući ga', ['okrenut leđima', 'pjevajući', 'gledajući u mobitel']],
   ['Kako ćeš se ponašati za stolom kod prijatelja?', 'pristojno, ne govorim punih usta', ['bacam hranu', 'vičem', 'ližem tanjur']],
-  ['Prijatelj je izgubio u igri. Što ćeš reći?', 'Dobro si igrao, idući put možda pobijediš.', ['Ha-ha, izgubio si!', 'Ti ništa ne znaš.', 'Ne igram više s tobom.']],
+  ['Prijatelj je izgubio u igri. Što ćeš reći?', 'Bila je to dobra igra, idući put možda pobijediš.', ['Ha-ha, nema ti pomoći!', 'Ti ništa ne znaš.', 'Ne igram više s tobom.']],
 ];
 const POMOC = [
   ['Učiteljica nosi mnogo knjiga. Kako možeš pomoći?', 'ponudim da ponesem dio knjiga', ['prođem pokraj nje', 'smijem se', 'zatvorim joj vrata']],
@@ -45,7 +45,7 @@ const DUZNOSTI = [
 const SUKOB = [
   ['Ti i prijatelj želite istu loptu. Kako ćete riješiti problem?', 'dogovorit ćemo se da je koristimo naizmjence', ['otet ću je', 'gurnut ću ga', 'bacit ću je preko ograde']],
   ['Netko te namjerno vrijeđa. Što je najbolje učiniti?', 'mirno reći da prestane i reći odrasloj osobi', ['udariti ga', 'vrijeđati ga još gore', 'plakati i šutjeti zauvijek']],
-  ['Što je dobro učiniti prije nego što odgovoriš kad si jako ljut?', 'duboko udahnuti i izbrojiti do deset', ['odmah vikati', 'baciti nešto', 'zalupiti vratima']],
+  ['Što je dobro učiniti prije nego što odgovoriš kad te obuzme ljutnja?', 'duboko udahnuti i izbrojiti do deset', ['odmah vikati', 'baciti nešto', 'zalupiti vratima']],
   ['Kako se kaže što osjećaš, a da ne vrijeđaš drugoga?', 'Ljut sam jer si mi uzeo bojice bez pitanja.', ['Ti si glup!', 'Nikad više ne pričam s tobom!', 'Mrzim te!']],
   ['Što je kompromis?', 'dogovor u kojem svatko malo popusti', ['pobjeda samo jednoga', 'svađa bez kraja', 'kazna za oboje']],
 ];

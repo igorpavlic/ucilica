@@ -294,7 +294,7 @@ const PONASANJE = [
   ['Ujutro u hodniku srećeš ravnatelja. Kako ćeš ga pozdraviti?', 'Dobro jutro!', ['Bok, stari!', 'Ej!', 'Ništa ne kažem.']],
   ['Kako ćeš pozdraviti prijatelja na igralištu?', 'Bok!', ['Poštovani gospodine!', 'Laku noć!', 'S poštovanjem!']],
   ['Susjed ti je pridržao vrata. Što ćeš reći?', 'Hvala lijepa!', ['Makni se!', 'Oprosti!', 'Laku noć!']],
-  ['Slučajno si gurnuo prijatelja. Što ćeš reći?', 'Oprosti, nisam namjerno.', ['Sam si kriv.', 'Hvala!', 'Dobar tek!']],
+  ['Slučajno gurneš prijatelja. Što ćeš reći?', 'Oprosti, nisam namjerno.', ['Sam si kriv.', 'Hvala!', 'Dobar tek!']],
   ['Kako ćeš pristojno zamoliti učiteljicu za olovku?', 'Molim vas, možete li mi posuditi olovku?', ['Daj olovku!', 'Olovka, odmah!', 'Hoću olovku.']],
   ['Što kažemo kad netko kihne?', 'Nazdravlje!', ['Dobar tek!', 'Laku noć!', 'Sretan put!']],
   ['Što kažemo prije jela za stolom?', 'Dobar tek!', ['Nazdravlje!', 'Sretan put!', 'Dobro jutro!']],

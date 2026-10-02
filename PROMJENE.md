@@ -4,6 +4,46 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −13. Dvadeset kvizova bez ponovljenog pitanja
+
+**Zahtjev:** dijete koje istu temu odigra 20 puta (140 pitanja) ne smije vidjeti ponovljeno pitanje.
+
+**Analiza** (simulacija: jedno dijete, svaka od 83 teme, 20 kvizova po 7 pitanja):
+- 5485 od 10 956 pitanja imalo je **tekst koji je dijete već vidjelo**, a 4933 bila su potpuno ista kao prije.
+- **Uzrok 1:** banka je imala isto pitanje pod više `_id`-eva, s drugim netočnim ponudama. Izbor je pamtio samo `_id`, pa je to pitanje bilo „novo”.
+- **Uzrok 2:** 55 tema imalo je manje od 140 različitih tekstova. Jezično izražavanje imalo ih je 17, zavičaj 19, krajevi Hrvatske 19, a kvader i kocka 8.
+- Tri teme davale su **prazne kvizove** (hrvatska domovina, zdravlje i sigurnost 2, kvader i kocka).
+
+**Popravak:**
+- **Izbor pitanja** (`questionGenerator.js`):
+  - uz `_id` pamti i **prikaz**: tekst, slika, tekst za čitanje, mreža, parovi i točan odgovor;
+  - pamti i **tekst** pitanja;
+  - najprije dolaze neviđeni tekstovi, a kad ih ponestane, generira nova pitanja (do 3 pokušaja);
+  - ako ni tada nema dovoljno, vraća pitanja koja dijete **najdavnije** nije vidjelo;
+  - kviz nikad nije prazan.
+- **Dodatni sadržaj** (`seeds/dodatci/`, uključuje se u `pedagogyReview.reviewQuestions`):
+  - **matematika:** nasumični brojevi (nizovi, mjesne vrijednosti, zaokruživanje, pretvorbe, opseg i površina, bridovi kocke i kvadra, pisano množenje i dijeljenje);
+  - **hrvatski:** glasovi, slogovi, rime, abeceda, množina, vrste riječi, č/ć, ije/je, dž/đ, veliko slovo, pridjevi od imena mjesta, upravni govor, glagolska vremena, rod, posvojni pridjevi, književne vrste i djela, pjesnička sredstva, mediji;
+  - **priroda i društvo:** životinje i biljke, tijelo, sigurnost i prva pomoć, otpad, voda i tlo, zrak, skupine životinja, ekosustavi, prilagodbe, organi i sustavi, krajevi Hrvatske, županije, nacionalni parkovi, djelatnosti, kulturna baština, karta;
+  - **nove teme:** Ja i drugi, Računalo i sigurnost, Promet i bicikl, Algoritmi 1. r.;
+  - svaka činjenica dolazi u više oblika: pitanje u oba smjera, tvrdnja Da/Ne sa svim uparivanjima, spajanje.
+- **34 nova izvorna teksta za čitanje** (`seeds/citanje-dodatni.js`): 3 za 2. razred, 15 za 3. i 16 za 4. razred, s pitanjima po procesima razumijevanja.
+- **Robot u Informatici** ide do različitih ciljeva (zvjezdica, kućica, lopta, poklon…), pa se tekst zadatka mijenja.
+
+**Rezultat simulacije** (sve teme, 20 kvizova po 7 pitanja):
+
+| | Prije | Poslije |
+|---|---:|---:|
+| isti tekst pitanja | 5485 | 1 |
+| potpuno isto pitanje | 4933 | 0 |
+| prazni kvizovi | 52 | 0 |
+
+**Provjera:** `npm run test:sve` prolazi. Simulacija: `tools/simulacija` s lažnom bazom.
+
+**Postavljanje:** baza se ne mora ponovno puniti. Nova pitanja upisuju se sama kad dijete potroši neviđene tekstove teme.
+
+---
+
 ## −12. Manje ponavljanja u Informatici, mreža bez skrolanja, hamburger izbornik
 
 **Prijava:** „Tko je drugi u redu?” vraća se nekoliko kvizova zaredom.

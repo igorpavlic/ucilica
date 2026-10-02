@@ -72,7 +72,7 @@ const PONASANJE_2 = [
 const VEZNE_2 = [
   ['Pala je kiša, ___ smo ostali kod kuće.', 'pa', ['ali', 'ili', 'nego']],
   ['Volim čitati ___ crtati.', 'i', ['ali', 'jer', 'nego']],
-  ['Nisam išao van ___ sam bio bolestan.', 'jer', ['i', 'ali', 'ili']],
+  ['Ostali smo kod kuće ___ smo bili bolesni.', 'jer', ['i', 'ali', 'ili']],
   ['___ ručka igrali smo se u parku.', 'Nakon', ['Prije nego', 'Zato', 'Ili']],
 ];
 function jezicnoIzrazavanjeDodatak2() {
