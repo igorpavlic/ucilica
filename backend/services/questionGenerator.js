@@ -293,13 +293,24 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
   // pitanja jer različiti brojevi/riječi u istome predlošku nisu stvarno nova
   // vrsta zadatka (npr. 7x "Koja riječ imenuje...?").
   const recentFamilies = new Set();
+  // Obitelj → kad ju je dijete zadnji put vidjelo. Kad su sve obitelji teme već
+  // viđene (mala tema, mnogo kvizova), prednost ima ona viđena NAJDAVNIJE —
+  // inače bi se „Tko je drugi u redu?” vraćao svaki drugi kviz.
+  const obiteljZadnjiPut = new Map();
   if (seenOids.length > 0) {
     const seenQuestions = await db.collection('questions')
       .find({ _id: { $in: seenOids } })
       .project({ type: 1, question: 1 })
       .toArray();
-    for (const q of seenQuestions) recentFamilies.add(questionFamilyKey(q));
+    for (const q of seenQuestions) {
+      const f = questionFamilyKey(q);
+      recentFamilies.add(f);
+      const t = vidjeno.zadnjiPut.get(String(q._id))?.getTime?.() ?? 0;
+      if (!obiteljZadnjiPut.has(f) || obiteljZadnjiPut.get(f) < t) obiteljZadnjiPut.set(f, t);
+    }
   }
+  // 0 = obitelj nikad viđena; veći broj = viđena nedavnije
+  const starostObitelji = (q) => obiteljZadnjiPut.get(questionFamilyKey(q)) ?? 0;
 
   const matchFresh = {
     topic_id: topicId,
@@ -340,6 +351,9 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
     }
   }
   if (pool.length === 0) return [];
+  // Najprije neviđene obitelji, zatim one viđene najdavnije (sort je stabilan,
+  // pa unutar iste starosti ostaje nasumičan redoslijed uzorka).
+  pool.sort((a, b) => starostObitelji(a) - starostObitelji(b));
 
   // 4. Prednost vještinama koje su dospjele za ponavljanje (FSRS).
   //    Vještina je gik.skillId (tema kao mikrovještina); starija pitanja padaju na gik.outcome.
@@ -375,7 +389,7 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
           difficulty: q.difficulty
         });
         questions = orderWithoutAdjacentFamilies(tezina.odaberiPoTezini(pool, count, dijete.rating, ocjena,
-          { familyKey: questionFamilyKey, avoidFamilies: recentFamilies }));
+          { familyKey: questionFamilyKey, avoidFamilies: recentFamilies, starost: starostObitelji }));
       }
     }
   } catch (err) {

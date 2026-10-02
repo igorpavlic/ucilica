@@ -4,6 +4,43 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −12. Manje ponavljanja u Informatici, mreža bez skrolanja, hamburger izbornik
+
+**Prijava:** „Tko je drugi u redu?” vraća se nekoliko kvizova zaredom.
+
+**Analiza** (simulacija: jedno dijete, 12 kvizova po 7 pitanja u istoj temi):
+- Isto pitanje, točno ista instanca, nije se vraćalo: 30-dnevni prozor radi.
+- Vraćao se **isti oblik pitanja** s drugim podatcima. Algoritmi 3. r. imali su oko 12 oblika, pa je dijete nakon dva kviza vidjelo gotovo sve.
+- Kad su svi oblici bili „nedavno viđeni”, izbor je uzimao nasumično. Zato se isti oblik mogao vratiti već u sljedećem kvizu.
+
+**Popravak:**
+- **Izbor po starosti obitelji** (`questionGenerator.js`, `tezina.js`): najprije dolaze neviđene obitelji pitanja, zatim one koje je dijete vidjelo **najdavnije**. Vrijedi za sve teme.
+- **Više oblika zadataka u Informatici:**
+  - sortiranje: 9 oblika (najviši/najniži, „koliko je djece više od…”, brojevi uzlazno i silazno, broj u sredini, životinje po težini…), po pozivu 3;
+  - AKO–INAČE: 6 oblika (paran/neparan, temperatura, robot i zid, razina u igri…), po pozivu 2;
+  - petlje: 4 nova oblika (skokovi, okreti pri crtanju lika, jabuke u košari, koliko ponavljanja);
+  - nizovi oblika (▲ ■ ● ★) i nizovi brojeva;
+  - šifra: „Koje slovo označava znak…?”;
+  - još 13 pitanja o zdravlju i sigurnosti.
+- **Rezultat simulacije** (isti tekst pitanja u 12 kvizova):
+
+  | Tema | Prije | Poslije |
+  |---|---:|---:|
+  | algoritmi 3 | 40 | 24 |
+  | algoritmi 4 | 32 | 18 |
+  | računalo i sigurnost 3 | 61 | 51 |
+
+  U temi „Računalo i sigurnost” pitanja su činjenice, pa se teže umnožavaju.
+- Nova pitanja ulaze u bazu sama, čim dijete potroši neviđena pitanja teme.
+
+**Mreža s robotom:**
+- veličina polja ovisi o širini i visini zaslona i o broju redaka;
+- kraći opis ispod mreže;
+- kratki odgovori su u dva stupca;
+- 5×5 stane bez skrolanja na 360×640.
+
+**Hamburger:** na mobitelu, izvan kviza, gornja traka ima samo naziv, bodove i ☰.
+
 ## −11. Kviz bez ometanja na mobitelu, copyright
 
 Uzor je zaslon lekcije u Duolingu: tijekom vježbe nema navigacije, na vrhu su samo izlaz i napredak, a „Provjeri/Nastavi” je na dnu.
