@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const { questionFamilyKey } = require('./questionFamily');
 const { dodajObjasnjenje, dodajSkupinska } = require('./objasnjenja');
 const { pitanjaZaTemu } = require('../seeds/citanje-tekstovi');
+const { dodatciZa } = require('../seeds/dodatci');
 
 // Tekstovi za čitanje (seeds/citanje-tekstovi.js) po generatoru teme.
 const TEKSTOVI_ZA_GENERATOR = {
@@ -550,6 +551,9 @@ function reviewQuestions(generatorName, questions){
 
   // Izvorni tekstovi za čitanje s pitanjima po procesima razumijevanja.
   if (TEKSTOVI_ZA_GENERATOR[generatorName]) qs.push(...pitanjaZaTemu(TEKSTOVI_ZA_GENERATOR[generatorName]));
+  // Dodatna pitanja za teme s malom bankom (seeds/dodatci): više oblika iste
+  // činjenice i nasumični brojevi, da se tekst ne ponavlja ni nakon 20 kvizova.
+  qs.push(...dodatciZa(generatorName));
 
   // Family diversification. Keep a useful drill core; transform surplus instances into other representations.
   const groups=new Map();
