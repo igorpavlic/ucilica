@@ -419,6 +419,30 @@ const tvrdi = (uvjet, opis, detalj = '') => {
     for (let i = 0; i < 12; i++) kolekcije.progress.push({ user_id: k2, topic_id: t2, completedAt: daniUnatrag(1), answers: [] });
     tvrdi((await QG.nedavnoVidjeno(k2, { topic_id: t2 })).ids.includes(String(jutros)), 'pitanje od prije 5 dana ostaje viđeno i nakon 12 novijih kvizova');
 
+    // Prijava pitanja: sprema se uvijek, šalje se kad je SMTP podešen,
+    // e-adresa roditelja ide u Reply-To; brisanje računa briše i prijave.
+    {
+      const PR = require('../services/prijave');
+      const nodemailer = require('nodemailer');
+      const pitanje = kolekcije.questions.find((x) => x.type === 'choice');
+      const korisnik = { _id: ID.user, username: 'test', emailRoditelja: 'roditelj@example.hr' };
+      delete process.env.SMTP_HOST;
+      const bez = await PR.prijavi({ pitanje, razlog: 'Dva odgovora su točna.', korisnik });
+      tvrdi(bez.poslano === false && (kolekcije.prijave || []).length === 1, 'bez SMTP-a prijava se sprema, ali ne šalje');
+      const poslano = [];
+      const izvorni = nodemailer.createTransport;
+      nodemailer.createTransport = () => ({ sendMail: async (m) => { poslano.push(m); } });
+      process.env.SMTP_HOST = 'smtp.test';
+      const sa = await PR.prijavi({ pitanje, razlog: 'Pitanje je nejasno.\nBcc: napadac@example.com', korisnik });
+      nodemailer.createTransport = izvorni;
+      delete process.env.SMTP_HOST;
+      const m = poslano[0] || {};
+      tvrdi(sa.poslano && m.to === 'contact@fromrim.hr' && m.replyTo === 'roditelj@example.hr',
+        'prijava ide na contact@fromrim.hr, odgovor roditelju (Reply-To)', JSON.stringify({ to: m.to, replyTo: m.replyTo }));
+      tvrdi(!/[\r\n]/.test(m.subject || '') && m.text.includes(pitanje.question) && m.text.includes('Pitanje je nejasno'),
+        'naslov je jedan redak, a poruka sadrži pitanje i razlog');
+    }
+
     // Privatnost: izvoz bez lozinke, brisanje svega što pripada djetetu.
     const P = require('../services/privatnost');
     const izvoz = await P.izvoz(ID.user);

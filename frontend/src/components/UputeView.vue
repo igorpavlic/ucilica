@@ -74,6 +74,8 @@
         <li><strong>Nova pitanja:</strong> pitanja koja je dijete vidjelo u zadnjih 30 dana nude se tek kad drugih nema.
           Kad dijete prođe postojeće zadatke, Mudrolina sama stvara nove. Ono što dijete zaboravlja dolazi ranije na ponavljanje.</li>
         <li><strong>Koliko vježbati:</strong> bolje kratko i svaki dan nego dugo jednom tjedno. Dnevni izazov traje nekoliko minuta.</li>
+        <li><strong>Pogrešno pitanje?</strong> Ispod svakog pitanja je gumb <strong>🚩 Prijavi pitanje</strong>. Opišite što nije u redu;
+          ako u profilu upišete e-adresu roditelja, odgovor stiže na nju.</li>
         <li><strong>Podatci:</strong> u profilu možete preuzeti sve podatke ili trajno obrisati račun.</li>
       </ul>
     </section>
@@ -92,7 +94,7 @@
       <details>
         <summary>Zašto je odgovor netočan, a mislim da je dobar?</summary>
         <p>Pročitaj objašnjenje ispod odgovora. Kod upisa provjeri piše li se riječ velikim ili malim slovom i jesi li upisao broj bez slova.
-          Ako i dalje misliš da je pitanje krivo, javi roditelju ili učitelju.</p>
+          Ako i dalje misliš da je pitanje krivo, klikni <strong>🚩 Prijavi pitanje</strong> i napiši što nije u redu.</p>
       </details>
       <details>
         <summary>Zaboravio sam lozinku.</summary>

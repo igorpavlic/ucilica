@@ -20,10 +20,14 @@
       <span v-if="!onemoguceno" class="ordering-hvat" aria-hidden="true">⠿</span>
       <span class="ordering-tekst">{{ index + 1 }}. {{ item }}</span>
       <div class="ordering-gumbi">
-        <button type="button" :disabled="onemoguceno || index === 0" :aria-label="`Pomakni ${item} gore`"
-          @pointerdown.stop @click="gumb(index, -1)">↑</button>
-        <button type="button" :disabled="onemoguceno || index === stavke.length - 1" :aria-label="`Pomakni ${item} dolje`"
-          @pointerdown.stop @click="gumb(index, 1)">↓</button>
+        <button type="button" class="ordering-strelica" :disabled="onemoguceno || index === 0" :aria-label="`Pomakni ${item} gore`"
+          title="Pomakni gore" @pointerdown.stop @click="gumb(index, -1)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </button>
+        <button type="button" class="ordering-strelica" :disabled="onemoguceno || index === stavke.length - 1" :aria-label="`Pomakni ${item} dolje`"
+          title="Pomakni dolje" @pointerdown.stop @click="gumb(index, 1)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </button>
       </div>
     </div>
     <p class="sr-only" aria-live="polite">{{ najava }}</p>

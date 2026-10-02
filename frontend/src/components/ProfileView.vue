@@ -88,6 +88,22 @@
         <p class="profil-privatnost-opis">
           Za roditelje: što Mudrolina čuva piše u <router-link to="/privatnost">obavijesti o privatnosti</router-link>.
         </p>
+        <!-- Neobavezno: samo za odgovor na prijavu pogrešnog pitanja -->
+        <div class="email-roditelja">
+          <label for="email-roditelja">E-adresa roditelja <span class="neobavezno">(neobavezno)</span></label>
+          <p class="profil-privatnost-opis">
+            Koristi se samo kad dijete prijavi pogrešno pitanje: na nju stiže odgovor. Ne šaljemo obavijesti ni reklame.
+          </p>
+          <div class="email-red">
+            <input id="email-roditelja" v-model="emailRoditelja" class="form-input" type="email" autocomplete="email"
+              placeholder="roditelj@primjer.hr" maxlength="120">
+            <button class="btn btn-secondary" :disabled="spremamEmail || emailRoditelja === (user.emailRoditelja || '')" @click="spremiEmail">
+              {{ spremamEmail ? 'Spremam…' : 'Spremi' }}
+            </button>
+          </div>
+          <p v-if="emailPoruka" class="email-poruka">{{ emailPoruka }}</p>
+        </div>
+
         <button class="btn btn-secondary" :disabled="izvozim" @click="preuzmiPodatke">
           {{ izvozim ? 'Pripremam…' : '⬇️ Preuzmi moje podatke' }}
         </button>
@@ -195,6 +211,7 @@ onMounted(async () => {
     const { razredi: dostupni } = await get('/subjects/razredi')
     if (dostupni?.length) razredi.value = dostupni
   } catch { /* ostaje zadano 1-4 */ }
+  emailRoditelja.value = user.value?.emailRoditelja || ''
   await ucitajObradjeno()
 })
 
@@ -212,6 +229,24 @@ async function changeGrade(g) {
   }
 }
 
+const emailRoditelja = ref('')
+const spremamEmail = ref(false)
+const emailPoruka = ref('')
+async function spremiEmail () {
+  spremamEmail.value = true
+  emailPoruka.value = ''
+  try {
+    const data = await patch('/auth/me', { emailRoditelja: emailRoditelja.value.trim() })
+    updateUser(data.user)
+    emailRoditelja.value = data.user.emailRoditelja || ''
+    emailPoruka.value = emailRoditelja.value ? 'Spremljeno.' : 'E-adresa je obrisana.'
+  } catch (e) {
+    emit('error', e.message)
+  } finally {
+    spremamEmail.value = false
+  }
+}
+
 async function changeAvatar(av) {
   if (!user.value || user.value.avatar === av) return
   try {
@@ -224,6 +259,12 @@ async function changeAvatar(av) {
 </script>
 
 <style scoped>
+.email-roditelja { text-align: left; margin: var(--space-md) 0; }
+.email-roditelja label { font-weight: 700; }
+.neobavezno { font-weight: 400; opacity: .7; }
+.email-red { display: flex; gap: 8px; flex-wrap: wrap; }
+.email-red .form-input { flex: 1 1 220px; }
+.email-poruka { font-size: .9rem; color: var(--correct); margin: 6px 0 0; }
 .covered-section { margin-top: var(--space-lg); text-align: left; }
 .covered-help { font-size: 0.9rem; opacity: 0.8; margin: 4px 0 var(--space-sm); }
 .covered-row label { display: flex; gap: 8px; align-items: baseline; padding: 6px 0; cursor: pointer; flex-wrap: wrap; }

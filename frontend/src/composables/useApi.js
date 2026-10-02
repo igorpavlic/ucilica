@@ -55,7 +55,9 @@ export function useApi() {
   const put = (path, body) => request(path, { method: 'PUT', body: JSON.stringify(body) })
   // Brisanje se ne ponavlja automatski: ponovni pokušaj nakon greške mogao bi
   // obrisati nešto drugo ili zbuniti korisnika porukom „nije pronađeno”.
+  // Slanje koje se ne smije ponoviti samo od sebe (npr. prijava pitanja — inače dvije e-poruke)
+  const postJednom = (path, body) => request(path, { method: 'POST', body: JSON.stringify(body) }, 0)
   const del = (path, body) => request(path, { method: 'DELETE', body: JSON.stringify(body || {}) }, 0)
 
-  return { loading, error, get, post, patch, put, del }
+  return { loading, error, get, post, postJednom, patch, put, del }
 }

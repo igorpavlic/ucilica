@@ -11,7 +11,7 @@
       <h2>Ukratko</h2>
       <ul>
         <li>Mudrolina čuva samo ono što treba za vježbu: korisničko ime, nadimak, avatar, razred i odgovore u kvizovima.</li>
-        <li>Ne tražimo ime i prezime, e-adresu, broj mobitela, adresu ni fotografiju.</li>
+        <li>Ne tražimo ime i prezime, broj mobitela, adresu ni fotografiju. E-adresu roditelja upisujete samo ako želite odgovor na prijavu pogrešnog pitanja.</li>
         <li>Nema oglasa, nema praćenja preko drugih stranica, ništa ne prodajemo i ne dijelimo.</li>
         <li>U svakom trenutku možete preuzeti sve podatke ili trajno obrisati račun u <router-link to="/profile">profilu</router-link>.</li>
       </ul>
@@ -33,6 +33,8 @@
           <tr><td>odgovori u kvizovima, točnost, vrijeme odgovora</td><td>da dijete ne dobiva ista pitanja, da se ponavlja ono što zaboravlja i da zadatci budu primjerene težine</td></tr>
           <tr><td>dani kad je riješen dnevni izazov</td><td>niz dana zaredom</td></tr>
           <tr><td>datum i verzija privole</td><td>dokaz da je roditelj dao privolu</td></tr>
+          <tr><td>e-adresa roditelja (neobavezno, upisuje se u profilu)</td><td>samo za odgovor na prijavu pitanja; ne šaljemo obavijesti ni reklame</td></tr>
+          <tr><td>prijave pitanja (tekst razloga, pitanje, korisničko ime)</td><td>ispravak pogrešnih pitanja; prijava se šalje e-poštom osobi koja održava pitanja</td></tr>
         </tbody>
       </table>
       <p>Odgovori se koriste i zbirno, bez imena, za procjenu težine pitanja i otkrivanje loše postavljenih zadataka.</p>

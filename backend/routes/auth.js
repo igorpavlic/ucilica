@@ -120,7 +120,11 @@ router.get('/me', auth, (req, res) => {
 router.patch('/me', auth, [
   body('displayName').optional().trim().isLength({ min: 1, max: 50 }).withMessage('Ime za prikaz: 1-50 znakova'),
   body('avatar').optional().isString().isLength({ min: 1, max: 10 }).withMessage('Avatar nije valjan'),
-  body('grade').optional().isInt({ min: 1, max: MAX_RAZRED }).withMessage(`Razred: 1-${MAX_RAZRED}`)
+  body('grade').optional().isInt({ min: 1, max: MAX_RAZRED }).withMessage(`Razred: 1-${MAX_RAZRED}`),
+  // Neobavezno: samo za odgovor na prijavu pitanja. Prazno = obriši.
+  body('emailRoditelja').optional().isString().trim()
+    .custom((v) => v === '' || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)).withMessage('E-adresa nije valjana')
+    .isLength({ max: 120 }).withMessage('E-adresa je preduga')
 ], async (req, res) => {
   try {
     if (!validate(req, res)) return;
@@ -130,9 +134,15 @@ router.patch('/me', auth, [
     for (const key of allowed) {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
     }
+    const unset = {};
+    if (req.body.emailRoditelja !== undefined) {
+      if (req.body.emailRoditelja === '') unset.emailRoditelja = '';
+      else updates.emailRoditelja = req.body.emailRoditelja.toLowerCase();
+    }
 
     const db = getDb();
-    await db.collection('users').updateOne({ _id: req.user._id }, { $set: updates });
+    await db.collection('users').updateOne({ _id: req.user._id },
+      { $set: updates, ...(Object.keys(unset).length ? { $unset: unset } : {}) });
     const user = await db.collection('users').findOne(
       { _id: req.user._id },
       { projection: { password: 0 } }

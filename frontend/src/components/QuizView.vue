@@ -129,6 +129,10 @@
           <PoredajPovlacenjem :stavke="redoslijed" :onemoguceno="answered" @premjesti="premjestiStavku" />
           <button v-if="!answered" class="btn-check ordering-check" @click="handleStructured([...redoslijed])">Provjeri redoslijed</button>
         </template>
+
+        <div class="prijava-red">
+          <PrijaviPitanje :key="questions[currentQ]._id" :pitanje="questions[currentQ]" />
+        </div>
       </div>
 
       <div v-if="answered && objasnjenje" class="explanation-card">
@@ -179,6 +183,7 @@ import { useGovor } from '../composables/useGovor'
 import { oznakeDaNe } from '../composables/daNe'
 import SpajanjeParova from './SpajanjeParova.vue'
 import PoredajPovlacenjem from './PoredajPovlacenjem.vue'
+import PrijaviPitanje from './PrijaviPitanje.vue'
 
 const props = defineProps({ topicId: String })
 const emit = defineEmits(['error'])

@@ -18,7 +18,7 @@ const { getDb } = require('../db/mongo');
 const VERZIJA_OBAVIJESTI = '2026-10-02';
 
 // Zbirke s podatcima pojedinog djeteta (ključ: user_id).
-const KORISNICKE_ZBIRKE = ['progress', 'quiz_attempts', 'skill_states', 'user_ratings', 'responses'];
+const KORISNICKE_ZBIRKE = ['progress', 'quiz_attempts', 'skill_states', 'user_ratings', 'responses', 'prijave'];
 
 /** Zapis privole koji se sprema uz korisnika pri registraciji. */
 function zapisPrivole(sada = new Date()) {
