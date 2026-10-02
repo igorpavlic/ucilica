@@ -38,6 +38,20 @@ module.exports = ({ izbor, broj, rijec, redoslijed, tocnoNetocno }) => [
     ]
   },
 
+  {
+    id: 'r2-mali-vrt', razred: 2, tema: 'citanje-2', ishod: 'OŠ HJ A.2.3', vrsta: 'pripovjedni',
+    naslov: 'Mali vrt',
+    tekst: 'Baka Mara dala je Teu malu gredicu u vrtu. Teo je posadio rotkvice, salatu i jedan suncokret. Svako jutro zalijevao je gredicu kantom. Nakon tri tjedna iščupao je prvu rotkvicu. Bila je crvena i hrskava. Salatu su pojeli za ručak, a suncokret je narastao viši od Tea. „Iduće godine posadit ću i mrkvu”, rekao je Teo.',
+    pitanja: [
+      izbor('podatak', 'Tko je Teu dao gredicu u vrtu?', ['baka Mara', 'tata', 'učiteljica'], 'Prva rečenica: „Baka Mara dala je Teu malu gredicu”.', 1),
+      izbor('podatak', 'Što je Teo posadio u svoju gredicu?', ['rotkvice, salatu i suncokret', 'mrkvu i krumpir', 'jagode i trešnje'], 'U tekstu piše da je posadio rotkvice, salatu i jedan suncokret.', 1),
+      izbor('podatak', 'Kakva je bila prva Teova rotkvica?', ['crvena i hrskava', 'žuta i mekana', 'zelena i gorka'], 'U tekstu piše: „Bila je crvena i hrskava.”', 1),
+      izbor('zakljucak', 'Zašto je Teov vrt dobro rastao?', ['Teo ga je svako jutro zalijevao.', 'Nitko ga nije dirao.', 'Padao je snijeg.'], 'Biljke trebaju vodu, a Teo je gredicu zalijevao svako jutro.', 2),
+      tocnoNetocno('podatak', 'Je li suncokret narastao viši od Tea?', true, 'U tekstu piše da je suncokret narastao viši od Tea.'),
+      izbor('zakljucak', 'Što će Teo posaditi iduće godine?', ['mrkvu', 'samo suncokret', 'ništa'], 'Teo kaže: „Iduće godine posadit ću i mrkvu.”', 1)
+    ]
+  },
+
   // ── 3. razred ────────────────────────────────────────────────────
   {
     id: 'r3-kornjaca', razred: 3, tema: 'citanje-3', ishod: 'OŠ HJ A.3.3', vrsta: 'pripovjedni',
@@ -220,6 +234,35 @@ module.exports = ({ izbor, broj, rijec, redoslijed, tocnoNetocno }) => [
     ]
   },
 
+  {
+    id: 'r3-zubar', razred: 3, tema: 'citanje-3', ishod: 'OŠ HJ A.3.3', vrsta: 'pripovjedni',
+    naslov: 'Posjet stomatologinji',
+    tekst: 'Ena se bojala odlaska stomatologinji. Cijelo jutro nije htjela doručkovati. U čekaonici je vidjela dječaka koji je izašao nasmiješen i s naljepnicom na majici. Stomatologinja Iva pokazala joj je sve instrumente i objasnila čemu služe. Pregledala joj je zube i rekla da ima samo jedan mali karijes. Popravak je trajao deset minuta i nije boljelo. Na izlasku je i Ena dobila naljepnicu. Kod kuće je odmah oprala zube, iako je bilo tek podne.',
+    pitanja: [
+      izbor('podatak', 'Čega se Ena bojala?', ['odlaska stomatologinji', 'pasa', 'mraka'], 'Prva rečenica: „Ena se bojala odlaska stomatologinji.”', 1),
+      izbor('zakljucak', 'Zašto Ena ujutro nije htjela doručkovati?', ['Bila je uplašena zbog posjeta stomatologinji.', 'Nije voljela kruh.', 'Već je jela u školi.'], 'Strah od posjeta oduzeo joj je volju za jelom.', 2),
+      izbor('podatak', 'Kako je stomatologinja Iva umirila Enu?', ['pokazala joj je instrumente i objasnila čemu služe', 'dala joj je bombon', 'pustila joj je crtić'], 'U tekstu piše da joj je pokazala sve instrumente i objasnila čemu služe.', 2),
+      broj('podatak', 'Koliko je minuta trajao popravak Enina zuba?', 10, 'Popravak je „trajao deset minuta”.', 1),
+      tocnoNetocno('podatak', 'Je li Eni popravak zuba bio bolan?', false, 'U tekstu piše da nije boljelo.'),
+      izbor('tumacenje', 'Što pokazuje Enino pranje zuba u podne?', ['Odlučila je bolje brinuti o zubima.', 'Zaboravila je da je podne.', 'Htjela je naljutiti mamu.'], 'Nakon posjeta Ena želi čuvati zube, pa ih pere i u podne.', 3),
+      izbor('vrednovanje', 'Koja je poruka priče o Eni?', ['Strah je često veći kad ne znamo što nas čeka.', 'Zube ne treba prati.', 'Stomatologa se treba bojati.'], 'Kad je Ena saznala što je čeka, strah je nestao.', 3)
+    ]
+  },
+  {
+    id: 'r3-obavijest-sajam', razred: 3, tema: 'citanje-3', ishod: 'OŠ HJ C.3.3', vrsta: 'obavijest',
+    naslov: 'Školski sajam',
+    tekst: 'U četvrtak, 7. prosinca, od 16 do 18 sati u školskoj dvorani održava se božićni sajam. Učenici će prodavati ukrase, čestitke i kolače koje su sami izradili. Cijene su od 1 do 5 eura. Sav prikupljeni novac bit će doniran skloništu za napuštene životinje. Roditelji i bake i djedovi su dobrodošli. Ako želite donijeti kolače, javite se razrednici do utorka.',
+    pitanja: [
+      izbor('podatak', 'Gdje se održava božićni sajam?', ['u školskoj dvorani', 'na gradskom trgu', 'u knjižnici'], 'U obavijesti piše: „u školskoj dvorani”.', 1),
+      broj('zakljucak', 'Koliko sati traje božićni sajam?', 2, 'Od 16 do 18 sati prođu 2 sata.', 2),
+      izbor('podatak', 'Što će učenici prodavati na sajmu?', ['ukrase, čestitke i kolače', 'igračke i knjige', 'voće i povrće'], 'Učenici će prodavati ukrase, čestitke i kolače.', 1),
+      izbor('podatak', 'Kome će biti doniran novac sa sajma?', ['skloništu za napuštene životinje', 'školskoj knjižnici', 'gradskom kazalištu'], 'Novac će biti doniran skloništu za napuštene životinje.', 1),
+      broj('podatak', 'Koliko eura stoji najskuplja stvar na sajmu?', 5, 'Cijene su „od 1 do 5 eura”.', 2),
+      izbor('podatak', 'Do kada se treba javiti razrednici za donošenje kolača?', ['do utorka', 'do petka', 'do nedjelje'], 'U obavijesti piše: „javite se razrednici do utorka”.', 1),
+      izbor('vrednovanje', 'Zašto je sajam dobra ideja?', ['Učenici pomažu životinjama svojim radom.', 'Učenici ne moraju ići u školu.', 'Ukrasi su besplatni.'], 'Zarađeni novac ide skloništu za životinje.', 2)
+    ]
+  },
+
   // ── 4. razred ────────────────────────────────────────────────────
   {
     id: 'r4-nikola-tesla', razred: 4, tema: 'citanje-4', ishod: 'OŠ HJ A.4.3', vrsta: 'biografija',
@@ -399,6 +442,48 @@ module.exports = ({ izbor, broj, rijec, redoslijed, tocnoNetocno }) => [
       izbor('podatak', 'Kako su učenici razvrstali skupljene knjige?', ['po dobi čitatelja', 'po boji korica', 'po težini'], 'Učenici su knjige „razvrstali po dobi čitatelja”.', 2),
       izbor('zakljucak', 'Zašto će knjige pomoći djeci u bolnici?', ['Lakše će provoditi dane u bolnici.', 'Brže će naučiti matematiku.', 'Neće morati uzimati lijekove.'], 'Medicinska sestra kaže da će knjige pomoći djeci da lakše provedu dane u bolnici.', 2),
       izbor('vrednovanje', 'Kakav je tekst o skupljanju knjiga?', ['vijest o stvarnom događaju', 'bajka', 'pjesma'], 'Tekst izvještava tko je, što, kada i gdje učinio, kao vijest.', 2)
+    ]
+  },
+  {
+    id: 'r4-pismo-iz-tabora', razred: 4, tema: 'citanje-4', ishod: 'OŠ HJ A.4.3', vrsta: 'pismo',
+    naslov: 'Pismo iz ljetnog tabora',
+    tekst: 'Mrkopalj, 12. srpnja\nDragi mama i tata,\nu taboru je odlično! Spavamo u drvenim kućicama, po šestero u svakoj. Svako jutro u sedam sati imamo tjelovježbu na livadi. Jučer smo planinarili do vrha Bjelolasice i vidjeli srnu. Naučila sam paliti logorsku vatru uz pomoć voditelja i snalaziti se kompasom. Hrana je dobra, ali mi nedostaju tatine palačinke. Vraćam se u subotu, pa me čekajte na kolodvoru u 15 sati.\nVaša Klara',
+    pitanja: [
+      izbor('podatak', 'Gdje se nalazi Klarin ljetni tabor?', ['u Mrkoplju', 'u Zagrebu', 'na moru'], 'Na početku pisma piše „Mrkopalj, 12. srpnja”.', 1),
+      broj('podatak', 'Koliko djece spava u jednoj drvenoj kućici?', 6, 'Klara piše da spavaju „po šestero u svakoj”.', 1),
+      izbor('podatak', 'Što je Klara vidjela na planinarenju do Bjelolasice?', ['srnu', 'medvjeda', 'vuka'], 'U pismu piše: „vidjeli srnu”.', 1),
+      izbor('podatak', 'Što je Klara naučila u taboru?', ['paliti logorsku vatru i snalaziti se kompasom', 'plivati i roniti', 'svirati gitaru'], 'Naučila je paliti logorsku vatru uz pomoć voditelja i snalaziti se kompasom.', 2),
+      izbor('zakljucak', 'Što Klari nedostaje u taboru?', ['tatine palačinke', 'njezin bicikl', 'školski prijatelji'], 'Klara piše: „nedostaju mi tatine palačinke”.', 1),
+      izbor('podatak', 'Kada i gdje roditelji trebaju dočekati Klaru?', ['u subotu u 15 sati na kolodvoru', 'u nedjelju ujutro ispred škole', 'u petak u podne u taboru'], 'Klara piše da se vraća u subotu i da je čekaju na kolodvoru u 15 sati.', 2),
+      izbor('tumacenje', 'Kako se Klara osjeća u taboru?', ['zadovoljno, iako joj pomalo nedostaje dom', 'tužno i želi odmah kući', 'ljutito na voditelje'], 'Piše da je „odlično”, ali spominje da joj nedostaju tatine palačinke.', 3)
+    ]
+  },
+  {
+    id: 'r4-recikliranje-vijest', razred: 4, tema: 'citanje-4', ishod: 'OŠ HJ C.4.1', vrsta: 'vijest',
+    naslov: 'Razred koji ne baca',
+    tekst: 'Učenici 4. c razreda tijekom ožujka vagali su otpad iz svoje učionice. Prvog tjedna skupili su 6 kilograma otpada, od toga 4 kilograma papira. Zatim su uveli tri kutije: za papir, za plastiku i za ostali otpad. Na poleđini papira počeli su pisati bilješke, a bočice za vodu donosili su od kuće. Posljednjeg tjedna u ožujku skupili su samo 2 kilograma otpada. Ravnateljica je predložila da cijela škola preuzme njihov plan.',
+    pitanja: [
+      broj('podatak', 'Koliko je kilograma otpada razred skupio prvog tjedna?', 6, 'Prvog tjedna skupili su 6 kilograma otpada.', 1),
+      broj('zakljucak', 'Za koliko se kilograma smanjio otpad od prvog do posljednjeg tjedna?', 4, '6 − 2 = 4.', 2),
+      izbor('podatak', 'Kojeg je otpada prvog tjedna bilo najviše?', ['papira', 'plastike', 'stakla'], 'Od 6 kilograma čak su 4 kilograma bila papir.', 2),
+      izbor('podatak', 'Za što su bile tri kutije u učionici?', ['za papir, za plastiku i za ostali otpad', 'za igračke, knjige i odjeću', 'za kolače, sokove i voće'], 'Uveli su kutije za papir, za plastiku i za ostali otpad.', 1),
+      izbor('zakljucak', 'Kako su učenici smanjili papirnati otpad?', ['pisali su bilješke na poleđini papira', 'bacali su papir kroz prozor', 'prestali su pisati'], 'Na poleđini papira počeli su pisati bilješke.', 2),
+      izbor('podatak', 'Što je predložila ravnateljica?', ['da cijela škola preuzme plan 4. c razreda', 'da se kutije uklone', 'da učenici prestanu vagati otpad'], 'Ravnateljica je predložila da cijela škola preuzme njihov plan.', 1),
+      izbor('vrednovanje', 'Koja je glavna poruka vijesti o 4. c razredu?', ['Malim promjenama možemo mnogo smanjiti otpad.', 'Vaganje otpada je dosadno.', 'Papir ne treba reciklirati.'], 'Razred je jednostavnim navikama smanjio otpad s 6 na 2 kilograma.', 3)
+    ]
+  },
+  {
+    id: 'r4-svjetionik', razred: 4, tema: 'citanje-4', ishod: 'OŠ HJ B.4.1', vrsta: 'pripovjedni',
+    naslov: 'Svjetioničarev unuk',
+    tekst: 'Marin je ljeto proveo kod djeda, svjetioničara na malom otoku. Djed mu je objasnio da svjetlo svjetionika pomaže brodovima da noću ne udare u hridi. Jedne večeri počela je oluja i nestalo je struje. Djed je s Marinom brzo upalio rezervni agregat, a Marin je svjetiljkom osvjetljavao put po skliskim stubama. Svjetlo je opet zasjalo. Ujutro je u luku uplovio ribarski brod. Ribar je zahvalio djedu, a djed je rekao: „Hvala mojem pomoćniku.” Marin je bio ponosan kao nikad prije.',
+    pitanja: [
+      izbor('podatak', 'Čime se bavi Marinov djed?', ['on je svjetioničar', 'on je ribar', 'on je kapetan broda'], 'U prvoj rečenici piše da je djed svjetioničar na malom otoku.', 1),
+      izbor('podatak', 'Čemu služi svjetlo svjetionika?', ['pomaže brodovima da noću ne udare u hridi', 'osvjetljava plažu za kupače', 'grije kuću svjetioničara'], 'Djed objašnjava da svjetlo pomaže brodovima da ne udare u hridi.', 1),
+      izbor('podatak', 'Što se dogodilo za oluje?', ['nestalo je struje', 'srušio se svjetionik', 'potonuo je brod'], 'U tekstu piše: „počela je oluja i nestalo je struje”.', 1),
+      izbor('podatak', 'Kako je Marin pomogao djedu?', ['svjetiljkom je osvjetljavao put po skliskim stubama', 'popravio je agregat sam', 'pozvao je policiju'], 'Marin je svjetiljkom osvjetljavao put po stubama.', 2),
+      izbor('zakljucak', 'Zašto je ribar zahvalio djedu?', ['Svjetlo svjetionika pomoglo mu je da se sigurno vrati.', 'Djed mu je prodao ribu.', 'Djed mu je posudio brod.'], 'Ribarski brod uplovio je u luku nakon oluje zahvaljujući svjetlu.', 2),
+      izbor('tumacenje', 'Zašto je Marin bio ponosan?', ['Djed je istaknuo njegovu pomoć.', 'Dobio je novi bicikl.', 'Ulovio je veliku ribu.'], 'Djed je rekao: „Hvala mojem pomoćniku.”', 2),
+      izbor('vrednovanje', 'Što priča o svjetioničarevu unuku pokazuje?', ['I djeca mogu pomoći u važnom poslu.', 'Oluje su zabavne.', 'Svjetionici nisu potrebni.'], 'Marinova pomoć bila je važna da svjetlo opet zasja.', 3)
     ]
   },
 ];
