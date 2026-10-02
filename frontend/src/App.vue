@@ -70,6 +70,15 @@
     @error="handleError"
     @stars="triggerStars"
   />
+
+  <footer v-if="!fokus && !appLoading" class="podnozje">
+    <span>© {{ godine }} From RIM · Mudrolina. Sva prava pridržana.</span>
+    <nav aria-label="Podnožje">
+      <router-link to="/upute">Upute</router-link>
+      <router-link to="/privatnost">Privatnost</router-link>
+      <a href="mailto:contact@fromrim.com">Kontakt</a>
+    </nav>
+  </footer>
 </template>
 
 <script setup>
@@ -89,7 +98,14 @@ const {
 } = useAuth()
 
 const authPages = ['login', 'register']
-const showTopbar = computed(() => !authPages.includes(route.name))
+// Kviz je način bez ometanja: bez gornje trake i podnožja (vlastito zaglavlje s ✕ i napretkom)
+const fokus = computed(() => route.name === 'quiz')
+const showTopbar = computed(() => !authPages.includes(route.name) && !fokus.value)
+const GODINA_POCETKA = 2026
+const godine = computed(() => {
+  const sada = new Date().getFullYear()
+  return sada > GODINA_POCETKA ? `${GODINA_POCETKA}.–${sada}.` : `${GODINA_POCETKA}.`
+})
 
 function handleLogout() {
   logout()

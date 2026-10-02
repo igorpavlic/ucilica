@@ -1,25 +1,21 @@
 <template>
-  <div class="shell">
-    <router-link v-if="jeMijesano(props.topicId)" :to="{ path: '/home', query: { grade: razredIz(props.topicId) } }" class="back-link">← Natrag na predmete</router-link>
-    <router-link v-else
-      :to="{ name: 'topics', params: { slug: $route.query.subjectSlug || 'unknown' }, query: { name: $route.query.subjectName, icon: '', grade: $route.query.grade } }"
-      class="back-link"
-    >← Natrag na teme</router-link>
-
+  <div class="shell kviz-shell">
     <div v-if="loadingQuiz" class="loading-overlay">
       <div class="spinner"></div>
       <div class="loading-text">Pripremam pitanja...</div>
     </div>
 
-    <div v-else-if="questions.length" class="quiz-container">
-      <div class="progress-row">
-        <span>{{ $route.query.topicIcon }} {{ $route.query.topicName }}</span>
-        <span>{{ currentQ + 1 }} / {{ questions.length }}</span>
+    <div v-else-if="questions.length" ref="kontejner" class="quiz-container" :class="{ 'ima-plocu': answered }">
+      <!-- Način bez ometanja (kao Duolingo): umjesto gornje trake samo izlaz, napredak i brojač -->
+      <div class="kviz-zaglavlje">
+        <router-link :to="natragRuta" class="kviz-zatvori" aria-label="Izađi iz kviza" title="Izađi iz kviza">✕</router-link>
+        <div class="progress-track" role="progressbar" :aria-valuenow="currentQ + 1" aria-valuemin="1" :aria-valuemax="questions.length">
+          <div class="progress-fill" :style="{ width: ((currentQ + 1) / questions.length * 100) + '%' }"></div>
+        </div>
+        <span class="kviz-brojac">{{ currentQ + 1 }}/{{ questions.length }}</span>
       </div>
+      <p class="kviz-tema">{{ $route.query.topicIcon }} {{ $route.query.topicName }}</p>
       <p v-if="opseg" class="scope-note">{{ opisOpsega }}</p>
-      <div class="progress-track">
-        <div class="progress-fill" :style="{ width: ((currentQ + 1) / questions.length * 100) + '%' }"></div>
-      </div>
 
       <div class="question-card" :key="currentQ">
         <!--
@@ -135,12 +131,15 @@
         </div>
       </div>
 
-      <div v-if="answered && objasnjenje" class="explanation-card">
+      <!-- Povratna ploča: izlazi s dna ekrana, pa objašnjenje i „Sljedeće” ne traže skrolanje -->
+      <div v-if="answered" ref="ploca" class="povratna-ploca" :class="isCorrect ? 'tocno' : 'netocno'">
+        <div class="povratna-unutra">
+      <div v-if="objasnjenje" class="explanation-card">
         <strong>Zašto?</strong> {{ objasnjenje }}
         <button v-if="govorDostupan" type="button" class="btn-slusaj" aria-label="Pročitaj objašnjenje naglas" @click="reci(objasnjenje)">🔊</button>
       </div>
 
-      <div v-if="answered" class="feedback-bar" :class="isCorrect ? 'correct' : 'wrong'">
+      <div class="feedback-bar" :class="isCorrect ? 'correct' : 'wrong'">
         <span>{{ isCorrect ? '✓' : '✗' }}</span>
         <span v-if="isCorrect">{{ correctMessages[Math.floor(Math.random() * correctMessages.length)] }}</span>
         <span v-else-if="questions[currentQ].type === 'match'">
@@ -149,9 +148,11 @@
         <span v-else>Točan odgovor: {{ correctAnswerText }}</span>
       </div>
 
-      <button v-if="answered" class="btn-next" @click="nextQuestion">
+      <button class="btn-next" @click="nextQuestion">
         {{ hasNextQuestion() ? 'Sljedeće pitanje →' : 'Pogledaj rezultat 🏆' }}
       </button>
+        </div>
+      </div>
     </div>
 
     <div v-else-if="exhausted" class="quiz-container">
@@ -212,6 +213,26 @@ const {
   provjeravam,
   correctCount
 } = storeToRefs(quizStore)
+
+// Kamo vodi ✕: miješano ponavljanje i dnevni izazov → početna, tema → popis tema predmeta
+const natragRuta = computed(() => jeMijesano(props.topicId)
+  ? { path: '/home', query: { grade: razredIz(props.topicId) } }
+  : { name: 'topics', params: { slug: route.query.subjectSlug || 'unknown' }, query: { name: route.query.subjectName, icon: '', grade: route.query.grade } })
+
+// Visina povratne ploče → donji razmak sadržaja, da ploča ništa ne prekrije
+const kontejner = ref(null)
+const ploca = ref(null)
+let promatracPloce = null
+watch(ploca, (el) => {
+  promatracPloce?.disconnect()
+  if (!el || typeof ResizeObserver === 'undefined') return
+  promatracPloce = new ResizeObserver(() => {
+    kontejner.value?.style.setProperty('--ploca-h', `${el.offsetHeight}px`)
+  })
+  promatracPloce.observe(el)
+})
+// Novo pitanje počinje na vrhu ekrana
+watch(currentQ, () => window.scrollTo(0, 0))
 
 const opisOpsega = computed(() => {
   const o = opseg.value
@@ -334,6 +355,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  promatracPloce?.disconnect()
   resetSession()
 })
 
