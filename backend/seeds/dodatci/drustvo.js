@@ -3,7 +3,7 @@
  * zavičaj i karta, gospodarske djelatnosti, kulturna baština, krajevi
  * Hrvatske, Hrvatska — moja domovina.
  */
-const { izbor, tocnoNetocno, obaSmjera, sveTvrdnje, uObitelj, spajanja, izTablice, daNe, uzmi } = require('./pomocno');
+const { izbor, tocnoNetocno, obaSmjera, sveTvrdnje, uObitelj, spajanja, izTablice, daNe, uzmi, obiteljTablice } = require('./pomocno');
 
 const KRAJEVI = ['nizinski', 'brežuljkasti', 'gorski', 'primorski'];
 const KRAJ_PRIPADNOST = 'kraj-pripadnost';
@@ -52,13 +52,13 @@ function krajeviDodatak() {
   // u kvizu najviše jedno takvo pitanje, ostalo su drugi oblici.
   q.push(...uObitelj(KRAJ_PRIPADNOST, [
     ...GRADOVI.map(([g, k]) => izbor(`U kojem se kraju Hrvatske nalazi grad ${g}?`, k, KRAJEVI.filter((x) => x !== k), 2)),
-    ...REGIJE.map(([r, k]) => izbor(`Koji je kraj Hrvatske ${r}?`, k, KRAJEVI.filter((x) => x !== k), 2)),
-    ...RIJEKE.map(([r, k]) => izbor(`Kroz koji kraj Hrvatske teče rijeka ${r}?`, k, KRAJEVI.filter((x) => x !== k), 3)),
-    ...PLANINE.map(([p, k]) => izbor(`U kojem se kraju Hrvatske nalazi planina ${p}?`, k, KRAJEVI.filter((x) => x !== k), 3)),
+    ...uObitelj(obiteljTablice(REGIJE), REGIJE.map(([r, k]) => izbor(`Koji je kraj Hrvatske ${r}?`, k, KRAJEVI.filter((x) => x !== k), 2))),
+    ...uObitelj(obiteljTablice(RIJEKE), RIJEKE.map(([r, k]) => izbor(`Kroz koji kraj Hrvatske teče rijeka ${r}?`, k, KRAJEVI.filter((x) => x !== k), 3))),
+    ...uObitelj(obiteljTablice(PLANINE), PLANINE.map(([p, k]) => izbor(`U kojem se kraju Hrvatske nalazi planina ${p}?`, k, KRAJEVI.filter((x) => x !== k), 3))),
   ]));
-  q.push(...OBILJEZJA.map(([o, k]) => izbor(`Koji kraj Hrvatske opisuje: ${o}?`, k, KRAJEVI.filter((x) => x !== k), 2)));
+  q.push(...uObitelj(obiteljTablice(OBILJEZJA), OBILJEZJA.map(([o, k]) => izbor(`Koji kraj Hrvatske opisuje: ${o}?`, k, KRAJEVI.filter((x) => x !== k), 2))));
   q.push(...spajanja(REGIJE, 'Spoji područje s krajem Hrvatske:', { koliko: 4, komada: 3 }));
-  q.push(...KR_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2)));
+  q.push(...uObitelj(obiteljTablice(KR_DA_NE), KR_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2))));
   return q;
 }
 
@@ -103,7 +103,7 @@ function domovinaDodatak() {
   const q = [...izTablice(DOMOVINA, 2)];
   q.push(...obaSmjera(ZUPANIJE, { pitajB: (a) => `Koji je grad sjedište županije: ${a}?`, pitajA: (b) => `Kojoj je županiji sjedište ${b}?`, tezina: 3 }));
   q.push(...obaSmjera(NP, { pitajB: (a) => `Što je posebno u nacionalnom parku ${a}?`, pitajA: (b) => `Koji nacionalni park ima ovo obilježje: ${b}?`, tezina: 3 }));
-  q.push(...DOM_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2)));
+  q.push(...uObitelj(obiteljTablice(DOM_DA_NE), DOM_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2))));
   return q;
 }
 
@@ -130,10 +130,10 @@ const GD_DA_NE = [['Je li turizam gospodarska djelatnost?', true], ['Bavi li se 
   ['Je li obrtnik osoba koja ručno izrađuje ili popravlja stvari?', true], ['Pripada li prijevoz robe vlakom poljoprivredi?', false], ['Ovise li gospodarske djelatnosti o prirodnim uvjetima kraja?', true]];
 function gospodarskeDodatak() {
   const q = [];
-  q.push(...ZANIMANJE_DJ.map(([z, d]) => izbor(`Kojoj djelatnosti pripada zanimanje: ${z}?`, d, uzmi(DJELATNOSTI.filter((x) => x !== d), 3), 2)));
-  q.push(...PROIZVOD_DJ.map(([p, d]) => izbor(`Koja djelatnost daje ovo: ${p}?`, d, uzmi(DJELATNOSTI.filter((x) => x !== d), 3), 2)));
+  q.push(...uObitelj(obiteljTablice(ZANIMANJE_DJ), ZANIMANJE_DJ.map(([z, d]) => izbor(`Kojoj djelatnosti pripada zanimanje: ${z}?`, d, uzmi(DJELATNOSTI.filter((x) => x !== d), 3), 2))));
+  q.push(...uObitelj(obiteljTablice(PROIZVOD_DJ), PROIZVOD_DJ.map(([p, d]) => izbor(`Koja djelatnost daje ovo: ${p}?`, d, uzmi(DJELATNOSTI.filter((x) => x !== d), 3), 2))));
   q.push(...izTablice(KRAJ_DJ, 2));
-  q.push(...GD_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2)));
+  q.push(...uObitelj(obiteljTablice(GD_DA_NE), GD_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2))));
   q.push(...spajanja(ZANIMANJE_DJ, 'Spoji zanimanje s djelatnošću:', { koliko: 4, komada: 3 }));
   return q;
 }
@@ -159,10 +159,10 @@ const KB_DA_NE = [['Je li klapsko pjevanje nematerijalna baština?', true], ['Je
   ['Smijemo li pisati po starim zidinama?', false], ['Je li paška čipka dio hrvatske tradicije?', true], ['Može li se narodni ples dotaknuti rukom kao predmet?', false]];
 function kulturnaDodatak() {
   const q = [];
-  q.push(...BASTINA.map(([b, v]) => izbor(`Je li ${b} materijalna ili nematerijalna baština?`, v, [v === 'materijalna' ? 'nematerijalna' : 'materijalna'], 2,
-    v === 'materijalna' ? 'Materijalnu baštinu možemo dotaknuti: građevine i predmete.' : 'Nematerijalna baština su pjesme, plesovi, običaji i umijeća.')));
+  q.push(...uObitelj(obiteljTablice(BASTINA), BASTINA.map(([b, v]) => izbor(`Je li ${b} materijalna ili nematerijalna baština?`, v, [v === 'materijalna' ? 'nematerijalna' : 'materijalna'], 2,
+    v === 'materijalna' ? 'Materijalnu baštinu možemo dotaknuti: građevine i predmete.' : 'Nematerijalna baština su pjesme, plesovi, običaji i umijeća.'))));
   q.push(...izTablice(KB_PITANJA, 2));
-  q.push(...KB_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2)));
+  q.push(...uObitelj(obiteljTablice(KB_DA_NE), KB_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2))));
   return q;
 }
 

@@ -3,7 +3,7 @@
  * biljke i životinje (prehrana, skupine, ekosustavi, prilagodbe), uvjeti
  * života, ljudsko tijelo.
  */
-const { izbor, tocnoNetocno, poredaj, obaSmjera, sveTvrdnje, spajanja, izTablice, daNe, uzmi, jedan } = require('./pomocno');
+const { izbor, tocnoNetocno, poredaj, obaSmjera, sveTvrdnje, spajanja, izTablice, daNe, uzmi, jedan, uObitelj, obiteljTablice } = require('./pomocno');
 const { _tablice: { DRVECE, DIO_BILJKE, STANJA } } = require('./priroda-a');
 
 // ═══ 3. razred: tlo, voda, zrak ═══
@@ -20,12 +20,12 @@ const TVZ_DA_NE = [['Treba li biljkama zrak?', true], ['Je li vjetar zrak u pokr
   ['Je li kondenzacija prijelaz vodene pare u kapljice vode?', true], ['Je li tlo nastalo za jedan dan?', false], ['Pomažu li gujavice tlu?', true], ['Može li se onečišćena voda očistiti samo od sebe za jedan dan?', false]];
 function tloVodaZrakDodatak() {
   const q = [];
-  q.push(...PROMJENE.map(([p, n]) => izbor(`Kako zovemo promjenu u primjeru: ${p.replace(/\.$/, '')}?`, n, ['isparavanje', 'taljenje', 'smrzavanje', 'kondenzacija'].filter((x) => x !== n), 2)));
+  q.push(...uObitelj(obiteljTablice(PROMJENE), PROMJENE.map(([p, n]) => izbor(`Kako zovemo promjenu u primjeru: ${p.replace(/\.$/, '')}?`, n, ['isparavanje', 'taljenje', 'smrzavanje', 'kondenzacija'].filter((x) => x !== n), 2))));
   q.push(...obaSmjera(INSTRUMENTI, { pitajB: (a) => `Što mjerimo ili određujemo instrumentom koji se zove ${a}?`, pitajA: (b) => `Kojim instrumentom mjerimo ili određujemo ${b}?`, tezina: 2 }));
   q.push(...obaSmjera(TLO_SASTAV, { pitajB: (a) => `Koja tvrdnja opisuje ${a} u tlu?`, pitajA: (b) => `Koji dio tla opisuje tvrdnja: ${b}?`, tezina: 2 }));
-  q.push(...ZRAK_ONECISCENJE.map(([o, d]) => tocnoNetocno(`Onečišćuje li zrak: ${o}?`, d, 2)));
-  q.push(...STANJA.map(([v, s]) => izbor(`Kojem agregatnom stanju vode pripada primjer: ${v}?`, s === 'kruto' ? 'čvrsto' : s, ['čvrsto', 'tekuće', 'plinovito'].filter((x) => x !== (s === 'kruto' ? 'čvrsto' : s)), 2)));
-  q.push(...TVZ_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2)));
+  q.push(...uObitelj(obiteljTablice(ZRAK_ONECISCENJE), ZRAK_ONECISCENJE.map(([o, d]) => tocnoNetocno(`Onečišćuje li zrak: ${o}?`, d, 2))));
+  q.push(...uObitelj(obiteljTablice(STANJA), STANJA.map(([v, s]) => izbor(`Kojem agregatnom stanju vode pripada primjer: ${v}?`, s === 'kruto' ? 'čvrsto' : s, ['čvrsto', 'tekuće', 'plinovito'].filter((x) => x !== (s === 'kruto' ? 'čvrsto' : s)), 2))));
+  q.push(...uObitelj(obiteljTablice(TVZ_DA_NE), TVZ_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2))));
   q.push(poredaj('Poredaj slojeve tla od površine prema dubini.', ['humus', 'sloj zemlje sa sitnim kamenčićima', 'stijena'], 3));
   return q;
 }
@@ -44,16 +44,16 @@ const SUMA_DA_NE = [['Jedu li biljožderi samo biljke?', true], ['Je li lisica b
   ['Treba li biljci svjetlost da stvara hranu?', true], ['Hrani li se vjeverica žirevima i orasima?', true]];
 function biljkeZivotinje3Dodatak() {
   const q = [];
-  q.push(...PREHRANA.map(([z, p]) => izbor(`Kako se hrani ${z}: je li biljožder, mesožder ili svežder?`, p, ['biljožder', 'mesožder', 'svežder'].filter((x) => x !== p), 2)));
+  q.push(...uObitelj(obiteljTablice(PREHRANA), PREHRANA.map(([z, p]) => izbor(`Kako se hrani ${z}: je li biljožder, mesožder ili svežder?`, p, ['biljožder', 'mesožder', 'svežder'].filter((x) => x !== p), 2))));
   for (const [a, b, c] of LANCI) {
     q.push(izbor(`U hranidbenom lancu ${a} – ___ – ${c} nedostaje jedno biće. Koje?`, b, uzmi(LANCI.map((l) => l[1]).filter((x) => x !== b), 3), 2));
     q.push(izbor(`Koje biće dolazi na kraj hranidbenog lanca ${a} – ${b} – ___?`, c, uzmi(LANCI.map((l) => l[2]).filter((x) => x !== c), 3), 2));
     q.push(poredaj(`Poredaj hranidbeni lanac koji počinje biljkom: ${uzmi([a, b, c], 3).join(', ')}.`, [a, b, c], 2));
   }
-  q.push(...VRSTE_BILJAKA.map(([b, v]) => izbor(`Je li ${b} stablo, grm ili zeljasta biljka?`, v, ['stablo', 'grm', 'zeljasta biljka'].filter((x) => x !== v), 2)));
-  q.push(...RAZVOJ.map(([p, items]) => poredaj(p, items, 2)));
+  q.push(...uObitelj(obiteljTablice(VRSTE_BILJAKA), VRSTE_BILJAKA.map(([b, v]) => izbor(`Je li ${b} stablo, grm ili zeljasta biljka?`, v, ['stablo', 'grm', 'zeljasta biljka'].filter((x) => x !== v), 2))));
+  q.push(...uObitelj(obiteljTablice(RAZVOJ), RAZVOJ.map(([p, items]) => poredaj(p, items, 2))));
   q.push(...obaSmjera(DIO_BILJKE, { pitajB: (a) => `Koju zadaću u biljci ima ${a}?`, tezina: 2 }));
-  q.push(...SUMA_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2)));
+  q.push(...uObitelj(obiteljTablice(SUMA_DA_NE), SUMA_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2))));
   return q;
 }
 
@@ -75,12 +75,12 @@ const BZ4_DA_NE = [['Je li šišmiš ptica?', false], ['Je li kit sisavac?', tru
   ['Je li kornjača gmaz?', true], ['Legu li ptice jaja?', true], ['Je li dupin riba?', false], ['Živi li hobotnica u rijeci?', false], ['Je li pauk kukac?', false]];
 function biljkeZivotinje4Dodatak() {
   const q = [];
-  q.push(...SKUPINE.map(([z, s]) => izbor(`U koju skupinu životinja pripada ${z}?`, s, uzmi(['sisavci', 'ptice', 'ribe', 'gmazovi', 'vodozemci', 'kukci'].filter((x) => x !== s), 3), 2)));
+  q.push(...uObitelj(obiteljTablice(SKUPINE), SKUPINE.map(([z, s]) => izbor(`U koju skupinu životinja pripada ${z}?`, s, uzmi(['sisavci', 'ptice', 'ribe', 'gmazovi', 'vodozemci', 'kukci'].filter((x) => x !== s), 3), 2))));
   q.push(...obaSmjera(OBILJEZJA, { pitajB: (a) => `Koje je obilježje skupine: ${a}?`, pitajA: (b) => `Koja skupina životinja: ${b}?`, tezina: 2 }));
-  q.push(...EKOSUSTAVI.map(([z, e]) => izbor(`U kojem ekosustavu najčešće živi ${z}?`, e, uzmi(['šuma', 'livada', 'rijeka', 'more', 'bara'].filter((x) => x !== e), 3), 2)));
+  q.push(...uObitelj(obiteljTablice(EKOSUSTAVI), EKOSUSTAVI.map(([z, e]) => izbor(`U kojem ekosustavu najčešće živi ${z}?`, e, uzmi(['šuma', 'livada', 'rijeka', 'more', 'bara'].filter((x) => x !== e), 3), 2))));
   q.push(...obaSmjera(PRILAGODBE, { pitajB: (a) => `Kojom se prilagodbom ističe ${a}?`, tezina: 2 }));
   q.push(...spajanja(SKUPINE.filter(([, s]) => s !== 'kukci'), 'Spoji životinju sa skupinom kojoj pripada:', { koliko: 4, komada: 3 }));
-  q.push(...BZ4_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2)));
+  q.push(...uObitelj(obiteljTablice(BZ4_DA_NE), BZ4_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2))));
   return q;
 }
 
@@ -99,7 +99,7 @@ function uvjetiZivotaDodatak() {
   q.push(...obaSmjera(PRILAGODBE_2, { pitajB: (a) => `Kako se ${a} prilagođava zimi?`, pitajA: (b) => `Koje živo biće ${b}?`, tezina: 2 }));
   q.push(...obaSmjera([...PRILAGODBE.slice(0, 5)], { pitajA: (b) => `Koje živo biće ${b}?`, tezina: 2 }));
   q.push(...izTablice(UVJETI, 2));
-  q.push(...UZ_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2)));
+  q.push(...uObitelj(obiteljTablice(UZ_DA_NE), UZ_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2))));
   return q;
 }
 
@@ -125,7 +125,7 @@ function ljudskoTijeloDodatak() {
   q.push(...obaSmjera(SUSTAVI, { pitajB: (a) => `Koji organi čine ${a}?`, pitajA: (b) => `Kojem sustavu pripadaju: ${b}?`, tezina: 3 }));
   q.push(...obaSmjera(KOSTUR, { pitajB: (a) => `Čemu služi ${a}?`, pitajA: (b) => `Koji dio kostura ${b}?`, tezina: 2 }));
   q.push(...izTablice(NAVIKE_4, 2));
-  q.push(...LT_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2)));
+  q.push(...uObitelj(obiteljTablice(LT_DA_NE), LT_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2))));
   return q;
 }
 
@@ -152,9 +152,9 @@ function ltTvrdnje() {
   const MNOZINA = ['pluća', 'kosti', 'mišići', 'bubrezi', 'crijeva'];
   const r = (a, b) => `Je li točno da ${a} ${b}?`;
   return [
-    ...sveTvrdnje(ORGANI.filter(([a]) => !MNOZINA.includes(a)), r, { lazni: 2 }),
-    ...sveTvrdnje(ORGANI.filter(([a]) => MNOZINA.includes(a)), r, { lazni: 2 }),
-    ...sveTvrdnje(KOSTUR.filter(([a]) => a !== 'rebra'), r, { lazni: 2 }),
+    ...sveTvrdnje(ORGANI.filter(([a]) => !MNOZINA.includes(a)), r, { lazni: 2, obitelj: obiteljTablice(ORGANI) }),
+    ...sveTvrdnje(ORGANI.filter(([a]) => MNOZINA.includes(a)), r, { lazni: 2, obitelj: obiteljTablice(ORGANI) }),
+    ...sveTvrdnje(KOSTUR.filter(([a]) => a !== 'rebra'), r, { lazni: 2, obitelj: obiteljTablice(KOSTUR) }),
   ];
 }
 function tvzTvrdnje() {

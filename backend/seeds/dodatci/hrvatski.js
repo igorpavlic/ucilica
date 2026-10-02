@@ -3,10 +3,7 @@
  * Svaka tablica daje više oblika pitanja; riječi u pitanju nisu pod
  * navodnicima kad svaka treba biti zaseban zadatak (obitelj pitanja).
  */
-const {
-  promijesaj, uzmi, jedan, cijeli, izbor, tocnoNetocno, upisBroja, poredaj, spoji,
-  oblik, obaSmjera, tvrdnje, sveTvrdnje, spajanja, izTablice, daNe,
-} = require('./pomocno');
+const { promijesaj, uzmi, jedan, cijeli, izbor, tocnoNetocno, upisBroja, poredaj, spoji, oblik, obaSmjera, tvrdnje, sveTvrdnje, spajanja, izTablice, daNe, uObitelj, obiteljTablice } = require('./pomocno');
 const { brojSlogova, rastavi } = require('../slogovi');
 
 const ponovi = (n, f) => Array.from({ length: n }, (_, i) => f(i)).flat().filter(Boolean);
@@ -279,8 +276,8 @@ function knjizevniTekstDodatak() {
   q.push(...obaSmjera(VRSTE_3, { pitajA: (b) => `Što je ${b}?`, pitajB: (a) => `Koja vrsta teksta odgovara opisu: ${a}?`, tezina: 2 }));
   q.push(...obaSmjera(POJMOVI_3, { pitajB: (a) => `Koji pojam odgovara opisu: ${a}?`, pitajA: (b) => `Što znači pojam ${b}?`, tezina: 2 }));
   q.push(...obaSmjera(PRIMJERI_3, { pitajB: (a) => `Je li ovo zagonetka, brzalica ili poslovica? „${a}”`, tezina: 2 }));
-  q.push(...USPOREDBE.map(([izraz, jest]) => tocnoNetocno(`Je li ${izraz.endsWith('.') ? `rečenica „${izraz}”` : `izraz „${izraz}”`} usporedba?`, jest, 2,
-    jest ? 'U izrazu se nešto uspoređuje riječju „kao”.' : 'U rečenici nema uspoređivanja riječju „kao” ili „poput”.')));
+  q.push(...uObitelj(obiteljTablice(USPOREDBE), USPOREDBE.map(([izraz, jest]) => tocnoNetocno(`Je li ${izraz.endsWith('.') ? `rečenica „${izraz}”` : `izraz „${izraz}”`} usporedba?`, jest, 2,
+    jest ? 'U izrazu se nešto uspoređuje riječju „kao”.' : 'U rečenici nema uspoređivanja riječju „kao” ili „poput”.'))));
   return q;
 }
 
@@ -334,9 +331,9 @@ function jezicnoIzrazavanjeDodatak() {
   const q = [];
   q.push(...obaSmjera(SLICNO, { pitajB: (a) => `Koja riječ ima slično značenje kao riječ ${a}?`, pitajA: (b) => `Koju riječ možemo zamijeniti riječju ${b}, a da značenje ostane isto?`, tezina: 2 }));
   q.push(...obaSmjera(SUPROTNO_3, { pitajB: (a) => `Koja riječ ima suprotno značenje od riječi ${a}?`, tezina: 2 }));
-  q.push(...PRIDJEV_ZA.map(([im, pr]) => izbor(`Koja riječ najbolje opisuje imenicu ${im}?`, pr, uzmi(PRIDJEV_ZA.filter(([, p]) => p !== pr && p.slice(0, 3) !== pr.slice(0, 3)).map(([, p]) => p), 3), 1)));
+  q.push(...uObitelj(obiteljTablice(PRIDJEV_ZA), PRIDJEV_ZA.map(([im, pr]) => izbor(`Koja riječ najbolje opisuje imenicu ${im}?`, pr, uzmi(PRIDJEV_ZA.filter(([, p]) => p !== pr && p.slice(0, 3) !== pr.slice(0, 3)).map(([, p]) => p), 3), 1))));
   q.push(...izTablice(PONASANJE, 1), ...izTablice(PISMO, 2), ...izTablice(VEZNE.map(([r, ...x]) => [`Koja riječ dolazi na crtu: ${r}`.replace(/\.$/, '?'), ...x]), 2));
-  q.push(...SLIJED.map(([naslov, koraci]) => poredaj(`Poredaj rečenice tako da opisuju radnju: ${naslov.toLowerCase()}.`, koraci, 2)));
+  q.push(...uObitelj(obiteljTablice(SLIJED), SLIJED.map(([naslov, koraci]) => poredaj(`Poredaj rečenice tako da opisuju radnju: ${naslov.toLowerCase()}.`, koraci, 2))));
   return q;
 }
 
@@ -357,13 +354,13 @@ const UPRAVNI = [
 function pravopis4Dodatak() {
   const q = [];
   q.push(...obaSmjera(PRIDJEVI_MJESTA, { pitajB: (a) => `Kako glasi pridjev od imena ${a}?`, pitajA: (b) => `Od kojega je imena nastao pridjev ${b}?`, tezina: 2 }));
-  q.push(...VELIKO_4.map(([r, v]) => {
+  q.push(...uObitelj(obiteljTablice(VELIKO_4), VELIKO_4.map(([r, v]) => {
     // Pokaži pravilan ili pogrešan zapis (veliko ↔ malo početno slovo).
     const krivo = v ? r[0].toLowerCase() + r.slice(1) : r[0].toUpperCase() + r.slice(1);
     const pravilno = Math.random() < 0.5;
     return tocnoNetocno(`Je li pravilno napisano: ${pravilno ? r : krivo}?`, pravilno, 2,
       v ? `Pravilno je ${r}: vlastito ime počinje velikim slovom.` : `Pravilno je ${r}: to nije vlastito ime, pa počinje malim slovom.`);
-  }));
+  })));
   q.push(...VELIKO_4.filter(([, v]) => v).map(([r]) => izbor(`Koji je zapis pravilan: ${promijesaj([r, r.toLowerCase()]).join(' ili ')}?`, r, [r.toLowerCase()], 2)));
   q.push(...izTablice(UPRAVNI, 3));
   q.push(...daNe([
@@ -391,7 +388,7 @@ function knjizevnost4Dodatak() {
   const q = [];
   q.push(...obaSmjera(DJELA, { pitajB: (a) => `Tko je autor djela ${a}?`, pitajA: (b) => `Koje od ovih djela potpisuje ${b}?`, tezina: 2 }));
   q.push(...obaSmjera(POJMOVI_4, { pitajB: (a) => `Koji književni pojam odgovara opisu: ${a}?`, pitajA: (b) => `Što je ${b}?`, tezina: 2 }));
-  q.push(...SREDSTVA.map(([stih, s]) => izbor(`Koje je pjesničko sredstvo u stihu: ${stih.replace(/\.$/, '')}?`, s, ['personifikacija', 'onomatopeja', 'usporedba'].filter((x) => x !== s), 3)));
+  q.push(...uObitelj(obiteljTablice(SREDSTVA), SREDSTVA.map(([stih, s]) => izbor(`Koje je pjesničko sredstvo u stihu: ${stih.replace(/\.$/, '')}?`, s, ['personifikacija', 'onomatopeja', 'usporedba'].filter((x) => x !== s), 3))));
   q.push(poredaj('Poredaj dijelove fabule redom kojim dolaze u priči.', ['uvod', 'zaplet', 'vrhunac', 'rasplet', 'završetak'], 3));
   q.push(...daNe([['Je li roman dulji od pripovijetke?', true], ['Ima li basna obično pouku?', true], ['Pišu li se lirske pjesme u stihovima?', true],
     ['Je li pisac isto što i glavni lik?', false], ['Je li Ivana Brlić-Mažuranić napisala Šumu Striborovu?', true], ['Je li Pinokio hrvatski roman?', false]], 2));
@@ -422,7 +419,7 @@ function vrsteRijeci4Dodatak() {
   }
   q.push(...obaSmjera(ROD, { pitajB: (a) => `Kojega je roda imenica ${a}?`, tezina: 2 }));
   q.push(...obaSmjera(POSVOJNI, { pitajB: (a) => `Kako glasi posvojni pridjev od riječi ${a}?`, tezina: 2 }));
-  q.push(...VLASTITE.map(([a, b]) => izbor(`Je li imenica ${a} vlastita ili opća?`, b, [b === 'opća' ? 'vlastita' : 'opća'], 2)));
+  q.push(...uObitelj(obiteljTablice(VLASTITE), VLASTITE.map(([a, b]) => izbor(`Je li imenica ${a} vlastita ili opća?`, b, [b === 'opća' ? 'vlastita' : 'opća'], 2))));
   return q;
 }
 
@@ -437,10 +434,10 @@ const CINJENICA = [['Zagreb je glavni grad Hrvatske.', true], ['Najukusnija je p
   ['Sunce izlazi na istoku.', true], ['Matematika je najzabavniji predmet.', false], ['Pas ima četiri noge.', true], ['Taj je film predug.', false]];
 function medijskaKulturaDodatak() {
   const q = [];
-  q.push(...MEDIJI_VRSTA.map(([a, b]) => izbor(`Je li ${a} tiskani ili elektronički medij?`, b, [b === 'tiskani' ? 'elektronički' : 'tiskani'], 2)));
+  q.push(...uObitelj(obiteljTablice(MEDIJI_VRSTA), MEDIJI_VRSTA.map(([a, b]) => izbor(`Je li ${a} tiskani ili elektronički medij?`, b, [b === 'tiskani' ? 'elektronički' : 'tiskani'], 2))));
   q.push(...obaSmjera(MEDIJI_POJMOVI, { pitajB: (a) => `Kako zovemo: ${a}?`, tezina: 2 }));
-  q.push(...CINJENICA.map(([r, c]) => izbor(`Iznosi li rečenica „${r}” činjenicu ili mišljenje?`, c ? 'činjenicu' : 'mišljenje', [c ? 'mišljenje' : 'činjenicu'], 2,
-    c ? 'To se može provjeriti.' : 'To je nečije mišljenje; netko drugi može misliti drukčije.')));
+  q.push(...uObitelj(obiteljTablice(CINJENICA), CINJENICA.map(([r, c]) => izbor(`Iznosi li rečenica „${r}” činjenicu ili mišljenje?`, c ? 'činjenicu' : 'mišljenje', [c ? 'mišljenje' : 'činjenicu'], 2,
+    c ? 'To se može provjeriti.' : 'To je nečije mišljenje; netko drugi može misliti drukčije.'))));
   q.push(...daNe([['Treba li provjeriti vijest u više izvora prije nego što je proslijediš?', true], ['Smiješ li u knjižnici glasno razgovarati?', false],
     ['Je li reklama napisana da bi nas nagovorila na kupnju?', true], ['Može li se fotografija na internetu promijeniti računalom?', true],
     ['Trebaš li vratiti knjigu u knjižnicu na vrijeme?', true], ['Je li svaka vijest na društvenim mrežama provjerena?', false]], 2));

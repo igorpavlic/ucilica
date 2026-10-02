@@ -4,6 +4,44 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −15. Isti problem u svim predmetima (pregled i popravak)
+
+**Pregled:** simulacija svih 83 tema po 20 kvizova, uz brojanje kvizova u kojima 3 ili više pitanja počinje istim riječima. Nađeni su ovi uzroci.
+
+**Uzroci:**
+1. **Predložak se prepoznavao preko čestoće riječi u cijeloj temi.** „Krava” je česta, pa su „Rimuju li se riječi krava i _” i „…mak i _” postale različite vrste. Isto se događalo sa zadatcima s paketima, nepoznanicama i bridovima.
+2. **Ista pitanja dobivala su različitu vrstu** ovisno o tome kad su generirana, jer se prepoznavalo zasebno pri svakom generiranju.
+3. **Isti zadatak sročen na više načina** bio je više vrsta. Primjeri:
+   - „Koje malo slovo odgovara velikom slovu A?” i „Koje je malo slovo za veliko slovo K?”;
+   - „Koliko je c ako je…”, „Koji broj nedostaje…” i „Koji broj treba upisati umjesto…”;
+   - „Što se nalazi istočno od škole?” i „U kojem se smjeru od škole nalazi pošta?”.
+4. **Isto pitanje iz tablice u dva oblika** bilo je dvije vrste („Kojoj djelatnosti pripada zanimanje…” i „Pripada li zanimanje…”).
+5. **Isti tekst s drugim ponudama** mogao je doći dvaput u isti kviz.
+6. **U kasnim kvizovima** neke teme imaju samo 2–3 vrste neviđenih pitanja.
+
+**Popravak:**
+- **Prepoznavanje predloška** (`questionFamily.prepoznajObitelji`):
+  - riječ je dio predloška ako je ima barem pola pitanja istoga početka;
+  - brojevi, nepoznanice (b, c, x, y, z, □), znakovi računa i riječ iza broja uvijek su podatak;
+  - sve iza dvotočke je podatak.
+- **Tablica tema** (`TEME`) za isti zadatak drukčije sročen: veliko i malo slovo, abeceda, nepoznati broj, vrijednost izraza, vrste trokuta, rime, slogovi, smjer na planu, strane svijeta, uljez među vrstama riječi, pojam i opis, mjesna vrijednost, sustavi organa, osjetila, dani i mjeseci, bridovi.
+- **Vrste se prepoznaju pri svakom slaganju kviza nad cijelom bankom teme.** Iste su bez obzira na to kad je pitanje generirano. Vrsta koju je zadao autor (tablica, tema) ostaje.
+- **Sva pitanja iz iste tablice** (svi oblici) jedna su vrsta: 66 mjesta u `seeds/dodatci`.
+- **U bazenu kviza svaki tekst je samo jednom.**
+- **Najviše dva pitanja iste vrste u kvizu.** Kad neviđenih drugih vrsta nema, uzima se pitanje druge vrste viđeno davno, nikad iz zadnja tri kviza (`UCILICA_GRANICA_STARIH`, zadano 2).
+
+**Rezultat simulacije** (83 teme × 20 kvizova × 7 pitanja = 11 340):
+
+| | prije | poslije |
+|---|---:|---:|
+| treće ili kasnije pitanje iste vrste u kvizu | 121 | 0 |
+| kvizova s 3+ pitanja istoga početka | 211 | (mjerenje u tijeku) |
+| davno viđeno pitanje vraćeno (samo kasni kvizovi) | 113 | 326 |
+
+**Provjera:** `npm run test:sve` prolazi.
+
+---
+
 ## −14. Kviz bez niza istih pitanja („koji grad pripada kojem kraju” 7×)
 
 **Prijava:** u temi Krajevi Hrvatske svih 7 pitanja kviza bilo je oblika „Kojem kraju pripada grad …?”.

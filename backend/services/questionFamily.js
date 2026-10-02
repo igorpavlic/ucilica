@@ -55,21 +55,69 @@ function orderWithoutAdjacentFamilies(questions = []) {
  */
 // riječi i znakovi računa (+, −, ×, =) ostaju, interpunkcija otpada
 const tokeniPitanja = (t) => normalizeStem(t).split(/\s+/).map((w) => w.replace(/^[.,?!:;„“”"'()]+|[.,?!:;„“”"'()]+$/g, '')).filter(Boolean);
-function prepoznajObitelji(pitanja = [], { prag = 3 } = {}) {
+/**
+ * Isti zadatak različito sročen („Koje malo slovo odgovara velikom slovu A?” i
+ * „Koje je malo slovo za veliko slovo K?”) dijete doživljava kao isto pitanje.
+ * Ovi uzorci takva pitanja svrstavaju u jednu temu, prije prepoznavanja predloška.
+ */
+const TEME = [
+  [/\b(malo|veliko)( tiskano)? slovo\b.*\b(odgovara|za)\b.*\b(malom|velikom|malo|veliko)\b/i, 'tema:veliko-malo-slovo'],
+  [/(u abecedi dolazi|dolazi (neposredno )?(prije|poslije|nakon) slova)/i, 'tema:redoslijed-abecede'],
+  [/^(koji broj nedostaje|koliko je [bcxyz] ako je|koji broj treba upisati umjesto)/i, 'tema:nepoznati-broj'],
+  [/^(kako se zove trokut|kakav je to trokut prema)/i, 'tema:vrste-trokuta'],
+  [/^od kuće do škole ima/i, 'tema:put-do-skole'],
+  [/zbroj duljina svih (njezinih )?bridova/i, 'tema:zbroj-bridova'],
+  [/^(rimuju li se|koja se riječ rimuje)/i, 'tema:rima'],
+  [/^ako je danas/i, 'tema:dani-u-tjednu'],
+  [/^koji mjesec dolazi/i, 'tema:mjeseci'],
+  [/^(koja je znamenka (jedinica|desetica|stotica|tisućica)|koliko (tisućica|stotica|desetica|jedinica) ima broj)/i, 'tema:mjesna-vrijednost'],
+  [/(kojem sustavu organa|kojem sustavu pripada)/i, 'tema:organ-sustav'],
+  [/^(koji je organ (zadužen za|osjetila)|kojim osjetilom)/i, 'tema:osjetila'],
+  [/\b(sjeverno|južno|istočno|zapadno|sjeveroistočno|sjeverozapadno|jugoistočno|jugozapadno) od\b|u kojem se smjeru od|kojim smjerom ideš/i, 'tema:smjer-na-planu'],
+  [/strana svijeta (nalazi )?između|strana svijeta suprotna/i, 'tema:strane-svijeta'],
+  [/^ako je [bcxyz] = /i, 'tema:vrijednost-izraza'],
+  [/^koja riječ ne pripada skupini/i, 'tema:uljez-vrsta-rijeci'],
+  [/^je li riječ \S+ (imenica|glagol|pridjev)\?/i, 'tema:je-li-vrsta-rijeci'],
+  [/^odgovara li (kazališni )?pojam/i, 'tema:pojam-i-opis'],
+  [/^(koja riječ nastaje kad složiš slogove|koja riječ nastaje od slogova)/i, 'tema:slaganje-slogova'],
+  [/opseg jedne njezine plohe/i, 'tema:opseg-plohe'],
+];
+const temaPitanja = (t) => TEME.find(([re]) => re.test(String(t || '')))?.[1];
+
+function prepoznajObitelji(pitanja = [], { udio = 0.5 } = {}) {
   // Sve iza prve dvotočke podatak je zadatka („Koji kraj opisuje: hladne zime?”,
   // „Dopuni: 8 kg = ___ g.”), pa ostaje samo uvod i znak „_”.
   const uvod = (t) => { const i = t.indexOf(': '); return i > 0 ? `${t.slice(0, i)}: _` : t; };
-  const tokeni = pitanja.map((q) => tokeniPitanja(uvod(String(q.question || '').replace(/:\s*$/, ': ')).trim()));
-  const ucestalost = new Map();
-  for (const t of tokeni) for (const w of new Set(t)) ucestalost.set(w, (ucestalost.get(w) || 0) + 1);
-  return tokeni.map((t, i) => {
-    const maska = t.map((w) => ((ucestalost.get(w) || 0) >= prag ? w : '_'));
-    const ostalo = maska.filter((w) => w !== '_').length;
-    // Predložak od samo „je li _” ili „smiješ li _” preopćenit je: takva su
-    // pitanja različita (o različitim stvarima), pa ostaju zasebne obitelji.
-    if (ostalo <= 2 || ostalo / maska.length < 0.4) return normalizeStem(pitanja[i].question || '');
-    return maska.join(' ').replace(/(_ )+_/g, '_');
+  // Brojevi, nepoznanice (c, x, □), znakovi računa i riječ iza broja
+  // („31892 paketa”, „1 paket”) uvijek su podatak.
+  const PODATAK = /^(n|[bcxyz]|[+\-−×÷·:=<>□○_]+|___)$/u;
+  const tokeni = pitanja.map((q) => {
+    const t = tokeniPitanja(uvod(String(q.question || '').replace(/:\s*$/, ': ')).trim());
+    return t.map((w, k) => (PODATAK.test(w) || (k > 0 && t[k - 1] === 'n') ? '_' : w));
   });
+  // Predložak se traži među pitanjima istoga početka (prve tri riječi): riječ
+  // pripada predlošku ako je ima barem pola tih pitanja („rimuju li se riječi
+  // _ i _”), a ne ako je samo česta u temi („krava” u više tablica).
+  const pocetak = (t) => t.filter((w) => w !== '_').slice(0, 3).join(' ');
+  const skupine = new Map();
+  tokeni.forEach((t, i) => { const k = pocetak(t); if (!skupine.has(k)) skupine.set(k, []); skupine.get(k).push(i); });
+  const out = new Array(pitanja.length);
+  for (const clanovi of skupine.values()) {
+    const ucestalost = new Map();
+    for (const i of clanovi) for (const w of new Set(tokeni[i])) ucestalost.set(w, (ucestalost.get(w) || 0) + 1);
+    for (const i of clanovi) {
+      const tema = temaPitanja(pitanja[i].question);
+      if (tema) { out[i] = tema; continue; }
+      const maska = clanovi.length < 2 ? tokeni[i] : tokeni[i].map((w) => (w !== '_' && ucestalost.get(w) >= Math.max(2, clanovi.length * udio) ? w : '_'));
+      const ostalo = maska.filter((w) => w !== '_').length;
+      // Predložak od samo „je li _” ili „smiješ li _” preopćenit je: takva su
+      // pitanja različita (o različitim stvarima), pa ostaju zasebne obitelji.
+      out[i] = (clanovi.length < 2 || ostalo <= 2 || ostalo / maska.length < 0.4)
+        ? normalizeStem(pitanja[i].question || '')
+        : maska.join(' ').replace(/(_ )+_/g, '_');
+    }
+  }
+  return out;
 }
 
 /** Upiši `obitelj` pitanjima koja je nemaju (prepoznavanjem predloška u skupu). */
@@ -78,4 +126,7 @@ function oznaciObitelji(pitanja = [], opcije) {
   return pitanja.map((q, i) => (q.obitelj ? q : { ...q, obitelj: obitelji[i] }));
 }
 
-module.exports = { normalizeStem, questionFamilyKey, orderWithoutAdjacentFamilies, prepoznajObitelji, oznaciObitelji };
+/** Obitelj koju je zadao autor (tablica, pojedino pitanje, tema) — ne prepoznaje se ponovno. */
+const zadanaObitelj = (o) => /^(tablica:|pitanje:|kraj-|tema:)/.test(String(o || ''));
+
+module.exports = { zadanaObitelj, temaPitanja, normalizeStem, questionFamilyKey, orderWithoutAdjacentFamilies, prepoznajObitelji, oznaciObitelji };

@@ -3,7 +3,7 @@
  * imale manje od ~150 različitih tekstova (algoritmi 1. r., kulturna baština,
  * ljudsko tijelo, zavičaj i karta, sigurnost, godišnja doba, životinje).
  */
-const { izbor, tocnoNetocno, upisBroja, poredaj, obaSmjera, sveTvrdnje, izTablice, daNe, uzmi, jedan, cijeli, promijesaj } = require('./pomocno');
+const { izbor, tocnoNetocno, upisBroja, poredaj, obaSmjera, sveTvrdnje, izTablice, daNe, uzmi, jedan, cijeli, promijesaj, uObitelj, obiteljTablice } = require('./pomocno');
 
 // ═══ Algoritmi i logika, 1. razred ═══
 const RUTINE = [
@@ -72,7 +72,7 @@ const KB_2 = [
 ];
 function kulturnaDodatak() {
   return [
-    ...BASTINA_2.map(([b, v]) => izbor(`Je li ${b} materijalna ili nematerijalna baština?`, v, [v === 'materijalna' ? 'nematerijalna' : 'materijalna'], 2)),
+    ...uObitelj(obiteljTablice(BASTINA_2), BASTINA_2.map(([b, v]) => izbor(`Je li ${b} materijalna ili nematerijalna baština?`, v, [v === 'materijalna' ? 'nematerijalna' : 'materijalna'], 2))),
     ...obaSmjera(OBICAJI, { pitajB: (a) => `Koji je običaj vezan uz blagdan ili događaj: ${a}?`, pitajA: (b) => `Uz koji je blagdan ili događaj vezan običaj: ${b}?`, tezina: 2 }),
     ...sveTvrdnje(OBICAJI, (a, b) => `Je li ${b} običaj koji se veže uz ${a}?`, { lazni: 1 }),
     ...izTablice(KB_2, 2),

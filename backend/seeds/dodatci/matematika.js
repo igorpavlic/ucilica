@@ -3,10 +3,7 @@
  * Brojevi su nasumični, pa svaki poziv daje nove tekstove; činjenice o
  * likovima, tijelima i mjerama imaju više oblika pitanja.
  */
-const {
-  promijesaj, uzmi, jedan, cijeli, izbor, tocnoNetocno, upisBroja, poredaj,
-  oblik, fmt, blizu, obaSmjera, tvrdnje, spajanja, izTablice, daNe,
-} = require('./pomocno');
+const { promijesaj, uzmi, jedan, cijeli, izbor, tocnoNetocno, upisBroja, poredaj, oblik, fmt, blizu, obaSmjera, tvrdnje, spajanja, izTablice, daNe, uObitelj, obiteljTablice } = require('./pomocno');
 
 const ponovi = (n, f) => Array.from({ length: n }, (_, i) => f(i)).flat().filter(Boolean);
 const ZNAK = { '<': '< manje', '>': '> veće', '=': '= jednako' };
@@ -59,9 +56,9 @@ function nizoviDodatak() {
     izbor(`Što je ${rijec}: ${promijesaj([v, m]).join(' ili ')}?`, v, [m], 1),
   ]);
   q.push(...usp(DULJE, 'dulje'), ...usp(VISE, 'više'), ...usp(TEZE, 'teže'));
-  q.push(...DULJE.map(([v, m]) => izbor(`Što je kraće: ${promijesaj([v, m]).join(' ili ')}?`, m, [v], 1)));
-  q.push(...VISE.map(([v, m]) => izbor(`Što je niže: ${promijesaj([v, m]).join(' ili ')}?`, m, [v], 1)));
-  q.push(...TEZE.map(([v, m]) => izbor(`Što je lakše: ${promijesaj([v, m]).join(' ili ')}?`, m, [v], 1)));
+  q.push(...uObitelj(obiteljTablice(DULJE), DULJE.map(([v, m]) => izbor(`Što je kraće: ${promijesaj([v, m]).join(' ili ')}?`, m, [v], 1))));
+  q.push(...uObitelj(obiteljTablice(VISE), VISE.map(([v, m]) => izbor(`Što je niže: ${promijesaj([v, m]).join(' ili ')}?`, m, [v], 1))));
+  q.push(...uObitelj(obiteljTablice(TEZE), TEZE.map(([v, m]) => izbor(`Što je lakše: ${promijesaj([v, m]).join(' ili ')}?`, m, [v], 1))));
   ponovi(3, () => {
     const [a, b, c] = uzmi([['mrav', 1], ['olovka', 2], ['metla', 3], ['autobus', 4], ['vlak', 5]], 3).sort((x, y) => x[1] - y[1]);
     return poredaj(`Poredaj od najkraćega do najduljega: ${promijesaj([a[0], b[0], c[0]]).join(', ')}.`, [a[0], b[0], c[0]], 2);
@@ -560,7 +557,7 @@ function kvaderKockaDodatak() {
     ['Koliko pari nasuprotnih ploha ima kvadar?', '3', ['2', '4', '6']],
   ], 2));
   const PREDMETI = [['kutija za cipele', 'kvadar'], ['kocka šećera', 'kocka'], ['opeka', 'kvadar'], ['kocka za igru', 'kocka'], ['ormar', 'kvadar'], ['tetrapak soka', 'kvadar'], ['Rubikova kocka', 'kocka'], ['akvarij', 'kvadar'], ['kutija šibica', 'kvadar'], ['knjiga', 'kvadar']];
-  q.push(...PREDMETI.map(([p, t]) => izbor(`Je li ${p} oblika kocke ili kvadra?`, t, [t === 'kocka' ? 'kvadar' : 'kocka'], 1)));
+  q.push(...uObitelj(obiteljTablice(PREDMETI), PREDMETI.map(([p, t]) => izbor(`Je li ${p} oblika kocke ili kvadra?`, t, [t === 'kocka' ? 'kvadar' : 'kocka'], 1))));
   ponovi(6, () => {
     const a = cijeli(2, 15);
     return upisBroja(`Brid kocke dug je ${a} cm. Koliki je zbroj duljina svih njezinih bridova u centimetrima?`, 12 * a, 3, `Kocka ima 12 jednakih bridova: 12 × ${a} = ${12 * a}`);

@@ -3,7 +3,7 @@
  * tijelo, sigurnost i zdravlje, ekologija, obitelj i dom, vrijeme, voda i tlo,
  * zavičaj. Tablice činjenica daju pitanja u više smjerova.
  */
-const { izbor, tocnoNetocno, upisBroja, poredaj, obaSmjera, tvrdnje, sveTvrdnje, spajanja, izTablice, daNe, uzmi, jedan, cijeli, promijesaj } = require('./pomocno');
+const { izbor, tocnoNetocno, upisBroja, poredaj, obaSmjera, tvrdnje, sveTvrdnje, spajanja, izTablice, daNe, uzmi, jedan, cijeli, promijesaj, uObitelj, obiteljTablice } = require('./pomocno');
 const HR = require('../hr-gramatika');
 
 // ── zajedničke tablice ──
@@ -92,7 +92,7 @@ function ekologijaDodatak() {
   const q = [];
   q.push(...obaSmjera(OTPAD, { pitajB: (a) => `U koju vrstu otpada pripada: ${a}?`, tezina: 1 }));
   q.push(...obaSmjera(BOJE_KANTI, { pitajB: (a) => `Koje je boje spremnik za ${a}?`, pitajA: (b) => `Što odlažemo u ${b.replace(/a$/, 'i')} spremnik?`, tezina: 2 }));
-  q.push(...NAVIKE.map(([r, d]) => tocnoNetocno(`Čuva li ova navika prirodu: ${r.replace(/\.$/, '')}?`, d, 1)));
+  q.push(...uObitelj(obiteljTablice(NAVIKE), NAVIKE.map(([r, d]) => tocnoNetocno(`Čuva li ova navika prirodu: ${r.replace(/\.$/, '')}?`, d, 1))));
   q.push(...daNe([['Može li se stari papir preraditi u novi?', true], ['Raspada li se plastična boca u prirodi brzo?', false], ['Daju li nam stabla kisik?', true],
     ['Smijemo li brati zaštićeno cvijeće?', false], ['Je li dobro posaditi drvo?', true], ['Može li se od kore voća napraviti kompost?', true]], 1));
   return q;
@@ -133,7 +133,7 @@ function dobaVrijemeDodatak() {
     q.push(izbor(`Koji mjesec dolazi poslije ${G(m)}?`, MJESECI[(i + 1) % 12], uzmi(MJESECI.filter((x) => x !== MJESECI[(i + 1) % 12]), 3), 2));
     q.push(izbor(`Koji mjesec dolazi prije ${G(m)}?`, MJESECI[(i + 11) % 12], uzmi(MJESECI.filter((x) => x !== MJESECI[(i + 11) % 12]), 3), 2));
   });
-  q.push(...MJESEC_DOBA.map(([m, d]) => izbor(`U kojem je godišnjem dobu mjesec ${m}?`, d, ['proljeće', 'ljeto', 'jesen', 'zima'].filter((x) => x !== d), 2)));
+  q.push(...uObitelj(obiteljTablice(MJESEC_DOBA), MJESEC_DOBA.map(([m, d]) => izbor(`U kojem je godišnjem dobu mjesec ${m}?`, d, ['proljeće', 'ljeto', 'jesen', 'zima'].filter((x) => x !== d), 2))));
   for (let h = 1; h <= 12; h++) q.push(upisBroja(`Velika kazaljka pokazuje 12, a mala ${h}. Koliko je sati?`, h, 2));
   q.push(poredaj('Poredaj godišnja doba počevši od proljeća.', ['proljeće', 'ljeto', 'jesen', 'zima'], 1));
   q.push(...[['Koliko mjeseci ima godina?', 12], ['Koliko dana ima tjedan?', 7], ['Koliko dana traje vikend?', 2], ['Koliko godišnjih doba ima godina?', 4], ['Koliko minuta ima jedan sat?', 60]].map(([p, n]) => upisBroja(p, n, 1)));
@@ -149,8 +149,8 @@ const DIO_BILJKE = [['korijen', 'upija vodu iz tla i drži biljku u zemlji'], ['
 function biljkeZivotinjeDodatak() {
   const q = [];
   q.push(...obaSmjera(BILJKE, { pitajB: (a) => `Je li ${a} voće, povrće ili žitarica?`, tezina: 1 }));
-  q.push(...DRVECE.map(([d, v]) => izbor(`Je li ${d} listopadno ili zimzeleno drvo?`, v, [v === 'listopadno' ? 'zimzeleno' : 'listopadno'], 2,
-    v === 'listopadno' ? 'U jesen mu lišće otpada.' : 'Ostaje zeleno i zimi.')));
+  q.push(...uObitelj(obiteljTablice(DRVECE), DRVECE.map(([d, v]) => izbor(`Je li ${d} listopadno ili zimzeleno drvo?`, v, [v === 'listopadno' ? 'zimzeleno' : 'listopadno'], 2,
+    v === 'listopadno' ? 'U jesen mu lišće otpada.' : 'Ostaje zeleno i zimi.'))));
   q.push(...obaSmjera(DIO_BILJKE, { pitajB: (a) => `Čemu služi ${a}?`, pitajA: (b) => `Koji dio biljke ${b}?`, tezina: 2 }));
   q.push(...obaSmjera(ZIVOTINJE.filter((z) => z[1] && !/mlado/.test(z[2])).map((z) => [z[0], z[2]]), { pitajA: (b) => `Koja je životinja majka mladunčeta koje se zove ${b}?`, tezina: 1 }));
   q.push(...obaSmjera(KORIST, { pitajB: (a) => `Koja je korist od životinje: ${a}?`, tezina: 1 }));
@@ -168,8 +168,8 @@ const HR_VODE = [['Sava', 'rijeka'], ['Drava', 'rijeka'], ['Dunav', 'rijeka'], [
 const U_TLU = ['gujavica', 'krtica', 'mrav', 'puž golać', 'korijen biljke', 'gljiva'];
 function vodaTloDodatak() {
   const q = [];
-  q.push(...STANJA.map(([v, s]) => izbor(`U kojem je stanju voda u primjeru: ${v}?`, s, ['kruto', 'tekuće', 'plinovito'].filter((x) => x !== s), 2)));
-  q.push(...VODE.map(([v, s]) => izbor(`Je li ${v} tekućica ili stajaćica?`, s, [s === 'tekućica' ? 'stajaćica' : 'tekućica'], 2, s === 'tekućica' ? 'Voda u njoj teče.' : 'Voda u njoj stoji.')));
+  q.push(...uObitelj(obiteljTablice(STANJA), STANJA.map(([v, s]) => izbor(`U kojem je stanju voda u primjeru: ${v}?`, s, ['kruto', 'tekuće', 'plinovito'].filter((x) => x !== s), 2))));
+  q.push(...uObitelj(obiteljTablice(VODE), VODE.map(([v, s]) => izbor(`Je li ${v} tekućica ili stajaćica?`, s, [s === 'tekućica' ? 'stajaćica' : 'tekućica'], 2, s === 'tekućica' ? 'Voda u njoj teče.' : 'Voda u njoj stoji.'))));
   q.push(...obaSmjera(HR_VODE.filter(([, b]) => b !== 'jezera'), { pitajB: (a) => `Što je ${a}: rijeka, jezero ili more?`, tezina: 1 }));
   q.push(...[
     ['Što se događa s vodom kad je jako zagrijemo?', 'isparava', ['smrzava se', 'postaje kamen', 'nestaje zauvijek']],
@@ -181,7 +181,7 @@ function vodaTloDodatak() {
     ['Kako čuvamo vodu od onečišćenja?', 'ne bacamo smeće i ulje u vodu', ['bacamo boce u rijeku', 'peremo auto uz potok', 'izlijevamo boju u sudoper']],
     ['Kako štedimo vodu?', 'zatvaramo slavinu dok peremo zube', ['ostavljamo slavinu otvorenu', 'kupamo se tri puta dnevno', 'zalijevamo cestu']],
   ].map(([p, t, k]) => izbor(p, t, k, 2)));
-  q.push(...U_TLU.map((z) => tocnoNetocno(`Živi li ili raste li u tlu ${z}?`, true, 1)));
+  q.push(...uObitelj(obiteljTablice(U_TLU), U_TLU.map((z) => tocnoNetocno(`Živi li ili raste li u tlu ${z}?`, true, 1))));
   q.push(...['šaran', 'roda', 'lastavica'].map((z) => tocnoNetocno(`Živi li ${z} u tlu?`, false, 1)));
   q.push(...daNe([['Je li morska voda slana?', true], ['Možemo li piti morsku vodu?', false], ['Je li rosa voda?', true], ['Teče li voda u jezeru kao u rijeci?', false],
     ['Je li humus važan za plodnost tla?', true], ['Može li voda biti kruta, tekuća i plinovita?', true]], 2));

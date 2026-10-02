@@ -2,7 +2,7 @@
  * dodatci/hrvatski-2.js — drugi skup dodatnih pitanja za Hrvatski jezik
  * (teme koje ni nakon prvoga skupa nisu imale ~150 različitih tekstova).
  */
-const { izbor, tocnoNetocno, obaSmjera, sveTvrdnje, izTablice, daNe, uzmi } = require('./pomocno');
+const { izbor, tocnoNetocno, obaSmjera, sveTvrdnje, izTablice, daNe, uzmi, uObitelj, obiteljTablice } = require('./pomocno');
 
 // ── 2. razred: riječi i značenje ──
 const DOVRSI_RADNJU = [
@@ -51,8 +51,8 @@ function knjizevniTekstDodatak2() {
   const q = [];
   q.push(...obaSmjera(BAJKE, { pitajB: (a) => `Što se pojavljuje u bajci ${a}?`, pitajA: (b) => `U kojoj se bajci pojavljuje ${b}?`, tezina: 2 }));
   q.push(...obaSmjera(BASNE, { pitajB: (a) => `Koja je pouka basne ${a}?`, pitajA: (b) => `Koja basna ima pouku: ${b}`.replace(/\.$/, '?'), tezina: 3 }));
-  q.push(...USPOREDBE_2.map(([izraz, jest]) => tocnoNetocno(`Krije li se usporedba u ${izraz.endsWith('.') ? `rečenici „${izraz}”` : `izrazu „${izraz}”`}?`, jest, 2,
-    jest ? 'Nešto se uspoređuje riječju „kao” ili „poput”.' : 'Ništa se ne uspoređuje.')));
+  q.push(...uObitelj(obiteljTablice(USPOREDBE_2), USPOREDBE_2.map(([izraz, jest]) => tocnoNetocno(`Krije li se usporedba u ${izraz.endsWith('.') ? `rečenici „${izraz}”` : `izrazu „${izraz}”`}?`, jest, 2,
+    jest ? 'Nešto se uspoređuje riječju „kao” ili „poput”.' : 'Ništa se ne uspoređuje.'))));
   q.push(...daNe([['Ima li basna obično pouku?', true], ['Događaju li se u bajkama čarolije?', true], ['Govore li životinje u basnama?', true],
     ['Je li brzalica pjesma za uspavljivanje?', false], ['Ima li pjesma stihove i kitice?', true], ['Je li ilustrator osoba koja piše priču?', false]], 2));
   return q;
@@ -91,7 +91,7 @@ const OSOBINE = [['Lik uvijek pomaže drugima i dijeli sve što ima.', 'dobrota'
   ['Lik priznaje grešku i ispriča se.', 'poštenje'], ['Lik ne želi ništa raditi i cijeli dan leži.', 'lijenost'], ['Lik se brine o bolesnoj životinji.', 'brižnost']];
 function knjizevnost4Dodatak2() {
   const q = [];
-  q.push(...SREDSTVA_2.map(([stih, s]) => izbor(`Koje se pjesničko sredstvo krije u stihu: ${stih.replace(/[.!]$/, '')}?`, s, ['personifikacija', 'onomatopeja', 'usporedba'].filter((x) => x !== s), 3)));
+  q.push(...uObitelj(obiteljTablice(SREDSTVA_2), SREDSTVA_2.map(([stih, s]) => izbor(`Koje se pjesničko sredstvo krije u stihu: ${stih.replace(/[.!]$/, '')}?`, s, ['personifikacija', 'onomatopeja', 'usporedba'].filter((x) => x !== s), 3))));
   q.push(...obaSmjera(OSOBINE, { pitajB: (a) => `Koju osobinu pokazuje ovaj opis: ${a.replace(/\.$/, '')}?`, tezina: 2 }));
   q.push(...daNe([['Je li fabula redoslijed događaja u priči?', true], ['Ima li roman obično više likova od basne?', true], ['Je li onomatopeja oponašanje zvukova riječima?', true],
     ['Je li personifikacija isto što i usporedba?', false], ['Može li sporedni lik pomagati glavnom liku?', true], ['Je li rasplet najnapetiji dio priče?', false],
@@ -116,8 +116,8 @@ function medijskaKulturaDodatak2() {
   q.push(...obaSmjera(KNJIZNICA, { pitajB: (a) => `Koji pojam iz knjižnice odgovara opisu: ${a}?`, pitajA: (b) => `Što je u knjižnici ${b}?`, tezina: 2 }));
   q.push(...obaSmjera(KAZALISTE, { pitajB: (a) => `Koji kazališni pojam odgovara opisu: ${a}?`, pitajA: (b) => `Što je u kazalištu ${b}?`, tezina: 2 }));
   q.push(...obaSmjera(EMISIJE, { pitajB: (a) => `${a} Što ćeš gledati ili slušati?`, tezina: 1 }));
-  q.push(...CINJENICA_2.map(([r, c]) => izbor(`Je li „${r}” činjenica ili mišljenje?`, c ? 'činjenica' : 'mišljenje', [c ? 'mišljenje' : 'činjenica'], 2,
-    c ? 'To se može provjeriti u pouzdanim izvorima.' : 'To je nečije mišljenje; netko drugi može misliti drukčije.')));
+  q.push(...uObitelj(obiteljTablice(CINJENICA_2), CINJENICA_2.map(([r, c]) => izbor(`Je li „${r}” činjenica ili mišljenje?`, c ? 'činjenica' : 'mišljenje', [c ? 'mišljenje' : 'činjenica'], 2,
+    c ? 'To se može provjeriti u pouzdanim izvorima.' : 'To je nečije mišljenje; netko drugi može misliti drukčije.'))));
   q.push(...daNe([['Treba li ograničiti vrijeme provedeno pred zaslonom?', true], ['Smiješ li prijatelju poslati tuđu fotografiju bez dopuštenja?', false],
     ['Može li reklama pretjerivati da bi proizvod izgledao bolje?', true], ['Treba li pri pisanju sastavka navesti odakle smo uzeli podatke?', true],
     ['Je li enciklopedija dobar izvor podataka za školski plakat?', true], ['Smiješ li u kazalištu za vrijeme predstave koristiti mobitel?', false]], 2));

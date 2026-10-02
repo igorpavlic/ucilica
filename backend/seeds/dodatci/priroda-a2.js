@@ -2,7 +2,7 @@
  * dodatci/priroda-a2.js — drugi skup za Prirodu i društvo 1. i 2. razreda
  * (teme koje ni nakon priroda-a.js nisu imale ~150 različitih tekstova).
  */
-const { izbor, tocnoNetocno, poredaj, obaSmjera, sveTvrdnje, izTablice, daNe, uzmi } = require('./pomocno');
+const { izbor, tocnoNetocno, poredaj, obaSmjera, sveTvrdnje, izTablice, daNe, uzmi, uObitelj, obiteljTablice } = require('./pomocno');
 
 // ── promet i sigurnost pješaka ──
 const PROMET_PJESAK = [
@@ -35,8 +35,8 @@ const SIGURNOST_DA_NE = [['Smiješ li prelaziti cestu na crveno svjetlo ako nema
   ['Smiješ li se kupati na mjestu gdje piše da je kupanje zabranjeno?', false]];
 function zdravljeSigurnost2Dodatak() {
   const q = [...izTablice(PROMET_PJESAK, 2), ...izTablice(PRVA_POMOC, 2)];
-  q.push(...NAMIRNICE.map(([n, k]) => izbor(`Kad je dobro jesti ili piti ovo: ${n}?`, k, ['svaki dan', 'nekoliko puta tjedno', 'rijetko'].filter((x) => x !== k), 2)));
-  q.push(...SIGURNOST_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2)));
+  q.push(...uObitelj(obiteljTablice(NAMIRNICE), NAMIRNICE.map(([n, k]) => izbor(`Kad je dobro jesti ili piti ovo: ${n}?`, k, ['svaki dan', 'nekoliko puta tjedno', 'rijetko'].filter((x) => x !== k), 2))));
+  q.push(...uObitelj(obiteljTablice(SIGURNOST_DA_NE), SIGURNOST_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2))));
   return q;
 }
 
@@ -60,9 +60,9 @@ function vodaTloDodatak() {
   const q = [];
   q.push(...obaSmjera(PADALINE, { pitajB: (a) => `Što je ${a}?`, pitajA: (b) => `Kako zovemo: ${b}?`, tezina: 2 }));
   q.push(...izTablice(UPORABA_VODE, 2));
-  q.push(...U_VODI.map(([z, d]) => tocnoNetocno(`Živi li ${z} u vodi?`, d, 1)));
-  q.push(...KRUZENJE.map(([p, items]) => poredaj(p, items, 2)));
-  q.push(...VODA_TLO_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2)));
+  q.push(...uObitelj(obiteljTablice(U_VODI), U_VODI.map(([z, d]) => tocnoNetocno(`Živi li ${z} u vodi?`, d, 1))));
+  q.push(...uObitelj(obiteljTablice(KRUZENJE), KRUZENJE.map(([p, items]) => poredaj(p, items, 2))));
+  q.push(...uObitelj(obiteljTablice(VODA_TLO_DA_NE), VODA_TLO_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2))));
   return q;
 }
 
@@ -79,8 +79,8 @@ const STRANE_DA_NE = [['Je li zapad suprotan istoku?', true], ['Zalazi li Sunce 
 function zavicajDodatak() {
   const q = [];
   q.push(...obaSmjera(ZANIMANJA, { pitajB: (a) => `Što radi ${a}?`, pitajA: (b) => `Tko ${b}?`, tezina: 1 }));
-  q.push(...SELO_GRAD.map(([o, m]) => izbor(`Gdje su češći ${o}: u selu ili u gradu?`, `u ${m === 'grad' ? 'gradu' : 'selu'}`, [`u ${m === 'grad' ? 'selu' : 'gradu'}`], 1)));
-  q.push(...STRANE_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 1)));
+  q.push(...uObitelj(obiteljTablice(SELO_GRAD), SELO_GRAD.map(([o, m]) => izbor(`Gdje su češći ${o}: u selu ili u gradu?`, `u ${m === 'grad' ? 'gradu' : 'selu'}`, [`u ${m === 'grad' ? 'selu' : 'gradu'}`], 1))));
+  q.push(...uObitelj(obiteljTablice(STRANE_DA_NE), STRANE_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 1))));
   return q;
 }
 
@@ -92,7 +92,7 @@ const ZIMA = [['jež', 'spava zimskim snom'], ['medvjed', 'spava zimskim snom'],
   ['roda', 'odlazi u toplije krajeve'], ['lastavica', 'odlazi u toplije krajeve'], ['vrabac', 'ostaje i traži hranu'], ['sjenica', 'ostaje i traži hranu'], ['srna', 'ostaje i traži hranu']];
 function biljkeZivotinje2Dodatak() {
   const q = [];
-  q.push(...DOM_DIV.map(([z, v]) => izbor(`Je li ${z} domaća ili divlja životinja?`, v, [v === 'domaća' ? 'divlja' : 'domaća'], 1)));
+  q.push(...uObitelj(obiteljTablice(DOM_DIV), DOM_DIV.map(([z, v]) => izbor(`Je li ${z} domaća ili divlja životinja?`, v, [v === 'domaća' ? 'divlja' : 'domaća'], 1))));
   q.push(...obaSmjera(JESTIVI_DIO, { pitajB: (a) => `Koji dio biljke jedemo kad jedemo: ${a}?`, tezina: 2 }));
   q.push(...obaSmjera(ZIMA, { pitajB: (a) => `Što radi ${a} zimi?`, tezina: 2 }));
   q.push(...daNe([['Spava li jež zimskim snom?', true], ['Odlazi li vrabac zimi u toplije krajeve?', false], ['Jedemo li list salate?', true], ['Jedemo li korijen jabuke?', false],
@@ -111,7 +111,7 @@ const STEDNJA = [['Kako štedimo struju?', 'gasimo svjetlo kad izađemo iz sobe'
   ['Što radimo sa smećem na izletu?', 'nosimo ga sa sobom do koša', ['ostavimo ga na livadi', 'bacimo ga u potok', 'zakopamo ga pod kamen']]];
 function ekologijaDodatak() {
   const q = [];
-  q.push(...OTPAD_2.map(([o, v]) => izbor(`U koji spremnik bacamo: ${o}?`, v, ['papir', 'plastika i metal', 'staklo', 'biootpad'].filter((x) => x !== v), 2)));
+  q.push(...uObitelj(obiteljTablice(OTPAD_2), OTPAD_2.map(([o, v]) => izbor(`U koji spremnik bacamo: ${o}?`, v, ['papir', 'plastika i metal', 'staklo', 'biootpad'].filter((x) => x !== v), 2))));
   q.push(...izTablice(STEDNJA, 1));
   q.push(...daNe([['Smijemo li bacati smeće kroz prozor automobila?', false], ['Je li dobro ići u školu pješice ako je blizu?', true], ['Treba li čuvati šume?', true],
     ['Je li u redu ostaviti slavinu da curi?', false], ['Možemo li staklo reciklirati?', true], ['Treba li hraniti ptice zimi?', true], ['Smijemo li gaziti cvjetne gredice u parku?', false],
@@ -136,7 +136,7 @@ const ZNAKOVI = [['Prometni znak u obliku osmerokuta s natpisom STOP znači:', '
   ['Plavi okrugli znak s biciklom označava:', 'biciklističku stazu', ['zabranu vožnje bicikla', 'popravak bicikla', 'prodaju bicikla']]];
 function sigurnostDodatak() {
   const q = [...izTablice(SITUACIJE_2, 1)];
-  q.push(...ZNAKOVI.map(([p, t, k]) => izbor(`${p.replace(/:$/, '')} — što to znači?`, t, k, 2)));
+  q.push(...uObitelj(obiteljTablice(ZNAKOVI), ZNAKOVI.map(([p, t, k]) => izbor(`${p.replace(/:$/, '')} — što to znači?`, t, k, 2))));
   q.push(...daNe([['Smiješ li se igrati s upaljačem?', false], ['Treba li se u autu vezati pojasom?', true], ['Smiješ li ući u lift sam s nepoznatom osobom?', false],
     ['Treba li reći odraslima kad se negdje ozlijediš?', true], ['Smiješ li se naginjati kroz prozor?', false], ['Treba li hodati pločnikom?', true],
     ['Smiješ li sam ići na kupanje u rijeku?', false], ['Treba li se na igralištu čekati red za tobogan?', true], ['Smiješ li prići nepoznatom psu bez pitanja vlasnika?', false],
@@ -168,7 +168,7 @@ const VRIJEME_DOBA = [['Kad najčešće pada snijeg?', 'zimi', ['ljeti', 'u prol
 const BLAGDANI = [['Božić', 'prosinac'], ['Nova godina', 'siječanj'], ['Valentinovo', 'veljača'], ['Praznik rada', 'svibanj'], ['Dan državnosti', 'svibanj'], ['Svi sveti', 'studeni']];
 function dobaVrijemeDodatak() {
   const q = [...izTablice(VRIJEME_DOBA, 1)];
-  q.push(...BLAGDANI.map(([b, m]) => izbor(`U kojem je mjesecu ${b}?`, m, uzmi(['siječanj', 'veljača', 'travanj', 'svibanj', 'srpanj', 'kolovoz', 'studeni', 'prosinac'].filter((x) => x !== m), 3), 2)));
+  q.push(...uObitelj(obiteljTablice(BLAGDANI), BLAGDANI.map(([b, m]) => izbor(`U kojem je mjesecu ${b}?`, m, uzmi(['siječanj', 'veljača', 'travanj', 'svibanj', 'srpanj', 'kolovoz', 'studeni', 'prosinac'].filter((x) => x !== m), 3), 2))));
   q.push(...daNe([['Dolazi li proljeće poslije zime?', true], ['Ima li veljača više dana od siječnja?', false], ['Je li subota dan vikenda?', true], ['Je li srijeda prvi dan u tjednu?', false],
     ['Je li prosinac posljednji mjesec u godini?', true], ['Počinje li školska godina u rujnu?', true], ['Pada li Božić ljeti?', false], ['Je li jutro prije podneva?', true]], 1));
   return q;

@@ -2,7 +2,7 @@
  * dodatci/nove.js — dodatna pitanja za nove teme: Ja i drugi (1.–4.),
  * Računalo i sigurnost (1.–4.), Promet i bicikl (3.–4.).
  */
-const { izbor, tocnoNetocno, poredaj, obaSmjera, sveTvrdnje, spajanja, izTablice, uzmi } = require('./pomocno');
+const { izbor, tocnoNetocno, poredaj, obaSmjera, sveTvrdnje, spajanja, izTablice, uzmi, uObitelj, obiteljTablice } = require('./pomocno');
 
 // ═══ Ja i drugi ═══
 const OSJECAJI = ['veselo', 'tužno', 'ljuto', 'uplašeno', 'ponosno', 'zabrinuto', 'iznenađeno', 'razočarano', 'sramežljivo'];
@@ -58,13 +58,13 @@ const JID_DA_NE_34 = [['Ima li svako dijete pravo na obrazovanje?', true], ['Smi
   ['Smiju li djeca sudjelovati u odlukama koje se njih tiču?', true]];
 const osjPitanje = ([s, o]) => izbor(`${s} Kako se vjerojatno osjećaš?`, o, uzmi(OSJECAJI.filter((x) => x !== o), 3), 1);
 function jaIDrugi12() {
-  return [...SITUACIJE_OSJ.map(osjPitanje), ...izTablice(PONASANJE, 1), ...izTablice(POMOC, 1), ...JID_DA_NE_12.map(([p, t]) => tocnoNetocno(p, t, 1)),
+  return [...uObitelj(obiteljTablice(SITUACIJE_OSJ), SITUACIJE_OSJ.map(osjPitanje)), ...izTablice(PONASANJE, 1), ...izTablice(POMOC, 1), ...uObitelj(obiteljTablice(JID_DA_NE_12), JID_DA_NE_12.map(([p, t]) => tocnoNetocno(p, t, 1))),
     ...izTablice(SUKOB.slice(0, 3), 2)];
 }
 function jaIDrugi34() {
-  return [...SITUACIJE_OSJ.map(osjPitanje), ...izTablice(SUKOB, 2), ...izTablice(DUZNOSTI, 2), ...izTablice(POMOC, 1),
+  return [...uObitelj(obiteljTablice(SITUACIJE_OSJ), SITUACIJE_OSJ.map(osjPitanje)), ...izTablice(SUKOB, 2), ...izTablice(DUZNOSTI, 2), ...izTablice(POMOC, 1),
     ...obaSmjera(PRAVA, { pitajB: (a) => `Koji primjer pokazuje ${a}?`, pitajA: (b) => `Koje se pravo djeteta vidi u primjeru: ${b}?`, tezina: 2 }),
-    ...spajanja(PRAVA, 'Spoji pravo djeteta s primjerom:', { koliko: 4, komada: 2 }), ...JID_DA_NE_34.map(([p, t]) => tocnoNetocno(p, t, 2))];
+    ...spajanja(PRAVA, 'Spoji pravo djeteta s primjerom:', { koliko: 4, komada: 2 }), ...uObitelj(obiteljTablice(JID_DA_NE_34), JID_DA_NE_34.map(([p, t]) => tocnoNetocno(p, t, 2)))];
 }
 
 // ═══ Računalo i sigurnost ═══
@@ -93,7 +93,7 @@ const LOZINKE = () => {
 };
 function digitalni12() {
   const q = [];
-  q.push(...UREDJAJI.map(([u, d]) => tocnoNetocno(`Je li ${u} digitalni uređaj?`, d, 1)));
+  q.push(...uObitelj(obiteljTablice(UREDJAJI), UREDJAJI.map(([u, d]) => tocnoNetocno(`Je li ${u} digitalni uređaj?`, d, 1))));
   q.push(...obaSmjera(TIPKE.slice(0, 4), { pitajB: (a) => `Što radi tipka ${a}?`, pitajA: (b) => `Koja tipka ${b}?`, tezina: 2 }));
   q.push(...RAC_DA_NE.slice(0, 9).map(([p, t]) => tocnoNetocno(p, t, 1)));
   q.push(...izTablice([
@@ -108,12 +108,12 @@ function digitalni12() {
 }
 function digitalni34() {
   const q = [];
-  q.push(...ULAZ_IZLAZ.map(([u, v]) => izbor(`Je li ${u} ulazni ili izlazni uređaj?`, v, [v === 'ulazni' ? 'izlazni' : 'ulazni'], 2,
-    v === 'ulazni' ? 'Njime unosimo podatke u računalo.' : 'Njime računalo pokazuje ili pušta rezultat.')));
+  q.push(...uObitelj(obiteljTablice(ULAZ_IZLAZ), ULAZ_IZLAZ.map(([u, v]) => izbor(`Je li ${u} ulazni ili izlazni uređaj?`, v, [v === 'ulazni' ? 'izlazni' : 'ulazni'], 2,
+    v === 'ulazni' ? 'Njime unosimo podatke u računalo.' : 'Njime računalo pokazuje ili pušta rezultat.'))));
   q.push(...obaSmjera(TIPKE, { pitajB: (a) => `Čemu služi tipka ${a}?`, pitajA: (b) => `Koja tipka ${b}?`, tezina: 2 }));
   q.push(...obaSmjera(POJMOVI_NET, { pitajB: (a) => `Što je ${a}?`, pitajA: (b) => `Kako zovemo: ${b}?`, tezina: 2 }));
   q.push(...obaSmjera(NAREDBE, { pitajB: (a) => `Što radi naredba ${a}?`, pitajA: (b) => `Koja naredba ${b}?`, tezina: 2 }));
-  q.push(...RAC_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2)), ...LOZINKE());
+  q.push(...uObitelj(obiteljTablice(RAC_DA_NE), RAC_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2))), ...LOZINKE());
   return q;
 }
 
@@ -137,7 +137,7 @@ function promet() {
   const q = [];
   q.push(...obaSmjera(ZNAKOVI, { pitajB: (a) => `Što znači prometni znak: ${a}?`, pitajA: (b) => `Kako izgleda prometni znak koji označava: ${b}?`, tezina: 2 }));
   q.push(...obaSmjera(BICIKL, { pitajB: (a) => `Čemu na biciklu služi: ${a}?`, pitajA: (b) => `Koji dio opreme bicikla ${b}?`, tezina: 2 }));
-  q.push(...PROMET_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2)), ...izTablice(SUDIONICI, 2));
+  q.push(...uObitelj(obiteljTablice(PROMET_DA_NE), PROMET_DA_NE.map(([p, t]) => tocnoNetocno(p, t, 2))), ...izTablice(SUDIONICI, 2));
   q.push(poredaj('Poredaj što radiš prije nego što kreneš biciklom.', ['Stavim kacigu.', 'Provjerim kočnice i svjetla.', 'Pogledam oko sebe.', 'Krenem uz desni rub ceste.'], 2));
   return q;
 }
@@ -170,7 +170,7 @@ function digTvrdnje12() {
   return [
     ...obaSmjera(UREDJAJ_SLUZI, { pitajB: (a) => `Čemu služi ${a}?`, pitajA: (b) => `Koji uređaj koristimo kad nam treba ovo: ${b}?`, tezina: 1 }),
     ...sveTvrdnje(UREDJAJ_SLUZI, (a, b) => `Služi li ${a} za ${b}?`.replace(/^Služi li (zvučnici|slušalice) /, 'Služe li $1 '), { lazni: 2, tezina: 1 }),
-    ...ZDRAVO_UZ_ZASLON.map(([p, t]) => tocnoNetocno(p, t, 1)),
+    ...uObitelj(obiteljTablice(ZDRAVO_UZ_ZASLON), ZDRAVO_UZ_ZASLON.map(([p, t]) => tocnoNetocno(p, t, 1))),
   ];
 }
 function digTvrdnje34() {
