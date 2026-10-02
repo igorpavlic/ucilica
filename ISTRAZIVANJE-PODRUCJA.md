@@ -1,5 +1,8 @@
 # Nova područja i ime aplikacije — istraživanje
 
+> Ažurirano 2. 10. 2026.: vjeronauk i odrastanje isključeni; dodano ime
+> Mudrolin i poglavlje 5 — spajanje s postojećim temama.
+
 Datum: 2. 10. 2026. · razredi 1.–4.
 
 Izvori su prikupljeni pretraživanjem; proxy ne pušta izravno čitanje
@@ -20,6 +23,12 @@ izvornom dokumentu.
 **Zaključak:** „Pametnica” ima isti problem kao „Učilica” — postoji hrvatska
 edukativna aplikacija za djecu tog imena, a domena `.hr` pripada drugoj tvrtki
 iz obrazovne tehnologije. Ne preporučuje se.
+
+**Mudrolin / Mudrolina** (provjereno 2. 10. 2026.): pretraga ne nalazi
+proizvod, aplikaciju, knjigu ni tvrtku tog imena u Hrvatskoj. Najbliži
+pogodak je „Mudralina”, studio za jogu u Beču — drugo ime, druga djelatnost.
+**Kandidat je slobodan koliko se pretragom može vidjeti**; prije odluke ipak
+provjeriti TMview/DZIV i zauzeti domenu (`mudrolin.hr`) i korisnička imena.
 
 Pretraga „Znalica” i „Vježbalica” nije pronašla aplikaciju za djecu tog imena
 (što ne znači da žig ne postoji). Prije odluke za svako ime provjeriti:
@@ -130,26 +139,12 @@ aplikaciji** · **rizici** · **napor** (M mali / S srednji / V velik).
   kurikularna — izbjegavati ili označiti datumom.
 - **Napor:** M.
 
-### 3.4. Odrastanje
+### 3.4. Odrastanje — ISKLJUČENO
 
-- **Uporište:** `zdr A.1.1–A.2.x` (rast i razvoj), PID 4. r. (*Moje tijelo se
-  mijenja*, `PID OŠ B.4.2`, već postoji tema `ljudsko-tijelo`), `osr A`
-  (slika o sebi), modul *Spolna/rodna ravnopravnost i odgovorno spolno
-  ponašanje* Kurikuluma zdravstvenog odgoja.
-- **Primjereno 1.–4. r.:** rast (visina, zubi), san, higijena, osjećaji pri
-  promjenama (polazak u školu, brat/sestra), **sigurnost tijela**: moje tijelo
-  pripada meni, siguran i nesiguran dodir, tajne koje se ne čuvaju, kome se
-  obratiti. U 4. r. tek uvod u promjene u pubertetu kako ga daje udžbenik PID-a.
-- **Kome se obratiti:** roditelju, učiteljici, stručnoj službi škole;
-  **Hrabri telefon za djecu 116 111** (besplatno, anonimno; za roditelje
-  0800 0800).
-- **Zadatci:** samo situacije „što možeš učiniti / kome reći” s objašnjenjem;
-  **bez bodovanja „netočno”** u modulu sigurnosti tijela (povratna informacija
-  „Bolje je reći odrasloj osobi kojoj vjeruješ, jer…”).
-- **Rizik:** najosjetljivije područje. Sadržaj mora pregledati školski
-  psiholog/pedagog i biti usklađen s modulom zdravstvenog odgoja; roditelj
-  mora moći modul isključiti. Ne objavljivati bez stručne recenzije.
-- **Napor:** S (sadržaj), V (recenzija).
+Isključeno odlukom od 2. 10. 2026. (osjetljivo područje). Ono što je
+nesporno i već je u kurikulu PID-a i zdravlja — rast, san, higijena, kome se
+obratiti za pomoć (112, Hrabri telefon 116 111) — ostaje unutar 3.5
+*Zdravstveni odgoj*; ništa iz modula o spolnosti i pubertetu.
 
 ### 3.5. Zdravstveni odgoj
 
@@ -231,20 +226,11 @@ aplikaciji** · **rizici** · **napor** (M mali / S srednji / V velik).
   „Kako se TI osjećaš?” — takva pitanja bez bodova.
 - **Napor:** S.
 
-### 3.10. Religijska kultura
+### 3.10. Religijska kultura — ISKLJUČENO
 
-- **Uporište:** **Katolički vjeronauk** (NN 10/2019), izborni predmet — u
-  osnovnoj školi bez alternativnog predmeta; npr. `OŠ KV A.1.1`. U RH se
-  izvode i drugi konfesionalni vjeronauci (pravoslavni, islamski, židovski…).
-- **Pravno i etički:** odabir vjeronauka pripada **roditeljima**; aplikacija za
-  sve učenike ne smije podrazumijevati jednu vjeru.
-- **Preporuka:** dvije razine:
-  1. **Religijska kultura** (svima): blagdani i običaji u Hrvatskoj kao
-     kulturna baština (Božić, Uskrs, Sveti Nikola…), poštovanje različitih
-     vjera — uz postojeću temu `kulturna-bastina`;
-  2. **Vjeronauk** kao **dodatni modul koji roditelj uključuje** u profilu,
-     sadržaj strogo prema kurikulu, s recenzijom vjeroučitelja.
-- **Napor:** S (1), V (2 — recenzija, više konfesija).
+Isključeno odlukom od 2. 10. 2026. Vjeronauk je izborni predmet čiji odabir
+pripada roditeljima. Blagdani i običaji ostaju samo kao **kulturna baština**
+(postojeća tema `kulturna-bastina`), bez vjerskog sadržaja.
 
 ### 3.11. Interdisciplinarnost
 
@@ -341,25 +327,70 @@ aplikaciji** · **rizici** · **napor** (M mali / S srednji / V velik).
 | 11 | Interdisciplinarnost | tematska nastava | podatci, vozni red | M | nizak | 2 |
 | 12 | Emocionalna inteligencija | osr A/B, zdr B | — | S | srednji | 3 |
 | 13 | Snalaženje na tipkovnici | ikt, Informatika | — | S | srednji (tablet) | 3 |
-| 14 | Odrastanje | zdr, PID 4, ZO | `ljudsko-tijelo` | S/V | **visok** | 4 — samo uz stručnu recenziju |
-| 15 | Religijska kultura / vjeronauk | KV (izborni) | blagdani | S/V | **visok** | 4 — kultura svima, vjeronauk kao modul koji uključuje roditelj |
 
 ### Tehničke posljedice
 
 - **Novi predmet ili kategorija** „Za život” (ili po području) s istim
   `subjects`/`topics` modelom; ishodi s kraticama međupredmetnih tema
   (`osr A.1.2`) u `gikEngine.js`.
-- **Moduli koje roditelj uključuje** (vjeronauk, odrastanje): polje u profilu,
-  filtar u `createSession` i miješanom ponavljanju.
 - **Pitanja bez točnog odgovora** (osjećaji, samoprocjena): tip koji se ne
   boduje i ne ulazi u FSRS.
 - **Novi prikazi:** `grid` (brojevno polje), `tipkovnica`.
-- **Recenzija:** `tools/recenzija-ucitelj.js` vrijedi i za nova područja; za
-  osjetljiva područja dodati obaveznu ljudsku recenziju prije objave.
+- **Recenzija:** `tools/recenzija-ucitelj.js` vrijedi i za nova područja.
 
 ---
 
-## 5. Izvori
+## 5. Što se može spojiti s postojećim temama
+
+Analiza postojeće banke (2. 10. 2026.: obitelji pitanja po temi, pregled
+stvarnih pitanja). Od 13 preostalih područja **devet se može uklopiti u
+postojeće teme**, tri traže malu novu temu, a samo tipkovnica traži zaseban
+modul.
+
+### 5.1. Karta preklapanja
+
+| Područje | Već postoji u | Što ondje već ima | Što nedostaje | Preporuka |
+|---|---|---|---|---|
+| **Prometna kultura** | R1 *Sigurnost i promet* (~20 obitelji o prometu), R2 *Zdravlje i sigurnost* (pješak, bicikl, kaciga, pojas) | pješački prijelaz, semafor, nogostup, pojas, kaciga, STOP | vidljivost (prsluk), autobus, prometni znakovi, bicikl i dobne granice, raskrižje; **ništa u 3. i 4. r.** | proširiti R1 i R2; **nova tema „Promet i bicikl” za 3.–4. r.** |
+| **Ekologija** | R1 *Ekologija i zajednica* (spremnici, recikliranje), R3 *Tlo, voda, zrak* (čuva / onečišćuje), R4 *Uvjeti života* | razvrstavanje otpada po bojama, recikliranje, čuvanje vode, zraka i tla | štednja energije, ponovna uporaba, zaštićena priroda; R2 nema ništa | proširiti postojeće; R2 dodati u *Voda i tlo* |
+| **Zdravstveni odgoj** | R1 *Ekologija i zajednica* (ruke, zubi, voda), R1 *Moje tijelo*, R2 *Zdravlje i sigurnost* (zubi, doručak, san, opekline), R4 *Ljudsko tijelo* (prehrana, tjelovježba) | higijena, prehrana, san, 112 | ekrani, lijekovi samo od odrasle osobe, prva pomoć na dječjoj razini; **R3 nema zdravlja** | proširiti postojeće; zdravlje kao stalan dio PID-a svakog razreda |
+| **Lijepo ponašanje** | R1 *Ekologija i zajednica* (hvala, oprosti, pozdrav, slušanje, pravila razreda, dobar prijatelj), R4 *Medijska kultura* (kazalište, kino, galerija) | osnovni bonton | ponašanje u prijevozu, za stolom, na internetu (pristojna poruka) | spojiti u novu temu **„Ja i drugi”** (vidi 5.2) |
+| **Humane vrednote** | tekstovi *Utrka*, *Hranilica*, *Stari hrast* (pomoć, briga, zajedništvo); R1 „dobar prijatelj” | pomoć drugome kroz priču | različitost, dijeljenje, Crveni križ | u **„Ja i drugi”** |
+| **Emocionalna inteligencija** | R2 *Čitanje i razumijevanje* (tužno–veselo), tekstovi *Nova prijateljica* (usamljenost → veselje), *Utrka* (osobine lika) | prepoznavanje osjećaja lika u priči | rječnik emocija, strategije smirivanja, pomiješani osjećaji | u **„Ja i drugi”** + pitanja o osjećajima u novim tekstovima |
+| **Građanski odgoj** | R4 *Hrvatska — domovina* (simboli, granice, EU), R1 „zašto imamo pravila u razredu” | domovina i simboli | **dječja prava**, glasanje u razredu, vijeće učenika | dječja prava u **„Ja i drugi”**; domovina ostaje |
+| **Potrošačka prava** | R2 *Mjerenje i novac* (23 obitelji: ostatak, apoeni, usporedba iznosa), R4 *Medijska kultura* (oglas, činjenica / mišljenje), R3 *Gospodarske djelatnosti* (trgovina) | račun s novcem, reklama | račun i zašto ga čuvamo, rok trajanja, potreba ili želja, štednja; **nema novca u 3. i 4. r.** | proširiti R2 novac; **nova tema „Novac i kupovina” za 3.–4. r.** (parametrizirana) |
+| **Sport** | R1 „zašto je sport važan”, R4 „zašto je tjelovježba važna”, R1 *Moje tijelo* (čime trčimo, skačemo) | korist kretanja | pravila igara, oprema, zagrijavanje, fair play | uz zdravlje kao podtema; zasebna tema tek ako bude potrebe |
+| **Učenje** | sustav: ponavljanje po krivulji zaboravljanja, objašnjenja, `/upute`; R4 *Medijska kultura* (rječnik, enciklopedija = `uku A.1.1`) | većina je već **funkcija aplikacije**, ne kviz | samoprocjena „koliko si siguran”, savjeti o učenju | bez nove teme: savjeti u uputama i objašnjenjima, kasnije samoprocjena |
+| **Interdisciplinarnost** | *Vozni red* (HJ + MAT), *Podatci i grafovi* (PID konteksti), *Plakat* (HJ + MAT), pokusi (PID + čitanje), miješano ponavljanje i dnevni izazov | zadatci iz dva predmeta i kvizovi iz cijelog razreda | tematski kviz („Jesen”, „Voda”, „Promet”) | oznake `tags` na temama i filtar u miješanom ponavljanju — bez novih pitanja |
+| **Brojevno polje** | R1 *Brojevi do 20*, R2 *Brojevi do 100*, R3 *Brojevi do 10 000* | brojenje, usporedba, prethodnik / sljedbenik | mreža brojeva i kretanje po njoj | **novi tip zadatka `mreza`** u postojećim temama brojeva, ne nova tema |
+| **Snalaženje na tipkovnici** | — | — | sve | zaseban modul (nije kviz; samo s fizičkom tipkovnicom) |
+
+### 5.2. Prijedlog: tri nove teme umjesto deset
+
+| Nova tema | Razredi | Spaja | Uporište |
+|---|---|---|---|
+| **Ja i drugi** | 1.–4. | lijepo ponašanje, humane vrednote, emocionalna inteligencija, dječja prava | `osr A.1.2`, `osr B.1.1`, `osr B.1.2`, `goo A` |
+| **Promet i bicikl** | 3.–4. | prometna kultura za stariju djecu (R1–R2 ostaju u postojećim temama) | PID, `zdr C`, `osr C.1.1` |
+| **Novac i kupovina** | 3.–4. | potrošačka prava, financijska pismenost (R2 ostaje u *Mjerenje i novac*) | `pod C`, `goo`, MAT (novac) |
+
+Sve ostalo — ekologija, zdravlje, sport, učenje, interdisciplinarnost,
+brojevno polje — ulazi u postojeće teme ili u mehanizme aplikacije.
+
+### 5.3. Usput uočeno u postojećim temama
+
+- **R1 *Ekologija i zajednica* miješa četiri područja**: otpad, higijenu,
+  sport i lijepo ponašanje (i „Što radi liječnik?”). Zato ponavljanje po
+  vještini za nju ne zna što dijete zapravo zaboravlja. Kad nastane „Ja i
+  drugi”, pitanja o bontonu treba premjestiti onamo, a higijenu u zdravlje.
+- **„U koje godišnje doba radimo ovo: vožnja biciklom?” → proljeće** — jednako
+  vrijedi i ljeto; pitanje je dvosmisleno.
+- **Boje spremnika** (papir plavi, plastika žuti, staklo zeleni, biootpad
+  smeđi) odgovaraju uobičajenoj praksi, ali se razlikuju po gradovima — u
+  pitanju navesti „najčešće” ili pitati o vrsti otpada.
+
+---
+
+## 6. Izvori
 
 **Ime**
 - Pametnica (aplikacija, Školski portal): https://www.skolskiportal.hr/sadrzaj/pljesak-molim/pametnica-hrvatska-aplikacija-koja-razvija-djecju-inteligenciju/
@@ -368,6 +399,7 @@ aplikaciji** · **rizici** · **napor** (M mali / S srednji / V velik).
 - pametnica.hr — interaktivni ekrani: https://pametnica.hr/
 - PAMETNICA d.o.o.: https://www.companywall.hr/tvrtka/pametnica-doo/MMxKC6uY
 - Učilica (sadržaj proizvoda): https://www.ucilica.tv/ucilica
+- „Mudralina” (studio za jogu, Beč — jedini sličan pogodak): https://www.facebook.com/MudralinaMindfulLiving/
 
 **Kurikul**
 - Međupredmetne teme (MZOM): https://mzom.gov.hr/istaknute-teme/odgoj-i-obrazovanje/nacionalni-kurikulum/medjupredmetne-teme/3852
