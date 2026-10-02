@@ -53,6 +53,7 @@
           <tr><td>Točno ili netočno</td><td>Odluči je li tvrdnja <strong>Točno</strong> ili <strong>Netočno</strong>.</td></tr>
           <tr><td>Spoji parove</td><td>Klikni nešto u lijevom stupcu, pa ono što mu pripada u desnom. Kad sve spojiš, klikni <strong>„Provjeri”</strong>.</td></tr>
           <tr><td>Poredaj</td><td>Strelicama <strong>↑</strong> i <strong>↓</strong> pomakni rečenice u pravi red, pa klikni <strong>„Provjeri redoslijed”</strong>.</td></tr>
+          <tr><td>Robot na mreži</td><td>Pogledaj gdje je robot 🤖 i kamo treba stići. Strelice ga pomiču za jedno polje.</td></tr>
           <tr><td>Tekst, tablica ili grafikon</td><td>Najprije pročitaj tekst ili pogledaj podatke, pa odgovori na pitanje.</td></tr>
         </tbody>
       </table>
@@ -65,7 +66,8 @@
       <ul>
         <li><strong>Registracija:</strong> račun otvara roditelj ili skrbnik i daje privolu za obradu podataka.
           Ne upisujte pravo ime i prezime — dovoljan je nadimak. Više u <router-link to="/privatnost">obavijesti o privatnosti</router-link>.</li>
-        <li><strong>Gradivo:</strong> pitanja prate kurikul za 1.–4. razred (Hrvatski jezik, Matematika, Priroda i društvo).</li>
+        <li><strong>Gradivo:</strong> pitanja prate kurikul za 1.–4. razred (Hrvatski jezik, Matematika, Priroda i društvo, Informatika).
+          Uz to su tu teme „Ja i drugi” (osjećaji, lijepo ponašanje, prava djeteta), „Promet i bicikl” i „Novac i kupovina”.</li>
         <li><strong>Obrađeno gradivo:</strong> u <router-link to="/profile">profilu</router-link> označite teme koje je dijete već učilo u školi.
           Miješano ponavljanje i dnevni izazov tada uzimaju samo njih.</li>
         <li><strong>Napredak:</strong> klikom na ⭐ i 🔥 gore vidite točne i netočne odgovore.</li>

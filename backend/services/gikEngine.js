@@ -5,7 +5,8 @@ const GIK_VERSION = 'Razredna nastava OŠ (GIK)';
 const SUBJECTS = {
   hrvatski: { name: 'Hrvatski jezik', slug: 'hrvatski', ciklus: 'razredna nastava' },
   matematika: { name: 'Matematika', slug: 'matematika', ciklus: 'razredna nastava' },
-  priroda: { name: 'Priroda i društvo', slug: 'priroda', ciklus: 'razredna nastava' }
+  priroda: { name: 'Priroda i društvo', slug: 'priroda', ciklus: 'razredna nastava' },
+  informatika: { name: 'Informatika', slug: 'informatika', ciklus: 'razredna nastava' }
 };
 
 const TOPIC_METADATA = {
@@ -80,7 +81,29 @@ const TOPIC_METADATA = {
   'krajevi-hr': { grade: 4, subject: 'priroda', domain: 'Prostor Republike Hrvatske', outcome: 'PID OŠ A.4.2', outcomeText: 'snalazi se na karti Republike Hrvatske i opisuje njezine krajeve', tags: ['Hrvatska', 'karta'] },
   'ljudsko-tijelo': { grade: 4, subject: 'priroda', domain: 'Čovjek i zdravlje', outcome: 'PID OŠ B.4.2', outcomeText: 'objašnjava građu i ulogu dijelova ljudskoga tijela te važnost zdravih navika', tags: ['ljudsko tijelo', 'zdravlje'] },
   'hrvatska-domovina': { grade: 4, subject: 'priroda', domain: 'Domovina i zajednica', outcome: 'PID OŠ C.4.1', outcomeText: 'opisuje obilježja Republike Hrvatske i važnost pripadnosti zajednici', tags: ['domovina', 'simboli'] },
-  'biljke-zivotinje-4': { grade: 4, subject: 'priroda', domain: 'Živi svijet', outcome: 'PID OŠ B.4.1', outcomeText: 'objašnjava povezanost živih bića s uvjetima života', tags: ['biljke', 'životinje'] }
+  'biljke-zivotinje-4': { grade: 4, subject: 'priroda', domain: 'Živi svijet', outcome: 'PID OŠ B.4.1', outcomeText: 'objašnjava povezanost živih bića s uvjetima života', tags: ['biljke', 'životinje'] },
+
+  // Nove teme (seeds/nove-teme.js, ISTRAZIVANJE-NOVE-TEME.md)
+  // Informatika — kurikul NN 22/2018
+  'algoritmi-1': { grade: 1, subject: 'informatika', domain: 'Računalno razmišljanje i programiranje', outcome: 'OŠ INF B.1.2', outcomeText: 'slijedi i prikazuje slijed koraka', secondaryOutcomes: ['OŠ INF B.1.1'], tags: ['algoritam', 'slijed', 'uzorak'] },
+  'algoritmi-2': { grade: 2, subject: 'informatika', domain: 'Računalno razmišljanje i programiranje', outcome: 'OŠ INF B.2.1', outcomeText: 'analizira niz uputa koje izvode jednostavan zadatak i ispravlja pogrešan redoslijed', tags: ['algoritam', 'greška'] },
+  'algoritmi-3': { grade: 3, subject: 'informatika', domain: 'Računalno razmišljanje i programiranje', outcome: 'OŠ INF B.3.1', outcomeText: 'stvara program u vizualnom okruženju slijedom koraka, ponavljanjem i odlukom', secondaryOutcomes: ['OŠ INF B.3.2', 'OŠ INF A.3.1'], tags: ['ponavljanje', 'odluka', 'sortiranje', 'šifra'] },
+  'algoritmi-4': { grade: 4, subject: 'informatika', domain: 'Računalno razmišljanje i programiranje', outcome: 'OŠ INF B.4.1', outcomeText: 'stvara program s ponavljanjem, odlukom i ulaznim vrijednostima', secondaryOutcomes: ['OŠ INF B.4.2'], tags: ['program', 'petlja', 'varijabla'] },
+  'digitalni-svijet-1': { grade: 1, subject: 'informatika', domain: 'Informacije, digitalna tehnologija i e-društvo', outcome: 'OŠ INF D.1.1', outcomeText: 'pažljivo i odgovorno rukuje opremom i čuva osobne podatke', secondaryOutcomes: ['OŠ INF A.1.1', 'OŠ INF A.1.2', 'OŠ INF D.1.2'], tags: ['uređaji', 'sigurnost', 'zdravlje'] },
+  'digitalni-svijet-2': { grade: 2, subject: 'informatika', domain: 'Informacije, digitalna tehnologija i e-društvo', outcome: 'OŠ INF A.2.1', outcomeText: 'objašnjava ulogu programa u uporabi računala', secondaryOutcomes: ['OŠ INF D.2.1'], needsReview: 'Ishodi domene D za 2. razred (sigurnost) nisu provjereni u kurikulu.', tags: ['programi', 'uređaji', 'sigurnost'] },
+  'digitalni-svijet-3': { grade: 3, subject: 'informatika', domain: 'Informacije, digitalna tehnologija i e-društvo', outcome: 'OŠ INF D (3. r.)', outcomeText: 'sigurno i odgovorno koristi digitalnu tehnologiju i čuva osobne podatke', needsReview: 'Točne oznake ishoda domena C i D za 3. razred nisu provjerene u kurikulu.', tags: ['lozinka', 'digitalni trag', 'sigurnost'] },
+  'digitalni-svijet-4': { grade: 4, subject: 'informatika', domain: 'Informacije, digitalna tehnologija i e-društvo', outcome: 'OŠ INF D.4.1', outcomeText: 'istražuje ograničenja uporabe računalne tehnologije te primjenjuje upute za očuvanje zdravlja i sigurnost pri radu s računalom', secondaryOutcomes: ['OŠ INF A.4.1', 'OŠ INF A.4.2', 'OŠ INF D.4.2'], tags: ['internet', 'sigurnost', 'zanimanja'] },
+  // Ja i drugi — PID domena C i MPT Osobni i socijalni razvoj, Građanski odgoj
+  'ja-i-drugi-1': { grade: 1, subject: 'priroda', domain: 'Pojedinac i društvo', outcome: 'osr B.1.1', outcomeText: 'prepoznaje i uvažava potrebe i osjećaje drugih', secondaryOutcomes: ['osr A.1.2', 'osr B.1.2', 'PID OŠ C.1.1'], tags: ['osjećaji', 'lijepo ponašanje'] },
+  'ja-i-drugi-2': { grade: 2, subject: 'priroda', domain: 'Pojedinac i društvo', outcome: 'osr B.1.1', outcomeText: 'prepoznaje i uvažava potrebe i osjećaje drugih', secondaryOutcomes: ['osr A.1.2', 'osr B.1.2', 'goo A.1.1'], tags: ['osjećaji', 'prava djeteta'] },
+  'ja-i-drugi-3': { grade: 3, subject: 'priroda', domain: 'Pojedinac i društvo', outcome: 'osr B.2.1', outcomeText: 'opisuje i uvažava potrebe i osjećaje drugih', secondaryOutcomes: ['osr A.2.2', 'osr B.2.2', 'osr B.2.3', 'goo A.2.1'], needsReview: 'Oznake MPT za 2. ciklus provjeriti u kurikulu.', tags: ['osjećaji', 'sukob', 'prava djeteta'] },
+  'ja-i-drugi-4': { grade: 4, subject: 'priroda', domain: 'Pojedinac i društvo', outcome: 'osr B.2.1', outcomeText: 'opisuje i uvažava potrebe i osjećaje drugih', secondaryOutcomes: ['osr A.2.2', 'osr B.2.2', 'osr B.2.3', 'goo A.2.1'], needsReview: 'Oznake MPT za 2. ciklus provjeriti u kurikulu.', tags: ['osjećaji', 'prava djeteta', 'volontiranje'] },
+  // Promet i bicikl — PID i MPT Zdravlje; pravila prema ZSPC (izmjene 2024.)
+  'promet-3': { grade: 3, subject: 'priroda', domain: 'Pojedinac i društvo — promet', outcome: 'PID OŠ C (promet)', outcomeText: 'primjenjuje pravila sigurnoga ponašanja u prometu kao pješak, putnik i biciklist', secondaryOutcomes: ['zdr C.2.1'], needsReview: 'Točnu oznaku ishoda PID-a za prometnu kulturu provjeriti u kurikulu.', tags: ['promet', 'bicikl', 'znakovi'] },
+  'promet-4': { grade: 4, subject: 'priroda', domain: 'Pojedinac i društvo — promet', outcome: 'PID OŠ C (promet)', outcomeText: 'primjenjuje pravila sigurnoga ponašanja u prometu kao pješak, putnik i biciklist', secondaryOutcomes: ['zdr C.2.1'], needsReview: 'Točnu oznaku ishoda PID-a za prometnu kulturu provjeriti u kurikulu.', tags: ['promet', 'bicikl', 'biciklistički ispit'] },
+  // Novac i kupovina — Matematika i MPT Poduzetništvo C
+  'novac-3': { grade: 3, subject: 'matematika', domain: 'Mjerenje — novac', outcome: 'MAT OŠ (novac)', outcomeText: 'računa s novcem u jednostavnim situacijama kupnje i štednje', secondaryOutcomes: ['pod C (financijska pismenost)'], needsReview: 'Oznaku ishoda MAT za novac u 3. razredu provjeriti u kurikulu.', tags: ['novac', 'kupnja', 'štednja'] },
+  'novac-4': { grade: 4, subject: 'matematika', domain: 'Mjerenje — novac', outcome: 'MAT OŠ (novac)', outcomeText: 'računa s novcem, čita račun i uspoređuje cijene', secondaryOutcomes: ['pod C (financijska pismenost)'], needsReview: 'Oznaku ishoda MAT za novac u 4. razredu provjeriti u kurikulu.', tags: ['novac', 'račun', 'rok trajanja'] }
 };
 
 function inferDifficultyBand(difficulty) {

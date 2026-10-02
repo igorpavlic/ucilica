@@ -394,6 +394,8 @@ je zamijenila tipkovnicu; tipkovnica ostaje neobavezan dodatak).
 
 ### 5.2. Prijedlog: četiri nove teme umjesto deset
 
+> Provedeno: istraživanje i generatori su u `ISTRAZIVANJE-NOVE-TEME.md` i `backend/seeds/nove-teme.js`.
+
 | Nova tema | Razredi | Spaja | Uporište |
 |---|---|---|---|
 | **Ja i drugi** | 1.–4. | lijepo ponašanje, humane vrednote, emocionalna inteligencija, dječja prava | `osr A.1.2`, `osr B.1.1`, `osr B.1.2`, `goo A` |

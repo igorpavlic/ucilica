@@ -43,6 +43,13 @@
           </template>
         </div>
 
+        <!-- Mreža (robot i put): svako polje je ćelija, pa se redovi ne lome. -->
+        <div v-if="questions[currentQ].mreza?.length" class="quiz-mreza" role="img" aria-label="Mreža polja s robotom">
+          <div v-for="(red, ri) in questions[currentQ].mreza" :key="ri" class="quiz-mreza-red">
+            <span v-for="(polje, pi) in red" :key="pi" class="quiz-mreza-polje">{{ polje }}</span>
+          </div>
+        </div>
+
         <p v-if="questions[currentQ].passage" class="reading-passage">{{ questions[currentQ].passage }}</p>
         <div v-if="questions[currentQ].chart?.length" class="quiz-chart" role="img" aria-label="Stupčasti grafikon s vrijednostima">
           <div v-for="row in questions[currentQ].chart" :key="row.label" class="quiz-chart-row">

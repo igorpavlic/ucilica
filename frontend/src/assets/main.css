@@ -1227,6 +1227,15 @@ select.form-input {
 
 /* Naslov i tekst za čitanje odvojeni su praznim redom */
 .reading-passage { white-space: pre-line; }
+/* Mreža za zadatke s robotom: kvadratna polja, veličina prema širini zaslona */
+.quiz-mreza { display: grid; width: max-content; max-width: 100%; gap: 4px; margin: 0 auto 1rem; padding: 8px; border-radius: var(--r-md); background: var(--bg-warm); }
+.quiz-mreza-red { display: flex; gap: 4px; justify-content: center; }
+.quiz-mreza-polje {
+  width: clamp(36px, 13vw, 52px); height: clamp(36px, 13vw, 52px);
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(1.3rem, 6vw, 1.9rem); line-height: 1;
+  background: var(--surface); border-radius: 6px;
+}
 .scope-note { font-size: 0.85rem; opacity: 0.75; margin: 2px 0 6px; }
 
 /* ── Dnevni izazov ─────────────────────────────────────────────── */

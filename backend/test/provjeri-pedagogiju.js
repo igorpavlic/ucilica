@@ -1,7 +1,7 @@
 /** Regression checks for pedagogical/content issues found in 2026 review. */
 const path=require('path');
 const seeds=path.join(__dirname,'..','seeds');
-const modules=['gen-hrvatski','gen-matematika','gen-priroda','seed-r2','seed-r3','seed-r4'].map(x=>require(path.join(seeds,x)));
+const modules=['gen-hrvatski','gen-matematika','gen-priroda','seed-r2','seed-r3','seed-r4','nove-teme-r1'].map(x=>require(path.join(seeds,x)));
 const all=[]; for(const m of modules) for(const [name,fn] of Object.entries(m)) if(name.startsWith('gen')&&typeof fn==='function') for(const q of fn()) all.push({...q,_gen:name});
 const text=q=>`${q.question||''} ${(q.answers||[]).join(' ')} ${q.correctAnswer||''}`;
 const forbidden=[

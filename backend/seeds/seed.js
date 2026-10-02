@@ -50,6 +50,8 @@ const GEN_MAP = {
   matematika: [genBrojevi, genZbrajanje, genOduzimanje, genUsporedbe, genGeometrija, genNizovi],
   priroda: [genDoba, genZivotinje, genTijelo, genObitelj, genSigurnost, genEkologija]
 };
+// Nove teme (Informatika, Ja i drugi) — seeds/nove-teme.js
+require("./nove-teme").prosiriSeed(GRADE, subjects, topicsDef, GEN_MAP);
 
 async function seed() {
   let pogreska = false;
