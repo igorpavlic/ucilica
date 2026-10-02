@@ -1,4 +1,5 @@
-require('dotenv').config();
+// .env iz mape backend/, bez obzira na to iz koje mape se pokreće (cPanel/Passenger)
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 // ═══════════════════════════════════════════════════════════
 // Provjera obaveznih env varijabli PRIJE bilo čega drugog
@@ -69,6 +70,15 @@ app.use('/api/subjects', subjectRoutes);
 app.use('/api/quiz', quizRoutes);                // AI rute imaju svoj limiter unutar routera
 app.use('/api/progress', progressRoutes);
 app.use('/api/prijave', prijaveRoutes);         // prijava pogrešnog pitanja (vlastiti limiter)
+// Provjera rada poslužitelja i baze (za hosting i nadzor)
+app.get('/api/health', async (req, res) => {
+  try {
+    await require('./db/mongo').getDb().command({ ping: 1 });
+    res.json({ ok: true, baza: 'ok' });
+  } catch {
+    res.status(503).json({ ok: false, baza: 'nedostupna' });
+  }
+});
 
 // ═══════════════════════════════════════════════════════════
 // SPA fallback — SAMO za ne-API rute
