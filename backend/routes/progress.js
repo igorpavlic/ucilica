@@ -1,10 +1,20 @@
 const express = require('express');
+const { oznakeDaNe } = require('../modules/quiz/quiz.service');
 const { ObjectId } = require('mongodb');
 const { getDb } = require('../db/mongo');
 const { auth } = require('../middleware/auth');
 const vjestine = require('../services/vjestine');
 const obradjeno = require('../services/obradjeno');
 const dnevni = require('../services/dnevni');
+
+/** Točan odgovor kao tekst za povijest odgovora, za svaki tip zadatka. */
+function tocanOdgovorTekst(q) {
+  if (q.type === 'choice') return q.answers?.[q.correctIndex] || '';
+  if (q.type === 'true-false') return oznakeDaNe(q)[q.correct ? 0 : 1];
+  if (q.type === 'ordering') return (q.items || []).join(' → ');
+  if (q.type === 'match') return (q.pairs || []).map((p) => `${p[0]} – ${p[1]}`).join('; ');
+  return q.correctAnswer || '';
+}
 
 const router = express.Router();
 
@@ -195,9 +205,7 @@ router.get('/answers', auth, async (req, res) => {
         visual: q.visual || '',
         type: q.type,
         answers: q.answers || [],
-        correctAnswer: q.type === 'choice'
-          ? (q.answers[q.correctIndex] || '')
-          : (q.correctAnswer || ''),
+        correctAnswer: tocanOdgovorTekst(q),
         correctIndex: q.correctIndex,
         userAnswer: a.userAnswer,
         wasCorrect: a.wasCorrect,

@@ -495,7 +495,7 @@ function objasni(q) {
   if ((m = t.match(/počinje istim slovom kao riječ "([^"]+)"/))) return izlaz(`„${m[1]}” i „${kljuc}” počinju glasom ${glasovi(m[1])[0]}.`, 'postupak', 'glasovna-analiza');
 
   // 9) Riječi i značenje
-  if ((m = t.match(/(?:znači suprotno od riječi|suprotno značenje od) "([^"]+)"/))) return izlaz(`„${m[1]}” i „${kljuc}” čine par suprotnosti. Provjera: ako nešto nije ${m[1]}, može biti ${kljuc}.`, 'pravilo', 'suprotnice');
+  if ((m = t.match(/(?:znači suprotno od riječi|suprotno značenje od(?: riječi)?) "([^"]+)"/))) return izlaz(`„${m[1]}” i „${kljuc}” čine par suprotnosti. Provjera: ako nešto nije ${m[1]}, može biti ${kljuc}.`, 'pravilo', 'suprotnice');
   if ((m = t.match(/U paru ["„]([^"„“”]+?) — ([^"„“”]+)["”“] riječi imaju kakav odnos/)) && /suprotno/.test(String(kljuc))) return izlaz(`„${m[1]}” i „${m[2]}” znače suprotno, kao „gore” i „dolje”.`, 'pravilo', 'suprotnice');
   if ((m = t.match(/slično značenje kao "([^"]+)"/))) return izlaz(`„${m[1]}” i „${kljuc}” znače gotovo isto, pa jednu riječ možemo zamijeniti drugom u rečenici.`, 'pravilo', 'bliskoznacnice');
   if ((m = t.match(/umanjenica (?:riječi |od )"([^"]+)"/i))) return izlaz(`Umanjenica imenuje nešto malo ili drago: ${m[1]} → ${kljuc}. Često završava na -ica, -ić ili -čica.`, 'pravilo', 'umanjenice');

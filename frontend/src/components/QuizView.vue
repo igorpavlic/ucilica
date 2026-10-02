@@ -94,55 +94,13 @@
           >{{ ans }}</button>
         </div>
 
-        <!-- Spajanje parova: klik lijevo pa klik desno. Bez povlačenja —
-             na dodirnicima je pouzdanije, a mlađem djetetu lakše. -->
-        <div v-if="questions[currentQ].type === 'match'" class="match-wrap">
-          <div class="match-cols">
-            <div class="match-col">
-              <button
-                v-for="l in questions[currentQ].lijevo"
-                :key="'l' + l.id"
-                class="match-item"
-                :class="{
-                  selected: odabranLijevi === l.id,
-                  linked: veze[l.id] !== undefined,
-                  ok: answered && vezaTocna(l.id),
-                  no: answered && veze[l.id] !== undefined && !vezaTocna(l.id)
-                }"
-                :disabled="answered"
-                @click="veze[l.id] !== undefined && !answered ? razvezi(l.id) : odaberiLijevi(l.id)"
-              >
-                <span class="match-tekst">{{ l.tekst }}</span>
-                <span v-if="veze[l.id] !== undefined" class="match-veza">{{ oznakaVeze(l.id) }}</span>
-              </button>
-            </div>
-
-            <div class="match-col">
-              <button
-                v-for="(d, di) in questions[currentQ].desno"
-                :key="'d' + d.id"
-                class="match-item"
-                :class="{ linked: vezanDesni(d.id), dim: odabranLijevi !== null && vezanDesni(d.id) }"
-                :disabled="answered"
-                @click="spoji(d.id)"
-              >
-                <span v-if="vezanDesni(d.id)" class="match-veza">{{ oznakaDesnog(d.id) }}</span>
-                <span class="match-tekst">{{ d.tekst }}</span>
-              </button>
-            </div>
-          </div>
-
-          <p v-if="!answered" class="match-uputa">
-            {{ odabranLijevi === null ? 'Klikni riječ lijevo, pa njezin par desno.' : 'Sada klikni par desno.' }}
-          </p>
-
-          <button
-            v-if="!answered"
-            class="btn-check match-check"
-            :disabled="!sveSpojeno || provjeravam"
-            @click="handleMatch"
-          >{{ sveSpojeno ? 'Provjeri' : `Spoji još ${preostaloVeza}` }}</button>
-        </div>
+        <SpajanjeParova
+          v-if="questions[currentQ].type === 'match'"
+          :key="questions[currentQ]._id"
+          :pitanje="questions[currentQ]"
+          :provjeravam="provjeravam"
+          @provjeri="handleMatch"
+        />
 
         <div v-if="questions[currentQ].type === 'input'" class="input-group">
           <input
@@ -156,21 +114,21 @@
           <button v-if="!answered" class="btn-check" :disabled="provjeravam" @click="handleInput">Provjeri</button>
         </div>
 
+        <!-- Na pitanje („Smiješ li…?”) Da/Ne, na tvrdnju Točno/Netočno -->
         <div v-if="questions[currentQ].type === 'true-false'" class="answers-grid">
-          <button v-for="option in [true, false]" :key="String(option)" class="answer-btn"
-            :disabled="answered || provjeravam" @click="handleStructured(option)">{{ option ? 'Točno' : 'Netočno' }}</button>
+          <button v-for="(option, oi) in [true, false]" :key="String(option)" class="answer-btn"
+            :class="{
+              correct: answered && option === tocnaTF,
+              wrong: answered && odabraniTF === option && option !== tocnaTF,
+              disabled: answered
+            }"
+            :disabled="answered || provjeravam" @click="odaberiTF(option)">{{ oznakeDaNe(questions[currentQ].question)[oi] }}</button>
         </div>
 
-        <div v-if="questions[currentQ].type === 'ordering'" class="ordering-list">
-          <div v-for="(item, index) in redoslijed" :key="item" class="ordering-item">
-            <span>{{ index + 1 }}. {{ item }}</span>
-            <div>
-              <button type="button" :disabled="answered || index === 0" :aria-label="`Pomakni ${item} gore`" @click="pomakniStavku(index, -1)">↑</button>
-              <button type="button" :disabled="answered || index === redoslijed.length - 1" :aria-label="`Pomakni ${item} dolje`" @click="pomakniStavku(index, 1)">↓</button>
-            </div>
-          </div>
-          <button v-if="!answered" class="btn-check" @click="handleStructured([...redoslijed])">Provjeri redoslijed</button>
-        </div>
+        <template v-if="questions[currentQ].type === 'ordering'">
+          <PoredajPovlacenjem :stavke="redoslijed" :onemoguceno="answered" @premjesti="premjestiStavku" />
+          <button v-if="!answered" class="btn-check ordering-check" @click="handleStructured([...redoslijed])">Provjeri redoslijed</button>
+        </template>
       </div>
 
       <div v-if="answered && objasnjenje" class="explanation-card">
@@ -211,13 +169,16 @@
 </template>
 
 <script setup>
-import { computed, inject, onMounted, onUnmounted } from 'vue'
+import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuth } from '../composables/useAuth'
 import { useQuizStore } from '../stores/quiz'
 import { jeMijesano, jeDnevni, razredIz } from '../composables/mijesano'
 import { useGovor } from '../composables/useGovor'
+import { oznakeDaNe } from '../composables/daNe'
+import SpajanjeParova from './SpajanjeParova.vue'
+import PoredajPovlacenjem from './PoredajPovlacenjem.vue'
 
 const props = defineProps({ topicId: String })
 const emit = defineEmits(['error'])
@@ -242,10 +203,7 @@ const {
   objasnjenje,
   redoslijed,
   inputAnswer,
-  veze,
-  odabranLijevi,
   tocnihVeza,
-  vezeTocne,
   provjeravam,
   correctCount
 } = storeToRefs(quizStore)
@@ -254,7 +212,7 @@ const opisOpsega = computed(() => {
   const o = opseg.value
   if (!o) return ''
   if (o.nacin === 'oznaceno') return `Ponavljanje iz ${o.brojTema} označenih obrađenih tema.`
-  if (o.nacin === 'vjezbano') return `Ponavljanje iz ${o.brojTema} tema koje si već vježbao/la.`
+  if (o.nacin === 'vjezbano') return `Ponavljanje iz ${o.brojTema} tema koje su već vježbane.`
   return 'Ponavljanje iz cijeloga razreda — obrađeno gradivo nije označeno, pa se mogu pojaviti i teme koje još niste učili.'
 })
 
@@ -280,10 +238,7 @@ const {
   checkInput,
   checkMatch,
   checkStructured,
-  pomakniStavku,
-  odaberiLijevi,
-  spoji,
-  razvezi,
+  premjestiStavku,
   advanceQuestion,
   hasNextQuestion,
   submitQuiz,
@@ -323,26 +278,14 @@ const visualGroups = computed(() => {
   return grupe
 })
 
-// ── spajanje parova ──────────────────────────────────────────────
-const brojVeza = computed(() => Object.keys(veze.value).length)
-const ukupnoParova = computed(() => questions.value[currentQ.value]?.lijevo?.length || 0)
-const sveSpojeno = computed(() => ukupnoParova.value > 0 && brojVeza.value === ukupnoParova.value)
-const preostaloVeza = computed(() => ukupnoParova.value - brojVeza.value)
-
-/** Brojčana oznaka veze — dijete vidi što je s čim spojeno bez crtanja linija */
-const redosljedVeza = computed(() => {
-  const m = {}
-  Object.keys(veze.value).forEach((l, i) => { m[l] = i + 1 })
-  return m
-})
-const oznakaVeze = (lijeviId) => redosljedVeza.value[lijeviId]
-const vezanDesni = (desniId) => Object.values(veze.value).includes(desniId)
-const oznakaDesnog = (desniId) => {
-  const l = Object.keys(veze.value).find(k => veze.value[k] === desniId)
-  return l === undefined ? '' : redosljedVeza.value[l]
+// ── točno/netočno: koji je gumb odabran i koji je točan ──────────
+const odabraniTF = ref(null)
+const tocnaTF = computed(() => ['Točno', 'Da'].includes(correctAnswerText.value))
+watch(currentQ, () => { odabraniTF.value = null })
+function odaberiTF (option) {
+  odabraniTF.value = option
+  handleStructured(option)
 }
-/** Nakon provjere: je li baš ta veza bila točna — server vraća ocjenu po vezi */
-const vezaTocna = (lijeviId) => vezeTocne.value[lijeviId] === true
 
 async function handleMatch () {
   try {
