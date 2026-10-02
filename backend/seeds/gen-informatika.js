@@ -33,7 +33,7 @@ const PRAZNO = '⬜', ROBOT = '🤖', STIJENA = '🪨';
 // („do zvjezdice”, „do kućice”…). [znak, genitiv (do …), akuzativ (na …)]
 const CILJEVI = [['⭐', 'zvjezdice', 'zvjezdicu'], ['🏠', 'kućice', 'kućicu'], ['⚽', 'lopte', 'loptu'], ['🎁', 'poklona', 'poklon'],
   ['🌸', 'cvijeta', 'cvijet'], ['🔑', 'ključa', 'ključ'], ['🧀', 'sira', 'sir'], ['🚩', 'zastavice', 'zastavicu']];
-const VOCE = [['🍎', 'jabuka'], ['🍒', 'trešnja'], ['🍓', 'jagoda'], ['🍐', 'kruška'], ['🍇', 'grožđe']];
+const VOCE = [['🍎', 'jabuka'], ['🍌', 'banana'], ['🍓', 'jagoda'], ['🍐', 'kruška'], ['🍇', 'grožđe']];
 
 const zapis = (niz) => niz.join(' ');
 const kljucPolja = ([r, c]) => `${r},${c}`;
@@ -294,7 +294,7 @@ function zadatakSljedecegKoraka(razred) {
 // Razvrstavanje: što ne pripada skupini (logički zadatak, 1. i 2. r.)
 // ═══════════════════════════════════════════════════════════════════
 const SKUPINE = [
-  ['voće', [['🍎', 'jabuka'], ['🍒', 'trešnja'], ['🍐', 'kruška'], ['🍇', 'grožđe'], ['🍓', 'jagoda']]],
+  ['voće', [['🍎', 'jabuka'], ['🍌', 'banana'], ['🍐', 'kruška'], ['🍇', 'grožđe'], ['🍓', 'jagoda']]],
   ['prijevozna sredstva', [['🚗', 'automobil'], ['🚌', 'autobus'], ['🚲', 'bicikl'], ['🚂', 'vlak'], ['✈️', 'zrakoplov']]],
   ['životinje', [['🐶', 'pas'], ['🐱', 'mačka'], ['🐰', 'zec'], ['🐮', 'krava'], ['🐷', 'svinja']]],
   ['odjeća', [['👕', 'majica'], ['👖', 'hlače'], ['🧦', 'čarape'], ['🧢', 'kapa'], ['👗', 'haljina']]],
@@ -360,7 +360,7 @@ function zadatciUzoraka(razred) {
 // ═══════════════════════════════════════════════════════════════════
 // Šifre: simboli za podatke (A.3.1)
 // ═══════════════════════════════════════════════════════════════════
-const RIJECI_SIFRE = ['MAMA', 'TATA', 'SOK', 'NOS', 'VUK', 'SOVA', 'KOZA', 'RIBA', 'VODA', 'LIST', 'ZEC', 'KAPA', 'LOPTA', 'NEBO', 'SIR', 'TRAVA', 'MORE', 'SOL'];
+const RIJECI_SIFRE = ['MAMA', 'TATA', 'SOK', 'NOS', 'LAV', 'SOVA', 'KOZA', 'RIBA', 'VODA', 'LIST', 'ZEC', 'KAPA', 'LOPTA', 'NEBO', 'SIR', 'TRAVA', 'MORE', 'SOL'];
 const SIMBOLI = ['🔺', '⭐', '🌙', '❤️', '🔷', '🍀', '☀️', '⚡'];
 
 function zadatciSifre(razred) {
@@ -423,7 +423,7 @@ function zadatciSortiranja(razred) {
   const poVisini = [...visine].sort((a, b) => a.value - b.value);
   const veliki = razred === 3 ? 1000 : 100000;
   const brojevi = () => uzmi(Array.from({ length: 60 }, () => cijeli(10, veliki - 1)), 5).filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
-  const ZIVOTINJE = [['mrav', 1], ['miš', 2], ['mačka', 3], ['pas', 4], ['ovca', 5], ['krava', 6], ['konj', 7]];
+  const ZIVOTINJE = [['mrav', 1], ['miš', 2], ['mačka', 3], ['pas', 4], ['ovca', 5], ['konj', 6], ['slon', 7]];
 
   const varijante = [
     () => {

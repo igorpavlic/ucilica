@@ -21,10 +21,10 @@ const RUTINE = [
   ['kupuješ kruh', ['Uđi u pekarnicu.', 'Pozdravi.', 'Reci što želiš.', 'Plati i zahvali.']],
 ];
 const STRELICE = [['→', 'desno'], ['←', 'lijevo'], ['↑', 'gore'], ['↓', 'dolje']];
-const SKUPINE_U = [['voće', ['jabuka', 'kruška', 'šljiva', 'marelica', 'trešnja', 'smokva']], ['životinje', ['pas', 'mačka', 'konj', 'zec', 'krava', 'ovca']],
+const SKUPINE_U = [['voće', ['jabuka', 'kruška', 'šljiva', 'banana', 'trešnja', 'naranča']], ['životinje', ['pas', 'mačka', 'konj', 'zec', 'krava', 'ovca']],
   ['odjeća', ['kapa', 'majica', 'hlače', 'jakna', 'šal', 'čarape']], ['vozila', ['auto', 'autobus', 'vlak', 'bicikl', 'tramvaj', 'kamion']],
   ['školski pribor', ['olovka', 'gumica', 'ravnalo', 'bilježnica', 'bojica', 'šiljilo']], ['boje', ['crvena', 'plava', 'zelena', 'žuta', 'ljubičasta', 'narančasta']]];
-const VELICINE = [['mrav', 1], ['miš', 2], ['mačka', 3], ['pas', 4], ['ovca', 5], ['krava', 6]];
+const VELICINE = [['mrav', 1], ['miš', 2], ['mačka', 3], ['pas', 4], ['konj', 5], ['slon', 6]];
 function algoritmi1Dodatak() {
   const q = [];
   for (const [naziv, koraci] of RUTINE) {

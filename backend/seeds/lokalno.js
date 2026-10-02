@@ -1,45 +1,44 @@
 /**
- * lokalno.js — pitanja ostaju u hrvatskom okviru.
+ * lokalno.js — pitanja ostaju u svijetu koji dijete od 6 do 10 godina poznaje.
  *
- * Zadatci za 1.–4. razred vežu se uz zavičaj i Hrvatsku: domaće životinje i
- * biljke, hrvatska mjesta, euro, metričke mjere i hrvatska književnost. Ovaj
- * modul:
- *   1. u računskim pričama mijenja tropsko voće domaćim (banana → šljiva,
- *      naranča → mandarina), sa svim padežnim oblicima;
- *   2. prepoznaje pitanja koja se i dalje vežu uz strana mjesta i pojmove
- *      (pregled ih izbacuje, test ih prijavljuje, a pri pokretanju servera
- *      isključuju se iz postojeće baze).
+ * Mjerilo je logičko: što dijete zna iz slikovnica, crtića, bajki, zoološkog
+ * vrta i svakodnevice? Zato su DOPUŠTENI:
+ *   - strane životinje i biljke (slon, žirafa, klokan, pingvin, kaktus, banana…);
+ *   - bajke i dječja književnost (Crvenkapica, Pepeljuga, Pinokio, Mali princ…);
+ *   - pojmovi iz dječje kulture (Indijanci, kauboji, piramide, pustinja, Afrika).
  *
- * Iznimke su opravdane gradivom: susjedne države i kontinenti u temi
- * „Hrvatska — moja domovina”; „hrvatski Andersen” u tekstu o Ivani
- * Brlić-Mažuranić.
+ * Isključuju se samo pojmovi koje dijete te dobi ne može znati ni zamisliti, a
+ * koji pitanje vežu uz drugu zemlju umjesto uz Hrvatsku:
+ *   - daleke države i strani gradovi (Novi Zeland, Kanada, New York, Graz…);
+ *   - strane valute (u zadatcima s novcem računa se u eurima);
+ *   - nemetričke mjere (inč, milja, galon, Fahrenheit).
+ *
+ * Pregled (pedagogyReview) takva pitanja izbacuje, test ih prijavljuje, a pri
+ * pokretanju servera isključuju se iz postojeće baze (services/obitelji.js).
  */
 
-// Strana mjesta i pojmovi (gledaju se pitanje, ponude, parovi i stavke — ne tekst za čitanje).
 const STRANO = new RegExp([
-  // egzotične životinje i biljke
-  'egipat\\w*', 'pingvin\\w*', 'kameleon\\w*', 'dev[aeu]', 'kaktus\\w*', 'krokodil\\w*', 'klokan\\w*', 'žiraf\\w*', 'slon\\w*',
-  'tigr\\w*', 'tigar', 'majmun\\w*', 'nosorog\\w*', 'kit', 'kita', 'kitovi', 'ananas\\w*', 'kokos\\w*', 'kivi', 'palm[aeiou]\\w*',
-  'pustinj\\w*', 'tropsk\\w*', 'banan\\w*', 'lav', 'lava', 'lavu', 'lavom', 'lavovi',
-  // strana mjesta, valute, mjere
-  'london\\w*', 'pariz\\w*', 'new york\\w*', 'graz\\w*', 'amerik\\w*', 'afrik\\w*', 'azij\\w*', 'dolar\\w*', 'funt\\w*', 'inč\\w*', 'fahrenheit\\w*',
-  'italij\\w*', 'talijansk\\w*', 'francusk\\w*', 'njemač\\w*', 'austrij\\w*', 'albanij\\w*', 'bugarsk\\w*', 'engles\\w*', 'europsk\\w*', 'europ[aeiou]',
-  // strane bajke i autori (književnost se veže uz hrvatske autore)
-  'grimm\\w*', 'collodi\\w*', 'pinokio\\w*', 'saint-exup\\w*', 'mali princ', 'heidi', 'spyri', 'carroll', 'alis[aeiu] u zemlji', 'twain', 'sawyer\\w*',
-  'andersen\\w*', 'crvenkapic\\w*', 'snjeguljic\\w*', 'pepeljug\\w*', 'trnoružic\\w*', 'zlatokos\\w*', 'mačak u čizmama', 'tri praščića', 'ružno pače',
-  'halloween', 'ragbi', 'bejzbol',
+  // daleke države koje dijete ne zna smjestiti
+  'novi zeland\\w*', 'novog zelanda', 'kanad\\w*', 'argentin\\w*', 'urugvaj\\w*', 'paragvaj\\w*', 'kolumbij\\w*', 'venezuel\\w*',
+  'norveš\\w*', 'švedsk\\w*', 'finsk\\w*', 'nizozem\\w*', 'belgij\\w*', 'luksemburg\\w*', 'portugal\\w*', 'rumunjsk\\w*', 'kazahstan\\w*', 'mongolij\\w*',
+  // strani gradovi
+  'new york\\w*', 'london\\w*', 'graz\\w*', 'berlin\\w*', 'madrid\\w*', 'moskv\\w*', 'tokij\\w*', 'tokio', 'peking\\w*', 'sydney\\w*', 'toronto\\w*',
+  'chicag\\w*', 'los angeles\\w*', 'washington\\w*', 'amsterdam\\w*', 'stockholm\\w*', 'oslo',
+  // strane valute
+  'dolar\\w*', 'funt[aeiu]', 'funti', 'jena', 'jenu', 'rupij\\w*', 'franak', 'franaka', 'franka',
+  // nemetričke mjere
+  'inč\\w*', 'milj[aeiu]', 'milja', 'galon\\w*', 'unc[aeiu]', 'jard\\w*', 'fahrenheit\\w*',
 ].map((r) => `(?<![\\p{L}])${r}(?![\\p{L}])`).join('|'), 'iu');
 
-// Gradivo koje se izravno tiče Hrvatske i smije spomenuti strano.
+// Gradivo koje izravno govori o drugim zemljama i smije ih spomenuti.
 const DOPUSTENO = {
-  genHrvatskaDomovina: /^(amerik|afrik|azij|europ|europsk|dolar|italij|njemač|austrij|albanij|bugarsk|engles)/i,
-  genCitanje4: /^andersen/i,
-  genVrsteRijeci4: /^europsk/i,
+  genHrvatskaDomovina: /^(dolar|kanad|argentin|new york|london|berlin)/i, // Hrvati u svijetu, euro umjesto stare valute
+  genCitanje4: /^(graz|new york)/i, // tekst o Tesli: podatak je u tekstu koji dijete čita
 };
 
 const tekstPitanja = (q) => [q.question, ...(q.answers || []), q.correctAnswer || '', ...(q.pairs || []).flat(), ...(q.items || [])].join(' | ');
 
-/** Prvi strani pojam u pitanju (ili null), uz iznimke za generator. */
+/** Prvi pojam koji dijete ne može znati (ili null), uz iznimke za generator. */
 function straniPojam(q, generator = '') {
   const t = tekstPitanja(q);
   const re = new RegExp(STRANO.source, 'giu');
@@ -50,38 +49,4 @@ function straniPojam(q, generator = '') {
   return null;
 }
 
-// Tropsko voće → domaće, oblik po oblik (isti nastavci: banana/šljiva, naranča/mandarina).
-const NASTAVCI = { a: 'a', e: 'e', u: 'u', i: 'i', om: 'om', ama: 'ama' };
-const OBLICI = [
-  [/\b(\d+) naranči\b/g, (m, n) => `${n} mandarina`],
-  [/\b([Bb])anan(a|e|u|i|om|ama)\b/g, (m, b, n) => `${b === 'B' ? 'Š' : 'š'}ljiv${NASTAVCI[n]}`],
-  [/\b([Nn])aranč(a|e|u|i|om|ama)\b/g, (m, b, n) => `${b === 'N' ? 'M' : 'm'}andarin${NASTAVCI[n]}`],
-];
-const zamijeni = (s) => {
-  if (typeof s !== 'string') return s;
-  let t = s;
-  for (const [re, z] of OBLICI) t = t.replace(re, z);
-  return t;
-};
-
-/**
- * Domaće voće umjesto tropskoga u pitanju. Ne mijenja zadatke o glasovima i
- * slogovima (tamo riječ je sam predmet zadatka) — njih filtar izbacuje.
- * Ako zamjena napravi dvije iste ponude, vraća null (pitanje se izbacuje).
- */
-function lokaliziraj(q) {
-  // zadatci o riječima i zadatci sa slikom (🍌 na slici) ostaju kakvi jesu
-  if (q.visual || /glas|slog|slov|samoglasni|suglasni|rimuj|na slici/i.test(q.question || '')) return q;
-  const x = { ...q, question: zamijeni(q.question), correctAnswer: zamijeni(q.correctAnswer), _c: zamijeni(q._c) };
-  if (Array.isArray(q.answers)) x.answers = q.answers.map(zamijeni);
-  if (Array.isArray(q.items)) x.items = q.items.map(zamijeni);
-  if (Array.isArray(q.pairs)) x.pairs = q.pairs.map((p) => (Array.isArray(p) ? p.map(zamijeni) : p));
-  if (Array.isArray(x.chart)) x.chart = q.chart.map((c) => (c && typeof c === 'object' ? { ...c, label: zamijeni(c.label) } : c));
-  if (x._c === undefined) delete x._c;
-  if (x.correctAnswer === undefined) delete x.correctAnswer;
-  const dupli = (a) => Array.isArray(a) && new Set(a.map(String)).size !== a.length;
-  if (dupli(x.answers) || dupli(x.items)) return null;
-  return x;
-}
-
-module.exports = { STRANO, DOPUSTENO, straniPojam, lokaliziraj };
+module.exports = { STRANO, DOPUSTENO, straniPojam };

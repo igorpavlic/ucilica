@@ -50,8 +50,8 @@ function nizoviDodatak() {
   }).forEach((x) => q.push(x));
   // Usporedbe po veličini, duljini, visini, masi — iz tablice parova.
   const DULJE = [['vlak', 'automobil'], ['rijeka', 'potok'], ['zmija', 'gušter'], ['šal', 'rukavica'], ['klupa', 'stolica'], ['metla', 'žlica'], ['ravnalo', 'gumica'], ['konop za preskakanje', 'vezica']];
-  const VISE = [['jablan', 'ruža'], ['neboder', 'kuća'], ['bor', 'grm'], ['tata', 'beba'], ['ormar', 'stolac'], ['planina', 'brežuljak'], ['toranj', 'klupa'], ['suncokret', 'tratinčica']];
-  const TEZE = [['lubenica', 'jagoda'], ['konj', 'zec'], ['bicikl', 'kaciga'], ['kamen', 'pero'], ['torba s knjigama', 'pernica'], ['krava', 'kokoš'], ['bundeva', 'orah'], ['stol', 'olovka']];
+  const VISE = [['žirafa', 'koza'], ['neboder', 'kuća'], ['bor', 'grm'], ['tata', 'beba'], ['ormar', 'stolac'], ['planina', 'brežuljak'], ['toranj', 'klupa'], ['suncokret', 'tratinčica']];
+  const TEZE = [['lubenica', 'jagoda'], ['slon', 'zec'], ['bicikl', 'kaciga'], ['kamen', 'pero'], ['torba s knjigama', 'pernica'], ['krava', 'kokoš'], ['bundeva', 'orah'], ['stol', 'olovka']];
   const usp = (tablica, rijec) => tablica.flatMap(([v, m]) => [
     izbor(`Što je ${rijec}: ${promijesaj([v, m]).join(' ili ')}?`, v, [m], 1),
   ]);
@@ -67,7 +67,7 @@ function nizoviDodatak() {
 }
 
 const GEOM_PREDMETI = [
-  ['lopta', 'kugla'], ['mandarina', 'kugla'], ['klikerica', 'kugla'], ['lubenica', 'kugla'],
+  ['lopta', 'kugla'], ['naranča', 'kugla'], ['klikerica', 'kugla'], ['lubenica', 'kugla'],
   ['kutija za cipele', 'kvadar'], ['ormar', 'kvadar'], ['opeka', 'kvadar'], ['tetrapak mlijeka', 'kvadar'], ['kutija šibica', 'kvadar'],
   ['kocka šećera', 'kocka'], ['kocka za igru', 'kocka'], ['Rubikova kocka', 'kocka'],
   ['limenka', 'valjak'], ['svijeća', 'valjak'], ['čaša', 'valjak'], ['bubanj', 'valjak'],

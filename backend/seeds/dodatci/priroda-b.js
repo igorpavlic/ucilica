@@ -58,10 +58,10 @@ function biljkeZivotinje3Dodatak() {
 }
 
 // ═══ 4. razred: biljke i životinje ═══
-const SKUPINE = [['lisica', 'sisavci'], ['šišmiš', 'sisavci'], ['dupin', 'sisavci'], ['divlja svinja', 'sisavci'], ['jež', 'sisavci'], ['medvjed', 'sisavci'],
-  ['vrabac', 'ptice'], ['sova', 'ptice'], ['lastavica', 'ptice'], ['galeb', 'ptice'], ['roda', 'ptice'],
+const SKUPINE = [['lisica', 'sisavci'], ['šišmiš', 'sisavci'], ['dupin', 'sisavci'], ['kit', 'sisavci'], ['jež', 'sisavci'], ['medvjed', 'sisavci'], ['divlja svinja', 'sisavci'],
+  ['vrabac', 'ptice'], ['sova', 'ptice'], ['pingvin', 'ptice'], ['lastavica', 'ptice'], ['galeb', 'ptice'], ['roda', 'ptice'],
   ['šaran', 'ribe'], ['pastrva', 'ribe'], ['morski pas', 'ribe'], ['srdela', 'ribe'],
-  ['zmija', 'gmazovi'], ['gušter', 'gmazovi'], ['kornjača', 'gmazovi'], ['poskok', 'gmazovi'],
+  ['zmija', 'gmazovi'], ['gušter', 'gmazovi'], ['kornjača', 'gmazovi'], ['krokodil', 'gmazovi'], ['poskok', 'gmazovi'],
   ['žaba', 'vodozemci'], ['daždevnjak', 'vodozemci'], ['vodenjak', 'vodozemci'],
   ['pčela', 'kukci'], ['mrav', 'kukci'], ['bubamara', 'kukci'], ['leptir', 'kukci']];
 const OBILJEZJA = [['sisavci', 'mladunce hrane mlijekom'], ['ptice', 'imaju perje i kljun, legu jaja'], ['ribe', 'dišu škrgama i imaju peraje'], ['gmazovi', 'koža im je prekrivena ljuskama, legu jaja na kopnu'],
@@ -69,7 +69,8 @@ const OBILJEZJA = [['sisavci', 'mladunce hrane mlijekom'], ['ptice', 'imaju perj
 const EKOSUSTAVI = [['srna', 'šuma'], ['djetlić', 'šuma'], ['vjeverica', 'šuma'], ['skakavac', 'livada'], ['leptir', 'livada'], ['poljski miš', 'livada'],
   ['šaran', 'rijeka'], ['vidra', 'rijeka'], ['hobotnica', 'more'], ['morski jež', 'more'], ['dupin', 'more'], ['žaba', 'bara'], ['lopoč', 'bara'], ['trska', 'bara']];
 const PRILAGODBE = [['patka', 'ima kožice među prstima za plivanje'], ['djetlić', 'ima jak kljun za kljucanje kore'], ['krtica', 'ima snažne prednje noge za kopanje'],
-  ['smilje', 'ima sitne sivkaste listove pa na suhom kamenjaru gubi malo vode'], ['riba', 'ima škrge za disanje u vodi'], ['sova', 'ima velike oči i vidi u mraku'], ['zec', 'ima duge uši i brze noge'],
+  ['kaktus', 'u debeloj stabljici čuva vodu'], ['riba', 'ima škrge za disanje u vodi'], ['sova', 'ima velike oči i vidi u mraku'], ['zec', 'ima duge uši i brze noge'],
+  ['kameleon', 'mijenja boju kože'], ['deva', 'može dugo izdržati bez vode'],
   ['hobotnica', 'mijenja boju kože da se sakrije'], ['čovječja ribica', 'živi u mračnim špiljama i može dugo bez hrane']];
 const BZ4_DA_NE = [['Je li šišmiš ptica?', false], ['Je li kit sisavac?', true], ['Dišu li ribe škrgama?', true], ['Imaju li kukci osam nogu?', false], ['Je li žaba vodozemac?', true],
   ['Je li kornjača gmaz?', true], ['Legu li ptice jaja?', true], ['Je li dupin riba?', false], ['Živi li hobotnica u rijeci?', false], ['Je li pauk kukac?', false]];

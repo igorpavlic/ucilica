@@ -4,6 +4,30 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −17. Hrvatski okvir po logici djeteta (ispravak −16)
+
+**Prijava:** strane biljke, životinje i bajke trebaju ostati. Dijete možda ne zna gdje su Novi Zeland ili Kanada, ali zna za Indijance, kauboje, klokane i Crvenkapicu.
+
+**Novo pravilo** (`seeds/lokalno.js`) — mjerilo je ono što dijete od 6 do 10 godina zna iz slikovnica, crtića, bajki i zoološkog vrta:
+- **Dopušteno:** strane životinje i biljke (slon, žirafa, klokan, pingvin, kaktus), tropsko voće (banana, naranča), bajke i strana dječja književnost (Crvenkapica, Pepeljuga, Pinokio, Mali princ, Heidi), pojmovi iz dječje kulture (Indijanci, kauboji, pustinja, Afrika, Amerika).
+- **Isključeno:** samo ono što dijete ne može znati ni zamisliti — daleke države (Novi Zeland, Kanada, Argentina, Norveška…), strani gradovi (New York, London, Graz…), strane valute (dolar, funta) i nemetričke mjere (inč, milja, galon, Fahrenheit).
+- **Iznimke:** tema o domovini (Hrvati u svijetu) i tekst o Tesli (podatak o Grazu i New Yorku dijete čita u tekstu).
+
+**Vraćeno u tablice**, uz zadržane hrvatske dodatke:
+- strane bajke uz hrvatske (Šuma Striborova, Regoč, Potjeh, Toporko, Jaglenac i Rutvica);
+- strana lektira uz hrvatsku (Veli Jože, Grga Čvarak, Konjic sedlenjak, Zlatni danci…);
+- slon, žirafa, tigar, lav, kit, pingvin, krokodil, kaktus, kameleon, deva uz lastavicu, poskok, divlju svinju, hobotnicu i čovječju ribicu;
+- banana i naranča; pridjevi od susjednih država uz pridjeve od hrvatskih mjesta;
+- tekst o Tesli u izvornom obliku, predstava „Mačak u čizmama”.
+
+Zamjena banana → šljiva je uklonjena.
+
+**Postojeća baza:** `iskljuciStrano()` pri pokretanju servera najprije vrati pitanja koja je prestrogo pravilo isključilo, a novo ih pravilo dopušta, zatim isključi samo ona s dalekim državama, gradovima, valutama i mjerama.
+
+**Provjera:** `npm run test:sve` prolazi (uključujući `test:lokalno` s novim pravilom i raznolikost kviza).
+
+---
+
 ## −16. Međunarodni oblici zadataka u hrvatskom okviru
 
 Detaljno: `ISTRAZIVANJE-MEDJUNARODNI-ZADATCI.md`.

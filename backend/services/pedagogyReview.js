@@ -3,7 +3,7 @@ const { questionFamilyKey, oznaciObitelji } = require('./questionFamily');
 const { dodajObjasnjenje, dodajSkupinska } = require('./objasnjenja');
 const { pitanjaZaTemu } = require('../seeds/citanje-tekstovi');
 const { dodatciZa } = require('../seeds/dodatci');
-const { lokaliziraj, straniPojam } = require('../seeds/lokalno');
+const { straniPojam } = require('../seeds/lokalno');
 
 // Tekstovi za čitanje (seeds/citanje-tekstovi.js) po generatoru teme.
 const TEKSTOVI_ZA_GENERATOR = {
@@ -558,10 +558,10 @@ function reviewQuestions(generatorName, questions){
   // činjenice i nasumični brojevi, da se tekst ne ponavlja ni nakon 20 kvizova.
   qs.push(...dodatciZa(generatorName));
 
-  // Hrvatski okvir: domaće voće umjesto tropskoga u računskim pričama, a pitanja
-  // vezana uz strana mjesta i pojmove (slon, pustinja, strane bajke…) ispadaju
-  // (seeds/lokalno.js).
-  qs = qs.map(lokaliziraj).filter(Boolean).filter((q) => !straniPojam(q, generatorName));
+  // Ispadaju pitanja s pojmovima koje dijete ne može znati: daleke države i
+  // strani gradovi, strane valute, nemetričke mjere (seeds/lokalno.js).
+  // Strane životinje, biljke i bajke su dopuštene.
+  qs = qs.filter((q) => !straniPojam(q, generatorName));
 
   // Family diversification. Keep a useful drill core; transform surplus instances into other representations.
   const groups=new Map();

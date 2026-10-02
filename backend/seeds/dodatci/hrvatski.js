@@ -15,7 +15,7 @@ const upisRijeci = (pitanje, rijec, tezina = 2, objasnjenje = '') =>
 // Riječi bez dvoslova (lj, nj, dž) — broj slova jednak je broju glasova.
 const JEDNOSTAVNE = ['pas', 'mama', 'tata', 'sok', 'nos', 'med', 'sir', 'lopta', 'kapa', 'ruka', 'noga', 'riba', 'voda', 'sat', 'zec', 'miš', 'jež',
   'more', 'sova', 'ptica', 'kruh', 'stol', 'vrata', 'mrkva', 'škola', 'torba', 'olovka', 'krava', 'kuća', 'mačka', 'jabuka', 'trava', 'grana',
-  'lisica', 'ruža', 'žaba', 'čaša', 'duga', 'drvo', 'brod', 'auto', 'oko', 'uho', 'list', 'kosa', 'vlak', 'mak', 'luk', 'torta', 'sunce'];
+  'lisica', 'ruža', 'žaba', 'čaša', 'duga', 'drvo', 'brod', 'auto', 'oko', 'uho', 'list', 'kosa', 'vlak', 'mak', 'luk', 'tigar', 'sunce'];
 const SAMO = new Set(['a', 'e', 'i', 'o', 'u']);
 function glasoviDodatak() {
   const q = [];
@@ -46,7 +46,7 @@ function glasoviDodatak() {
 }
 
 const RIME = [['mak', 'rak', 'zrak', 'znak', 'vlak', 'mrak'], ['kosa', 'rosa', 'osa', 'bosa'], ['sat', 'brat', 'vrat'], ['med', 'led', 'red'], ['nos', 'kos'],
-  ['kapa', 'šapa'], ['ruka', 'buka', 'muka'], ['sok', 'skok', 'tok'], ['most', 'gost', 'kost'], ['cvijet', 'svijet'], ['dom', 'grom'], ['trava', 'glava', 'krava']];
+  ['kapa', 'šapa'], ['ruka', 'buka', 'muka'], ['sok', 'skok', 'tok'], ['most', 'gost', 'kost'], ['lav', 'plav'], ['cvijet', 'svijet'], ['dom', 'grom'], ['trava', 'glava', 'krava']];
 const SLOZENE = ['lopta', 'jabuka', 'kuća', 'mačka', 'olovka', 'krava', 'ptica', 'torba', 'riba', 'voda', 'sunce', 'lisica', 'škola', 'cipela', 'kišobran', 'prozor', 'livada', 'ljuljačka', 'leptir', 'trešnja', 'zvijezda', 'pas', 'sok', 'kruh', 'banana', 'čokolada', 'bicikl', 'automobil', 'televizor', 'krokodil'];
 function rijeciDodatak() {
   const q = [];
@@ -115,7 +115,7 @@ function receniceDodatak() {
 // ═══ 2. razred ═══
 
 const ZVUKOVI = [['krava', 'muče'], ['ovca', 'bleji'], ['koza', 'meketa'], ['konj', 'rže'], ['pijetao', 'kukuriče'], ['magarac', 'njače'],
-  ['svinja', 'grokće'], ['vuk', 'zavija'], ['žaba', 'krekeće'], ['pčela', 'zuji'], ['sova', 'huče'], ['golub', 'guče'], ['kokoš', 'kvoca'], ['miš', 'ciči'], ['zmija', 'sikće'], ['pas', 'laje']];
+  ['svinja', 'grokće'], ['vuk', 'zavija'], ['žaba', 'krekeće'], ['pčela', 'zuji'], ['sova', 'huče'], ['golub', 'guče'], ['lav', 'riče'], ['miš', 'ciči'], ['zmija', 'sikće'], ['pas', 'laje']];
 const ALATI = [
   ['Čime režemo papir?', 'škarama', ['olovkom', 'žlicom', 'četkom']],
   ['Čime pišemo u bilježnicu?', 'olovkom', ['škarama', 'češljem', 'vilicom']],
@@ -151,7 +151,7 @@ const OPISI_IMENICA = [
   ['Koja riječ imenuje osobu koja nosi pisma?', 'poštar', ['kuhar', 'zidar', 'pilot']],
   ['Koja riječ imenuje predmet kojim otključavamo vrata?', 'ključ', ['zvono', 'čavao', 'žlica']],
   ['Koja riječ imenuje životinju koja gradi mrežu?', 'pauk', ['mrav', 'puž', 'leptir']],
-  ['Koja riječ imenuje mjesto na kojem rastu mnoga stabla?', 'šuma', ['livada', 'cesta', 'trg']],
+  ['Koja riječ imenuje mjesto na kojem rastu mnoga stabla?', 'šuma', ['pustinja', 'cesta', 'trg']],
   ['Koja riječ imenuje pojavu kad zimi pada bijelo s neba?', 'snijeg', ['vjetar', 'sunce', 'duga']],
   ['Koja riječ imenuje osobu koja gasi požare?', 'vatrogasac', ['frizer', 'trgovac', 'slikar']],
   ['Koja riječ imenuje predmet na kojem spavamo?', 'krevet', ['ormar', 'stol', 'tepih']],
@@ -286,7 +286,7 @@ const SLICNO = [['lijep', 'krasan'], ['brz', 'hitar'], ['velik', 'golem'], ['gov
 const SUPROTNO_3 = [['početak', 'kraj'], ['vrijedan', 'lijen'], ['hrabar', 'plašljiv'], ['bogat', 'siromašan'], ['istina', 'laž'], ['mir', 'rat'], ['pobjeda', 'poraz'],
   ['dobiti', 'izgubiti'], ['rano', 'kasno'], ['blizu', 'daleko'], ['često', 'rijetko'], ['sigurno', 'opasno'], ['čist', 'prljav'], ['zdrav', 'bolestan'], ['sjever', 'jug'], ['istok', 'zapad']];
 const PRIDJEV_ZA = [['limun', 'kiseo'], ['šećer', 'sladak'], ['led', 'hladan'], ['vatra', 'vruća'], ['puž', 'spor'], ['gepard', 'brz'], ['perje', 'lagano'], ['kamen', 'tvrd'],
-  ['jastuk', 'mekan'], ['jablan', 'visok'], ['noć', 'tamna'], ['trava', 'zelena'], ['more', 'slano'], ['med', 'sladak'], ['snijeg', 'bijel']];
+  ['jastuk', 'mekan'], ['žirafa', 'visoka'], ['noć', 'tamna'], ['trava', 'zelena'], ['more', 'slano'], ['med', 'sladak'], ['snijeg', 'bijel']];
 const PONASANJE = [
   ['Ujutro u hodniku srećeš ravnatelja. Kako ćeš ga pozdraviti?', 'Dobro jutro!', ['Bok, stari!', 'Ej!', 'Ništa ne kažem.']],
   ['Kako ćeš pozdraviti prijatelja na igralištu?', 'Bok!', ['Poštovani gospodine!', 'Laku noć!', 'S poštovanjem!']],
@@ -341,7 +341,8 @@ function jezicnoIzrazavanjeDodatak() {
 
 const PRIDJEVI_MJESTA = [['Zagreb', 'zagrebački'], ['Split', 'splitski'], ['Rijeka', 'riječki'], ['Osijek', 'osječki'], ['Zadar', 'zadarski'], ['Pula', 'pulski'],
   ['Dubrovnik', 'dubrovački'], ['Varaždin', 'varaždinski'], ['Karlovac', 'karlovački'], ['Sisak', 'sisački'], ['Šibenik', 'šibenski'], ['Vukovar', 'vukovarski'],
-  ['Čakovec', 'čakovečki'], ['Slavonija', 'slavonski'], ['Dalmacija', 'dalmatinski'], ['Istra', 'istarski'], ['Zagorje', 'zagorski'],
+  ['Čakovec', 'čakovečki'], ['Slavonija', 'slavonski'], ['Dalmacija', 'dalmatinski'], ['Istra', 'istarski'], ['Zagorje', 'zagorski'], ['Italija', 'talijanski'],
+  ['Njemačka', 'njemački'], ['Francuska', 'francuski'], ['Slovenija', 'slovenski'], ['Mađarska', 'mađarski'], ['Austrija', 'austrijski'], ['Europa', 'europski'],
   ['Koprivnica', 'koprivnički'], ['Bjelovar', 'bjelovarski'], ['Gospić', 'gospićki'], ['Krk', 'krčki'], ['Knin', 'kninski'], ['Rovinj', 'rovinjski'],
   ['Poreč', 'porečki'], ['Đakovo', 'đakovački'], ['Vinkovci', 'vinkovački'], ['Krapina', 'krapinski'], ['Lika', 'lički'], ['Baranja', 'baranjski']];
 const VELIKO_4 = [['Republika Hrvatska', true], ['Osnovna škola Ivana Gorana Kovačića', true], ['Nacionalni park Plitvička jezera', true], ['Uskrs', true], ['Nova godina', true],
@@ -374,19 +375,20 @@ function pravopis4Dodatak() {
   return q;
 }
 
-// Hrvatski autori i djela iz lektire razredne nastave
 const DJELA = [['Čudnovate zgode šegrta Hlapića', 'Ivana Brlić-Mažuranić'], ['Vlak u snijegu', 'Mato Lovrak'], ['Družba Pere Kvržice', 'Mato Lovrak'],
-  ['Bijeli jelen', 'Vladimir Nazor'], ['Veli Jože', 'Vladimir Nazor'], ['Regoč', 'Ivana Brlić-Mažuranić'], ['Grga Čvarak', 'Ratko Zvrko'],
-  ['Konjic sedlenjak', 'Nada Iveljić'], ['Zlatni danci', 'Jagoda Truhelka'], ['Alkar', 'Dinko Šimunović'], ['Duh u močvari', 'Anto Gardaš'],
-  ['Divlji konj', 'Božidar Prosenjak'], ['Koko i duhovi', 'Ivan Kušan'], ['Smogovci', 'Hrvoje Hitrec'], ['Kad bi drveće hodalo', 'Grigor Vitez'],
-  ['Zaljubljen do ušiju', 'Miro Gavran']];
+  ['Bijeli jelen', 'Vladimir Nazor'], ['Pinokio', 'Carlo Collodi'], ['Mali princ', 'Antoine de Saint-Exupéry'], ['Heidi', 'Johanna Spyri'],
+  ['Alisa u Zemlji čudesa', 'Lewis Carroll'], ['Ružno pače', 'Hans Christian Andersen'], ['Ivica i Marica', 'braća Grimm'], ['Koko u Parizu', 'Ivan Kušan'],
+  ['Smogovci', 'Hrvoje Hitrec'], ['Pustolovine Toma Sawyera', 'Mark Twain'],
+  ['Veli Jože', 'Vladimir Nazor'], ['Regoč', 'Ivana Brlić-Mažuranić'], ['Grga Čvarak', 'Ratko Zvrko'], ['Konjic sedlenjak', 'Nada Iveljić'],
+  ['Zlatni danci', 'Jagoda Truhelka'], ['Alkar', 'Dinko Šimunović'], ['Duh u močvari', 'Anto Gardaš'], ['Divlji konj', 'Božidar Prosenjak'],
+  ['Koko i duhovi', 'Ivan Kušan'], ['Kad bi drveće hodalo', 'Grigor Vitez'], ['Zaljubljen do ušiju', 'Miro Gavran']];
 const POJMOVI_4 = [['dulje prozno djelo s više likova i događaja', 'roman'], ['kraće prozno djelo s manje likova', 'pripovijetka'], ['pjesma koja izražava osjećaje', 'lirska pjesma'],
   ['narodna priča o nekom mjestu ili junaku s malo istine', 'legenda'], ['događaji u priči poredani jedan za drugim', 'fabula'], ['najnapetiji dio priče', 'vrhunac'],
   ['dio priče u kojem se problem riješi', 'rasplet'], ['lik oko kojega se zbiva radnja', 'glavni lik'], ['riječi koje oponašaju zvukove', 'onomatopeja'],
   ['davanje ljudskih osobina neživim stvarima', 'personifikacija'], ['jednak glas na kraju stihova', 'rima'], ['razgovor dvaju likova', 'dijalog']];
 const SREDSTVA = [['Vjetar pjeva u krošnjama.', 'personifikacija'], ['Cvrči, cvrči cvrčak.', 'onomatopeja'], ['Oči su joj plave kao more.', 'usporedba'],
   ['Sunce se smiješi djeci.', 'personifikacija'], ['Tik-tak, kuca sat.', 'onomatopeja'], ['Snijeg je bijel poput šećera.', 'usporedba'], ['Rijeka priča priče.', 'personifikacija'],
-  ['Bum! Zagrmi nebo.', 'onomatopeja'], ['Snažan je kao medvjed.', 'usporedba'], ['Kiša tuče po prozoru: kap-kap.', 'onomatopeja'], ['Mjesec nas gleda s neba.', 'personifikacija'], ['Lagan je poput pera.', 'usporedba']];
+  ['Bum! Zagrmi nebo.', 'onomatopeja'], ['Hrabar je kao lav.', 'usporedba'], ['Kiša tuče po prozoru: kap-kap.', 'onomatopeja'], ['Mjesec nas gleda s neba.', 'personifikacija'], ['Lagan je poput pera.', 'usporedba']];
 function knjizevnost4Dodatak() {
   const q = [];
   q.push(...obaSmjera(DJELA, { pitajB: (a) => `Tko je autor djela ${a}?`, pitajA: (b) => `Koje od ovih djela potpisuje ${b}?`, tezina: 2 }));
@@ -394,7 +396,7 @@ function knjizevnost4Dodatak() {
   q.push(...uObitelj(obiteljTablice(SREDSTVA), SREDSTVA.map(([stih, s]) => izbor(`Koje je pjesničko sredstvo u stihu: ${stih.replace(/\.$/, '')}?`, s, ['personifikacija', 'onomatopeja', 'usporedba'].filter((x) => x !== s), 3))));
   q.push(poredaj('Poredaj dijelove fabule redom kojim dolaze u priči.', ['uvod', 'zaplet', 'vrhunac', 'rasplet', 'završetak'], 3));
   q.push(...daNe([['Je li roman dulji od pripovijetke?', true], ['Ima li basna obično pouku?', true], ['Pišu li se lirske pjesme u stihovima?', true],
-    ['Je li pisac isto što i glavni lik?', false], ['Je li Ivana Brlić-Mažuranić napisala Šumu Striborovu?', true], ['Je li Veli Jože djelo Vladimira Nazora?', true]], 2));
+    ['Je li pisac isto što i glavni lik?', false], ['Je li Ivana Brlić-Mažuranić napisala Šumu Striborovu?', true], ['Je li Pinokio hrvatski roman?', false]], 2));
   return q;
 }
 

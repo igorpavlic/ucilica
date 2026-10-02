@@ -44,7 +44,7 @@ const HIGIJENA = [
   ['Zašto je važno dovoljno spavati?', 'da se tijelo odmori i bude zdravo', ['da manje jedemo', 'da ne idemo u školu', 'da bude tiho']],
   ['Što pijemo kad smo žedni?', 'vodu', ['gazirani sok', 'kavu', 'ništa']],
   ['Koja je od ovih namirnica voće?', 'jabuka', ['mrkva', 'kruh', 'sir']],
-  ['Koje je od ovoga povrće?', 'mrkva', ['jabuka', 'šljiva', 'kruška']],
+  ['Koje je od ovoga povrće?', 'mrkva', ['jabuka', 'banana', 'kruška']],
 ];
 function tijeloDodatak() {
   const q = [];
@@ -83,7 +83,7 @@ function sigurnostDodatak() {
 }
 
 const OTPAD = [['novine', 'papir'], ['kartonska kutija', 'papir'], ['bilježnica', 'papir'], ['plastična boca', 'plastika'], ['jogurtna čašica', 'plastika'],
-  ['limenka', 'metal'], ['staklena boca', 'staklo'], ['staklenka od pekmeza', 'staklo'], ['kora mandarine', 'biootpad'], ['ogrizak jabuke', 'biootpad'], ['ljuske jaja', 'biootpad'], ['stara baterija', 'posebni otpad']];
+  ['limenka', 'metal'], ['staklena boca', 'staklo'], ['staklenka od pekmeza', 'staklo'], ['kora banane', 'biootpad'], ['ogrizak jabuke', 'biootpad'], ['ljuske jaja', 'biootpad'], ['stara baterija', 'posebni otpad']];
 const BOJE_KANTI = [['papir', 'plava'], ['plastika i metal', 'žuta'], ['staklo', 'zelena'], ['biootpad', 'smeđa']];
 const NAVIKE = [['Zatvaram slavinu dok perem zube.', true], ['Gasim svjetlo kad izlazim iz sobe.', true], ['Bacam smeće u rijeku.', false], ['Idem pješice ili biciklom kad mogu.', true],
   ['Ostavljam punjač u utičnici cijeli dan.', false], ['Pišem na objema stranama papira.', true], ['Lomim grane drveća u parku.', false], ['Nosim platnenu vrećicu u trgovinu.', true],

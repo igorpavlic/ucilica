@@ -57,20 +57,33 @@ async function iskljuciStrano({ log = console.log } = {}) {
   const { GENERATORS } = require('./questionGenerator');
   const { straniPojam } = require('../seeds/lokalno');
   const db = getDb();
+  const RAZLOG = 'pojam koji dijete ne zna: daleka država, strani grad, valuta ili mjera (seeds/lokalno.js)';
   const teme = await db.collection('topics').find({}).project({ _id: 1, slug: 1 }).toArray();
-  let ukupno = 0;
+  let iskljuceno = 0, vraceno = 0;
   for (const tema of teme) {
     const ime = GENERATORS[tema.slug]?.name || '';
-    const sva = await db.collection('questions').find({ topic_id: tema._id, isActive: true })
-      .project({ question: 1, answers: 1, correctAnswer: 1, pairs: 1, items: 1, visual: 1 }).toArray();
-    const lose = sva.filter((q) => straniPojam(q, ime) || (!q.visual && /\b(banan|naranč)/i.test([q.question, ...(q.answers || []), ...(q.items || [])].join(' ')) && !/glas|slog|slov/i.test(q.question || '')));
+    const polja = { question: 1, answers: 1, correctAnswer: 1, pairs: 1, items: 1, iskljucenoRazlog: 1 };
+
+    // Prijašnje pravilo bilo je prestrogo (slon, banana, Crvenkapica…): vrati
+    // pitanja koja ono isključilo, a novo ih pravilo dopušta.
+    const ranije = await db.collection('questions').find({ topic_id: tema._id, isActive: false, iskljucenoRazlog: /seeds\/lokalno\.js/ })
+      .project(polja).toArray();
+    const vrati = ranije.filter((q) => q.iskljucenoRazlog !== RAZLOG && !straniPojam(q, ime));
+    if (vrati.length) {
+      await db.collection('questions').updateMany({ _id: { $in: vrati.map((q) => q._id) } },
+        { $set: { isActive: true }, $unset: { iskljucenoRazlog: '', iskljucenoAt: '' } });
+      vraceno += vrati.length;
+    }
+
+    const sva = await db.collection('questions').find({ topic_id: tema._id, isActive: true }).project(polja).toArray();
+    const lose = sva.filter((q) => straniPojam(q, ime));
     if (!lose.length) continue;
     await db.collection('questions').updateMany({ _id: { $in: lose.map((q) => q._id) } },
-      { $set: { isActive: false, iskljucenoRazlog: 'strani pojam ili tropsko voće (seeds/lokalno.js)', iskljucenoAt: new Date() } });
-    ukupno += lose.length;
+      { $set: { isActive: false, iskljucenoRazlog: RAZLOG, iskljucenoAt: new Date() } });
+    iskljuceno += lose.length;
   }
-  if (ukupno) log(`🇭🇷 Isključeno ${ukupno} pitanja vezanih uz strane pojmove.`);
-  return ukupno;
+  if (vraceno) log(`🇭🇷 Vraćeno ${vraceno} pitanja (strane životinje, voće i bajke su dopušteni).`);
+  if (iskljuceno) log(`🇭🇷 Isključeno ${iskljuceno} pitanja s pojmovima koje dijete ne zna.`);
+  return { iskljuceno, vraceno };
 }
-
 module.exports = { dopuniObitelji, iskljuciStrano };

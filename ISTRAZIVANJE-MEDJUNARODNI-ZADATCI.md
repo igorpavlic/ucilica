@@ -3,8 +3,8 @@
 Cilj: koristiti oblike zadataka koji su se u drugim zemljama i na međunarodnim natjecanjima pokazali dobrima za djecu od 6 do 10 godina. Sadržaj pritom ostaje u hrvatskom okviru:
 - hrvatski jezik, pravopis i abeceda (č, ć, dž, đ, lj, nj);
 - hrvatska imena i mjesta, euro, metričke mjere;
-- domaće životinje i biljke, hrvatska književnost;
-- bez vezanja uz strana mjesta i pojmove.
+- svijet koji dijete poznaje: domaće i strane životinje i biljke, bajke, hrvatska i strana dječja književnost;
+- bez pojmova koje dijete te dobi ne može znati (daleke države, strani gradovi, strane valute i mjere).
 
 ## 1. Izvori
 
@@ -70,37 +70,29 @@ Napomena: dio izvornih PDF-ova nije bio dostupan iz razvojne okoline (mrežna pr
 | Najkraći put | kuća – pekarnica – škola ili kuća – park – škola (minute) |
 | Šifra s pomakom | pomak po hrvatskoj abecedi (MAMA → NBNB) |
 
-## 3. Hrvatski okvir: što je uklonjeno ili zamijenjeno
+## 3. Hrvatski okvir: mjerilo je što dijete zna
 
-`seeds/lokalno.js` u svakom generiranju:
-1. **Mijenja tropsko voće domaćim** u računskim pričama: banana → šljiva, naranča → mandarina, sa svim padežima. Ako se ponude podudare, pitanje se izbacuje.
-2. **Izbacuje pitanja vezana uz strana mjesta i pojmove:**
-   - egzotične životinje i biljke (slon, lav, pingvin, krokodil, deva, kameleon, kaktus…);
-   - pustinje, strane gradove i države, dolare i inče;
-   - strane bajke i autore.
+Mjerilo je logičko: što dijete od 6 do 10 godina zna iz slikovnica, crtića, bajki, zoološkog vrta i svakodnevice? Dijete možda ne zna gdje su Novi Zeland ili Kanada, ali zna za Indijance, kauboje, klokane i Crvenkapicu.
 
-**Iznimke** (gradivo o Hrvatskoj):
-- susjedne i druge države te kontinenti u temi „Hrvatska — moja domovina”;
-- „hrvatski Andersen” u tekstu o Ivani Brlić-Mažuranić;
-- zebre i slonica na Brijunima (hrvatski nacionalni park).
-
-**Zamjene u vlastitim tablicama:**
-
-| Bilo | Sada |
+| Dopušteno | Isključeno |
 |---|---|
-| slon, žirafa, tigar, krokodil | medvjed, konj, jablan, poskok |
-| pingvin, kit | lastavica, divlja svinja |
-| kameleon, deva, kaktus | hobotnica, čovječja ribica, smilje |
-| banana, naranča (voće u zadatcima) | šljiva, marelica, smokva, trešnja, mandarina |
-| Crvenkapica, Snjeguljica, Pepeljuga… | Šuma Striborova, Regoč, Kako je Potjeh tražio istinu, Šegrt Hlapić, Lutonjica Toporko, Bratac Jaglenac i sestrica Rutvica |
-| Pinokio, Mali princ, Heidi, Alisa, Tom Sawyer, Ivica i Marica, Ružno pače | Veli Jože, Regoč, Grga Čvarak, Konjic sedlenjak, Zlatni danci, Alkar, Duh u močvari, Divlji konj, Koko i duhovi, Kad bi drveće hodalo, Zaljubljen do ušiju |
-| pridjevi od stranih država | koprivnički, bjelovarski, gospićki, krčki, kninski, rovinjski, porečki, đakovački, vinkovački, krapinski, lički, baranjski |
-| Tesla: Graz, New York | Smiljan, Memorijalni centar |
-| predstava „Mačak u čizmama” | predstava „Šegrt Hlapić” |
+| strane životinje i biljke: slon, žirafa, lav, klokan, pingvin, krokodil, kaktus, palma | daleke države: Novi Zeland, Kanada, Argentina, Norveška, Nizozemska… |
+| tropsko voće: banana, naranča, ananas | strani gradovi: New York, London, Graz, Berlin, Tokio… |
+| bajke: Crvenkapica, Snjeguljica, Pepeljuga, Tri praščića, Ružno pače | strane valute: dolar, funta, jen, franak (novac je u eurima) |
+| strana dječja književnost: Pinokio, Mali princ, Heidi, Alisa, Tom Sawyer | nemetričke mjere: inč, milja, galon, unca, jard, Fahrenheit |
+| pojmovi iz dječje kulture: Indijanci, kauboji, pustinja, piramide, Afrika, Amerika | |
 
-**Postojeća baza:** pri pokretanju servera `services/obitelji.js → iskljuciStrano()` isključi (`isActive: false`) takva pitanja. Generator teme poslije daje zamjenska. Napredak djece ostaje.
+`seeds/lokalno.js` u svakom generiranju izbacuje pitanja iz desnog stupca.
 
-**Test:** `npm run test:lokalno` (dio `test:sve`) ruši provjeru ako bilo koji generator ili tekst za čitanje spomene strani pojam izvan iznimaka.
+**Iznimke:**
+- tema „Hrvatska — moja domovina” (Hrvati u svijetu, euro umjesto stare valute);
+- tekst o Nikoli Tesli: podatak o Grazu i New Yorku dijete pročita u tekstu.
+
+**Uz strane bajke i lektiru** tablice imaju i hrvatske: Šuma Striborova, Regoč, Kako je Potjeh tražio istinu, Lutonjica Toporko, Bratac Jaglenac i sestrica Rutvica; Veli Jože, Grga Čvarak, Konjic sedlenjak, Zlatni danci, Alkar, Duh u močvari, Divlji konj, Koko i duhovi, Kad bi drveće hodalo, Zaljubljen do ušiju. **Uz egzotične životinje** su i domaće: lastavica, poskok, divlja svinja, hobotnica, čovječja ribica.
+
+**Postojeća baza:** pri pokretanju servera `services/obitelji.js → iskljuciStrano()` najprije vrati pitanja koja je ranije, prestrogo pravilo isključilo (slon, banana, Crvenkapica…), zatim isključi (`isActive: false`) samo pitanja iz desnog stupca. Napredak djece ostaje.
+
+**Test:** `npm run test:lokalno` (dio `test:sve`) ruši provjeru ako bilo koji generator ili tekst za čitanje spomene pojam iz desnog stupca izvan iznimaka.
 
 ## 4. Za učitelja ili učiteljicu (prije objave)
 

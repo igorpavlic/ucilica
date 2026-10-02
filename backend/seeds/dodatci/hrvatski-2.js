@@ -40,10 +40,12 @@ function gramatikaPravopisDodatak2() {
 }
 
 // ── 3. razred: književni tekst ──
-// Hrvatske bajke i priče (Ivana Brlić-Mažuranić, Priče iz davnine; Čudnovate zgode šegrta Hlapića)
-const BAJKE = [['Šuma Striborova', 'šumski starješina Stribor i snaha guja'], ['Regoč', 'div Regoč i vila Kosjenka'], ['Kako je Potjeh tražio istinu', 'djed Vjest i tri brata'],
-  ['Čudnovate zgode šegrta Hlapića', 'šegrt Hlapić i majstor Mrkonja'], ['Lutonjica Toporko i devet župančića', 'mali Toporko i devet župančića'],
-  ['Bratac Jaglenac i sestrica Rutvica', 'sestrica koja spašava bratca']];
+const BAJKE = [['Crvenkapica', 'vuk prerušen u baku'], ['Snjeguljica i sedam patuljaka', 'otrovana jabuka'], ['Pepeljuga', 'staklena cipelica'], ['Ivica i Marica', 'kućica od medenjaka'],
+  ['Tri praščića', 'kuća od opeke'], ['Trnoružica', 'ubod vretenom i dugi san'], ['Ružno pače', 'pače koje izraste u labuda'], ['Pinokio', 'nos koji raste od laži'],
+  ['Mačak u čizmama', 'lukavi mačak koji pomaže gospodaru'], ['Zlatokosa i tri medvjeda', 'tri zdjelice kaše'],
+  // hrvatske bajke (Ivana Brlić-Mažuranić, Priče iz davnine)
+  ['Šuma Striborova', 'šumski starješina Stribor i snaha guja'], ['Regoč', 'div Regoč i vila Kosjenka'], ['Kako je Potjeh tražio istinu', 'djed Vjest i tri brata'],
+  ['Lutonjica Toporko i devet župančića', 'mali Toporko i devet župančića'], ['Bratac Jaglenac i sestrica Rutvica', 'sestrica koja spašava bratca']];
 const BASNE = [['Lisica i gavran', 'Ne vjeruj laskavcima.'], ['Kornjača i zec', 'Upornost pobjeđuje brzinu.'], ['Cvrčak i mrav', 'Tko radi na vrijeme, ne gladuje zimi.'],
   ['Lav i miš', 'I mali može pomoći velikome.'], ['Vuk i janje', 'Silnik uvijek nađe izgovor.'], ['Pastir i vuk', 'Lažljivcu se ne vjeruje ni kad govori istinu.']];
 const USPOREDBE_2 = [['spor kao puž', true], ['lukav kao lisica', true], ['ponosan kao paun', true], ['Mačka spava.', false], ['visok kao toranj', true], ['Ptica leti.', false],
@@ -108,7 +110,7 @@ const KAZALISTE = [['podignuti dio dvorane na kojem glume glumci', 'pozornica'],
   ['predstava u kojoj glume lutke', 'lutkarska predstava'], ['predstava u kojoj se pjeva', 'opera'], ['predstava u kojoj se priča pokretom i plesom', 'balet'],
   ['osoba koja izvodi ulogu', 'glumac'], ['ljudi koji gledaju predstavu', 'publika']];
 const EMISIJE = [['Želiš doznati što se danas dogodilo u svijetu.', 'vijesti'], ['Želiš znati hoće li sutra padati kiša.', 'vremensku prognozu'],
-  ['Želiš gledati utakmicu uživo.', 'sportski prijenos'], ['Želiš naučiti kako žive dupini u Jadranu.', 'dokumentarnu emisiju'], ['Želiš se nasmijati likovima iz crtića.', 'crtani film'],
+  ['Želiš gledati utakmicu uživo.', 'sportski prijenos'], ['Želiš naučiti kako žive pingvini.', 'dokumentarnu emisiju'], ['Želiš se nasmijati likovima iz crtića.', 'crtani film'],
   ['Želiš slušati pjesme.', 'glazbenu emisiju']];
 const CINJENICA_2 = [['Hrvatska ima izlaz na more.', true], ['Ljeto je bolje od zime.', false], ['Mjesec kruži oko Zemlje.', true], ['Najbolji sladoled je od čokolade.', false],
   ['Godina ima dvanaest mjeseci.', true], ['Psi su ljepši od mačaka.', false], ['Dunav je rijeka.', true], ['Ta je knjiga dosadna.', false]];
