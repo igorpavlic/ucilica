@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Simulirani pilot Učilice — sintetička djeca kroz STVARNI servis kviza.
+ * Simulirani pilot Mudroline — sintetička djeca kroz STVARNI servis kviza.
  *
  * Ovo NIJE pilot s djecom. Simulacija provjerava mehaniku sustava pod jasno
  * navedenim pretpostavkama: kalibraciju težine, izbor pitanja, opseg

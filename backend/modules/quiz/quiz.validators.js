@@ -17,7 +17,7 @@ const generateTopicValidators = [
 ];
 
 const generateAllValidators = [
-  body('grade').optional().isInt({ min: 1, max: 8 }).withMessage('Grade: 1-8')
+  body('grade').optional().isInt({ min: 1, max: 4 }).withMessage('Razred: 1-4')
 ];
 
 const checkAnswerValidators = [

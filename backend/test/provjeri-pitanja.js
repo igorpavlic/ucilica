@@ -15,6 +15,7 @@ const SEEDS = path.join(__dirname, '..', 'seeds');
 const MODULI = {
   'gen-hrvatski': 1, 'gen-matematika': 1, 'gen-priroda': 1,
   'seed-r2': 2, 'seed-r3': 3, 'seed-r4': 4,
+  'nove-teme-r1': 1,
 };
 
 // ── prikupi sva pitanja ────────────────────────────────────────────
@@ -257,7 +258,9 @@ function natuknica(q) {
 
   // Oblici natuknice — iz njih dijete ne može pročitati što se traži.
   if (/\.\.\.\s*$/.test(puni)) return true;                    // "Nakon ljeta dolazi..."
-  if (/→/.test(puni)) return true;                              // "„skijanje" → doba?"
+  // Strelica kao prečac pitanja je natuknica; strelice kao naredbe robotu
+  // (informatika: „Robot izvrši naredbe → → ↓.”) nisu.
+  if (/→/.test(puni) && !/naredb/i.test(puni)) return true;   // "„skijanje" → doba?"
   if (/^[^?!]{1,30}[:=]\s*\??$/.test(puni)) return true;        // "Humus:?", "Kruto stanje="
 
   // Inače mora negdje stajati pitanje.

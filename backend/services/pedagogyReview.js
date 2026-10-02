@@ -33,6 +33,8 @@ function itemKeyZa(q) {
   // Isti tekst uz drugi grafikon je drugi zadatak. Grafikon se dodaje samo
   // kad postoji, pa ključevi pitanja bez grafikona ostaju nepromijenjeni.
   if (q.chart?.length) dijelovi.push(q.chart);
+  // Isto vrijedi za mrežu (robot, cilj, stijene): drugi raspored je drugi zadatak.
+  if (q.mreza?.length) dijelovi.push(q.mreza);
   return kratkiHash(JSON.stringify(dijelovi));
 }
 const HR = require('../seeds/hr-gramatika');
@@ -574,7 +576,7 @@ function reviewQuestions(generatorName, questions){
 /** Polja koja seed i generiranje upisuju uz pitanje (osim osnovnih). */
 function storedExtras(q) {
   const out = {};
-  for (const k of ['templateId', 'itemKey', 'objasnjenjeIzvor', 'objasnjenjeVrsta', 'proces', 'tekstId', 'ishod']) {
+  for (const k of ['templateId', 'itemKey', 'objasnjenjeIzvor', 'objasnjenjeVrsta', 'proces', 'tekstId', 'ishod', 'mreza']) {
     if (q[k] !== undefined && q[k] !== null && q[k] !== '') out[k] = q[k];
   }
   return out;

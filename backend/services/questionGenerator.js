@@ -100,6 +100,8 @@ const GENERATORS = {
   'ljudsko-tijelo': genLjudskoTijelo,
   'hrvatska-domovina': genHrvatskaDomovina,
   'biljke-zivotinje-4': genBiljkeZivotinje4,
+  // Nove teme: Informatika, Ja i drugi, Promet i bicikl, Novac i kupovina
+  ...require('../seeds/nove-teme').GENERATORI,
 };
 
 function shuffle(arr) {

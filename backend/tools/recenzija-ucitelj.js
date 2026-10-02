@@ -34,6 +34,7 @@ const izvori = [
   [2, require(path.join(KORIJEN, 'seeds/seed-r2'))],
   [3, require(path.join(KORIJEN, 'seeds/seed-r3'))],
   [4, require(path.join(KORIJEN, 'seeds/seed-r4'))],
+  [1, require(path.join(KORIJEN, 'seeds/nove-teme-r1'))],
 ];
 console.log = log;
 

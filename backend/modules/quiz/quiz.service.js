@@ -24,6 +24,7 @@ function mapSafeQuestion(question, answerOrder = null, matchTokens = null) {
     visual: question.visual || '',
     passage: question.passage || '',
     chart: question.chart || [],
+    mreza: question.mreza || [],
     hint: question.hint || '',
     answers: question.type === 'choice' && Array.isArray(answerOrder)
       ? answerOrder.map((index) => question.answers[index])

@@ -86,7 +86,7 @@
       <div class="profil-privatnost">
         <h3>Podatci i privatnost</h3>
         <p class="profil-privatnost-opis">
-          Za roditelje: što Učilica čuva piše u <router-link to="/privatnost">obavijesti o privatnosti</router-link>.
+          Za roditelje: što Mudrolina čuva piše u <router-link to="/privatnost">obavijesti o privatnosti</router-link>.
         </p>
         <button class="btn btn-secondary" :disabled="izvozim" @click="preuzmiPodatke">
           {{ izvozim ? 'Pripremam…' : '⬇️ Preuzmi moje podatke' }}
@@ -132,7 +132,7 @@ async function preuzmiPodatke () {
     const blob = new Blob([JSON.stringify(podatci, null, 2)], { type: 'application/json' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    a.download = `ucilica-${user.value.username}.json`
+    a.download = `mudrolina-${user.value.username}.json`
     a.click()
     URL.revokeObjectURL(a.href)
   } catch (e) {

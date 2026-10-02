@@ -2,7 +2,7 @@
   <div class="auth-page">
     <div class="auth-card">
       <div class="auth-header">
-        <div class="brand">📚 Učilica</div>
+        <div class="brand">📚 Mudrolina</div>
         <p>Napravi svoj profil!</p>
       </div>
 
@@ -25,7 +25,8 @@
       <div class="form-group">
         <label>Razred</label>
         <select class="form-input" v-model.number="form.grade">
-          <option v-for="g in 8" :key="g" :value="g">{{ g }}. razred</option>
+          <!-- Zasad samo razredna nastava (1.–4.); za 5.–8. još nema sadržaja. -->
+          <option v-for="g in 4" :key="g" :value="g">{{ g }}. razred</option>
         </select>
       </div>
 

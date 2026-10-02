@@ -14,6 +14,7 @@ const modules = [
   ['R2', require('../seeds/seed-r2')],
   ['R3', require('../seeds/seed-r3')],
   ['R4', require('../seeds/seed-r4')],
+  ['R1-nove', require('../seeds/nove-teme-r1')],
 ];
 
 function shuffle(a) {

@@ -4,6 +4,42 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −8. Nove teme: Informatika, Ja i drugi, Promet i bicikl, Novac i kupovina
+
+- **Novi predmet Informatika** (1.–4. r.), dvije teme po razredu, prema kurikulu NN 22/2018:
+  - „Algoritmi i logika”: slijed koraka, robot na mreži, pronađi pogrešnu naredbu, uzorci,
+    šifre, sortiranje, AKO–INAČE, petlje i varijable;
+  - „Računalo i sigurnost”: uređaji, programi, zdravlje, osobni podatci, lozinke, prijevare.
+- **Ja i drugi** (PID, 1.–4. r.): osjećaji, smirivanje, pomoć drugima, lijepo ponašanje,
+  prava i dužnosti djeteta, ja-poruke, rješavanje sukoba.
+- **Promet i bicikl** (PID, 3.–4. r.): znakovi, semafor, pješak, biciklist i oprema bicikla.
+  Pravila prema ZSPC-u (izmjene 2024.): dob 9 godina uz potvrdu, kaciga do 16, e-romobil od 14.
+- **Novac i kupovina** (MAT, 3.–4. r.): parametrizirani računi s cijelim eurima, štednja,
+  cjenik, račun iz trgovine, najmanje novčanica, potreba ili želja, rok trajanja.
+- Registar `seeds/nove-teme.js` puni seed skripte, `GENERATORS`, `npm run topics:add`
+  (stvara i predmet Informatika) i testove.
+- **Novi prikaz `mreza`** (robot 🤖, cilj ⭐, stijene 🪨) u `QuizView.vue`. Mreža ulazi u `itemKey`.
+- Test „natuknica” dopušta strelice kad su to naredbe robotu.
+- Upute i README navode nove teme. Istraživanje je u `ISTRAZIVANJE-NOVE-TEME.md`.
+
+**Provjera:**
+- `npm run test:sve` prolazi, ponovljeno više puta jer su generatori nasumični.
+- Recenzija učitelja: 0 ODBIJ i 0 DORADI za nove teme.
+- Simulacija (240 djece × 18 kvizova): nijedan kviz bez novih pitanja.
+
+## −7. Ime Mudrolina, razredi 1.–4., istraživanje Informatike
+
+- **Preimenovano u Mudrolina** u sučelju, obavijesti o privatnosti, uputama, opisima
+  paketa i README-u; izvoz podataka sada je `mudrolina-<korisnik>.json`. Namjerno
+  nepromijenjeno: ključ `ucilica_token` (korisnici ostaju prijavljeni), zadana baza
+  `ucilica`, imena paketa i repozitorija.
+- **Razred pri registraciji i u profilu: samo 1.–4.** (`MAX_RAZRED` u `routes/auth.js`,
+  `quiz.validators.js`, izbornik u `RegisterView.vue`). Gradivo 5.–8. još ne postoji.
+- `ISTRAZIVANJE-PODRUCJA.md` §3.1: „Snalaženje na tipkovnici” zamijenjeno
+  istraživanjem **Informatike za 1.–4. r.** (domene A–D, ishodi po razredu, predmet
+  *Informacijske i digitalne kompetencije*, unplugged zadatci, Dabar); prijedlog nove
+  teme „Informatika”.
+
 ## −6. Objava: trust proxy, 30 dana bez ponavljanja, dnevni izazov, privatnost djece
 
 - **`trust proxy`** (`server.js`, `TRUST_PROXY`, zadano 1 u produkciji) — iza Caddyja ili

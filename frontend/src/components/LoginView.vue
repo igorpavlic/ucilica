@@ -2,7 +2,7 @@
   <div class="auth-page">
     <div class="auth-card">
       <div class="auth-header">
-        <div class="brand">📚 Učilica</div>
+        <div class="brand">📚 Mudrolina</div>
         <p>Prijavi se i nastavi učiti!</p>
       </div>
 

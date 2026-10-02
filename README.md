@@ -1,4 +1,8 @@
-# Učilica
+# Mudrolina
+
+> Ranije **Učilica** — preimenovano jer na hrvatskom tržištu već postoje edukativni
+> proizvodi tog imena. Tehničke oznake (`ucilica_token`, zadana baza `ucilica`,
+> ime repozitorija) namjerno su ostale iste, da se korisnici ne odjave i baza ne promijeni.
 
 Interaktivna aplikacija za vježbanje gradiva hrvatske osnovne škole, razredi 1–4.
 Tri predmeta, ~6 200 proceduralno generiranih pitanja, gramatički ispravan hrvatski.
@@ -222,7 +226,7 @@ s 409, da FSRS upisuje rok ponavljanja i da spajanje parova ispravno broji veze.
 ## REST API
 
 ```
-POST   /api/auth/register      { username, password, displayName, avatar, grade, privolaRoditelja: true }
+POST   /api/auth/register      { username, password, displayName, avatar, grade (1–4), privolaRoditelja: true }
 POST   /api/auth/login         { username, password }
 GET    /api/auth/me            🔒
 PATCH  /api/auth/me            🔒 { displayName?, avatar?, grade? }
@@ -314,15 +318,19 @@ kvotama. Svako spremljeno pitanje nosi `gik` metapodatke s ishodom iz kurikula
 
 ## Gradivo po razredima
 
-| Razred | Hrvatski | Matematika | Priroda i društvo |
-|---|---|---|---|
-| 1. | slova, glasovi, riječi, rečenice | brojevi do 20, +/− do 10, geometrija, nizovi | godišnja doba, životinje, tijelo, obitelj, sigurnost, ekologija |
-| 2. | imenice i rod, glagoli, rečenice, čitanje | brojevi do 100, +/−, ×/÷, geometrija, mjerenje | zavičaj, godišnja doba, biljke i životinje, voda i tlo, zdravlje |
-| 3. | vrste riječi, pravopis, književnost, izražavanje | brojevi do 1000, ×/÷, geometrija i mjerenje | zavičaj i karta, tlo/voda/zrak, biljke i životinje, gospodarstvo, baština |
-| 4. | vrste riječi, pravopis, književnost, mediji | brojevi do milijun, pisano ×/÷, kutovi, opseg i površina, kvadar i kocka | uvjeti života, krajevi RH, ljudsko tijelo, domovina, biljke i životinje |
+| Razred | Hrvatski | Matematika | Priroda i društvo | Informatika |
+|---|---|---|---|---|
+| 1. | slova, glasovi, riječi, rečenice | brojevi do 20, +/− do 10, geometrija, nizovi | godišnja doba, životinje, tijelo, obitelj, sigurnost, ekologija, **ja i drugi** | **algoritmi i logika, računalo i sigurnost** |
+| 2. | imenice i rod, glagoli, rečenice, čitanje | brojevi do 100, +/−, ×/÷, geometrija, mjerenje | zavičaj, godišnja doba, biljke i životinje, voda i tlo, zdravlje, **ja i drugi** | **algoritmi i logika, računalo i sigurnost** |
+| 3. | vrste riječi, pravopis, književnost, izražavanje | brojevi do 1000, ×/÷, geometrija i mjerenje, **novac i kupovina** | zavičaj i karta, tlo/voda/zrak, biljke i životinje, gospodarstvo, baština, **ja i drugi, promet i bicikl** | **algoritmi i logika, računalo i sigurnost** |
+| 4. | vrste riječi, pravopis, književnost, mediji | brojevi do milijun, pisano ×/÷, kutovi, opseg i površina, kvadar i kocka, **novac i kupovina** | uvjeti života, krajevi RH, ljudsko tijelo, domovina, biljke i životinje, **ja i drugi, promet i bicikl** | **algoritmi i logika, računalo i sigurnost** |
+
+Podebljane teme su nove (`backend/seeds/nove-teme.js`, istraživanje u
+`ISTRAZIVANJE-NOVE-TEME.md`).
 # Dopuna sadržaja 3. i 4. razreda
 
-Nove teme (čitanje s razumijevanjem, podatci i grafovi, nepoznati broj) mogu se
+Nove teme (čitanje s razumijevanjem, podatci i grafovi, nepoznati broj, a zatim
+predmet Informatika te Ja i drugi, Promet i bicikl, Novac i kupovina) mogu se
 dodati u postojeću bazu naredbom `cd backend && npm run topics:add`. Skripta
 ne briše postojeća pitanja ni napredak te preskače teme koje već imaju pitanja.
 Na praznoj bazi koristi se uobičajeni `npm run seed:all`. Taj postupak briše i

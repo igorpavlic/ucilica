@@ -1,5 +1,5 @@
 /**
- * seed.js — Učilica V4 (2400+ pitanja, 200+ po temi)
+ * seed.js — Mudrolina V4 (2400+ pitanja, 200+ po temi)
  * 1. razred hrvatske osnovne škole
  * Pokretanje:  node seeds/seed.js   (iz backend/ mape)
  */
@@ -50,10 +50,12 @@ const GEN_MAP = {
   matematika: [genBrojevi, genZbrajanje, genOduzimanje, genUsporedbe, genGeometrija, genNizovi],
   priroda: [genDoba, genZivotinje, genTijelo, genObitelj, genSigurnost, genEkologija]
 };
+// Nove teme (Informatika, Ja i drugi) — seeds/nove-teme.js
+require("./nove-teme").prosiriSeed(GRADE, subjects, topicsDef, GEN_MAP);
 
 async function seed() {
   let pogreska = false;
-  console.log(`\n🌱 Učilica SEED V4 — ${GRADE}. razred\n`);
+  console.log(`\n🌱 Mudrolina SEED V4 — ${GRADE}. razred\n`);
   const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
   const client = new MongoClient(uri);
 

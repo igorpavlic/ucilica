@@ -8,6 +8,9 @@ const privatnost = require('../services/privatnost');
 
 const router = express.Router();
 
+// Zasad samo razredna nastava (1.–4. razred) — za 5.–8. još nema sadržaja.
+const MAX_RAZRED = 4;
+
 function generateToken(userId) {
   return jwt.sign({ id: userId.toString() }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d'
@@ -33,7 +36,7 @@ router.post('/register', [
   body('password').isLength({ min: 4 }).withMessage('Lozinka: minimalno 4 znaka'),
   body('displayName').optional().trim().isLength({ min: 1, max: 50 }).withMessage('Ime za prikaz: 1-50 znakova'),
   body('avatar').optional().isString().isLength({ min: 1, max: 10 }).withMessage('Avatar nije valjan'),
-  body('grade').optional().isInt({ min: 1, max: 8 }).withMessage('Razred: 1-8'),
+  body('grade').optional().isInt({ min: 1, max: MAX_RAZRED }).withMessage(`Razred: 1-${MAX_RAZRED}`),
   // Dijete mlađe od 16 godina ne može samo dati privolu (ZPOU čl. 19) —
   // registraciju potvrđuje roditelj ili skrbnik.
   body('privolaRoditelja').custom((v) => v === true)
@@ -117,7 +120,7 @@ router.get('/me', auth, (req, res) => {
 router.patch('/me', auth, [
   body('displayName').optional().trim().isLength({ min: 1, max: 50 }).withMessage('Ime za prikaz: 1-50 znakova'),
   body('avatar').optional().isString().isLength({ min: 1, max: 10 }).withMessage('Avatar nije valjan'),
-  body('grade').optional().isInt({ min: 1, max: 8 }).withMessage('Razred: 1-8')
+  body('grade').optional().isInt({ min: 1, max: MAX_RAZRED }).withMessage(`Razred: 1-${MAX_RAZRED}`)
 ], async (req, res) => {
   try {
     if (!validate(req, res)) return;
@@ -146,7 +149,7 @@ router.patch('/me', auth, [
 router.get('/me/izvoz', auth, async (req, res) => {
   try {
     const podatci = await privatnost.izvoz(req.user._id);
-    res.setHeader('Content-Disposition', `attachment; filename="ucilica-${req.user.username}.json"`);
+    res.setHeader('Content-Disposition', `attachment; filename="mudrolina-${req.user.username}.json"`);
     res.json(podatci);
   } catch (err) {
     console.error('Export error:', err);

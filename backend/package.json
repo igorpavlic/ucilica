@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "Učilica — backend API i generatori pitanja",
+  "description": "Mudrolina — backend API i generatori pitanja",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

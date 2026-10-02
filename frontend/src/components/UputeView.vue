@@ -13,7 +13,7 @@
     <section id="djeca">
       <h2>🧒 Za djecu</h2>
       <ol class="upute-koraci">
-        <li><strong>Prijavi se</strong> svojim korisničkim imenom. Tada Učilica pamti što si već riješio i daje ti nova pitanja.</li>
+        <li><strong>Prijavi se</strong> svojim korisničkim imenom. Tada Mudrolina pamti što si već riješio i daje ti nova pitanja.</li>
         <li><strong>Odaberi razred</strong> gore na početnoj stranici.</li>
         <li><strong>Riješi dnevni izazov ⭐</strong> — 10 pitanja iz svih predmeta. Možeš ga riješiti jednom na dan.</li>
         <li>Ili <strong>odaberi predmet</strong>, pa <strong>temu</strong>, i vježbaj samo nju.</li>
@@ -24,7 +24,7 @@
       <div class="upute-kartice">
         <div class="upute-kartica">
           <div class="upute-ikona">🔊</div>
-          <p><strong>Poslušaj pitanje.</strong> Ako ne znaš pročitati pitanje, klikni zvučnik pa ti ga Učilica pročita naglas.</p>
+          <p><strong>Poslušaj pitanje.</strong> Ako ne znaš pročitati pitanje, klikni zvučnik pa ti ga Mudrolina pročita naglas.</p>
         </div>
         <div class="upute-kartica">
           <div class="upute-ikona">⭐</div>
@@ -53,6 +53,7 @@
           <tr><td>Točno ili netočno</td><td>Odluči je li tvrdnja <strong>Točno</strong> ili <strong>Netočno</strong>.</td></tr>
           <tr><td>Spoji parove</td><td>Klikni nešto u lijevom stupcu, pa ono što mu pripada u desnom. Kad sve spojiš, klikni <strong>„Provjeri”</strong>.</td></tr>
           <tr><td>Poredaj</td><td>Strelicama <strong>↑</strong> i <strong>↓</strong> pomakni rečenice u pravi red, pa klikni <strong>„Provjeri redoslijed”</strong>.</td></tr>
+          <tr><td>Robot na mreži</td><td>Pogledaj gdje je robot 🤖 i kamo treba stići. Strelice ga pomiču za jedno polje.</td></tr>
           <tr><td>Tekst, tablica ili grafikon</td><td>Najprije pročitaj tekst ili pogledaj podatke, pa odgovori na pitanje.</td></tr>
         </tbody>
       </table>
@@ -65,12 +66,13 @@
       <ul>
         <li><strong>Registracija:</strong> račun otvara roditelj ili skrbnik i daje privolu za obradu podataka.
           Ne upisujte pravo ime i prezime — dovoljan je nadimak. Više u <router-link to="/privatnost">obavijesti o privatnosti</router-link>.</li>
-        <li><strong>Gradivo:</strong> pitanja prate kurikul za 1.–4. razred (Hrvatski jezik, Matematika, Priroda i društvo).</li>
+        <li><strong>Gradivo:</strong> pitanja prate kurikul za 1.–4. razred (Hrvatski jezik, Matematika, Priroda i društvo, Informatika).
+          Uz to su tu teme „Ja i drugi” (osjećaji, lijepo ponašanje, prava djeteta), „Promet i bicikl” i „Novac i kupovina”.</li>
         <li><strong>Obrađeno gradivo:</strong> u <router-link to="/profile">profilu</router-link> označite teme koje je dijete već učilo u školi.
           Miješano ponavljanje i dnevni izazov tada uzimaju samo njih.</li>
         <li><strong>Napredak:</strong> klikom na ⭐ i 🔥 gore vidite točne i netočne odgovore.</li>
         <li><strong>Nova pitanja:</strong> pitanja koja je dijete vidjelo u zadnjih 30 dana nude se tek kad drugih nema.
-          Kad dijete prođe postojeće zadatke, Učilica sama stvara nove. Ono što dijete zaboravlja dolazi ranije na ponavljanje.</li>
+          Kad dijete prođe postojeće zadatke, Mudrolina sama stvara nove. Ono što dijete zaboravlja dolazi ranije na ponavljanje.</li>
         <li><strong>Koliko vježbati:</strong> bolje kratko i svaki dan nego dugo jednom tjedno. Dnevni izazov traje nekoliko minuta.</li>
         <li><strong>Podatci:</strong> u profilu možete preuzeti sve podatke ili trajno obrisati račun.</li>
       </ul>
@@ -81,7 +83,7 @@
       <h2>❓ Česta pitanja</h2>
       <details>
         <summary>Mogu li igrati bez prijave?</summary>
-        <p>Možeš, kao gost. Ali tada Učilica ne pamti što si riješio, pa se pitanja mogu ponavljati, a dnevni izazov nije dostupan.</p>
+        <p>Možeš, kao gost. Ali tada Mudrolina ne pamti što si riješio, pa se pitanja mogu ponavljati, a dnevni izazov nije dostupan.</p>
       </details>
       <details>
         <summary>Dnevni izazov kaže „Novi te čeka sutra”.</summary>
@@ -94,7 +96,7 @@
       </details>
       <details>
         <summary>Zaboravio sam lozinku.</summary>
-        <p>Javi se roditelju ili osobi koja je postavila Učilicu.</p>
+        <p>Javi se roditelju ili osobi koja je postavila Mudrolinu.</p>
       </details>
       <details>
         <summary>Zvučnik 🔊 se ne prikazuje.</summary>
