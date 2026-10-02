@@ -97,15 +97,20 @@ function efektivnaOcjena({ item, template, difficulty }) {
  * obitelji pitanja. Vraća null kad nema dovoljno podataka — tada pozivatelj
  * koristi kvote po autorskoj težini.
  */
-function odaberiPoTezini(pool, count, ocjenaDjeteta, ocjenaPitanja, { familyKey = (q) => q._id, avoidFamilies = new Set(), cilj = 0.75 } = {}) {
+function odaberiPoTezini(pool, count, ocjenaDjeteta, ocjenaPitanja, { familyKey = (q) => q._id, avoidFamilies = new Set(), cilj = 0.75, starost = null } = {}) {
   const ocijenjeni = pool.map((q) => {
     const r = ocjenaPitanja(q);
     const p = ocekivano(ocjenaDjeteta, r);
     return { q, p, d: Math.abs(p - cilj) };
   }).sort((a, b) => a.d - b.d);
+  // Kad su sve obitelji nedavno viđene: unutar pojasa težine prednost ima
+  // obitelj viđena najdavnije (starost: 0 = nikad, veće = nedavnije).
+  const poStarosti = starost
+    ? [...ocijenjeni].sort((a, b) => starost(a.q) - starost(b.q) || a.d - b.d)
+    : ocijenjeni;
   const odabrani = [], obitelji = new Set();
-  const uzmi = (filtar) => {
-    for (const x of ocijenjeni) {
+  const uzmi = (filtar, redoslijed = ocijenjeni) => {
+    for (const x of redoslijed) {
       if (odabrani.length >= count) break;
       if (odabrani.includes(x)) continue;
       const f = familyKey(x.q);
@@ -114,8 +119,8 @@ function odaberiPoTezini(pool, count, ocjenaDjeteta, ocjenaPitanja, { familyKey 
     }
   };
   uzmi((x, f) => x.p >= 0.55 && x.p <= 0.92 && !obitelji.has(f) && !avoidFamilies.has(f));
-  uzmi((x, f) => x.p >= 0.55 && x.p <= 0.92 && !obitelji.has(f));
-  uzmi((x, f) => !obitelji.has(f));
+  uzmi((x, f) => x.p >= 0.55 && x.p <= 0.92 && !obitelji.has(f), poStarosti);
+  uzmi((x, f) => !obitelji.has(f), poStarosti);
   uzmi(() => true);
   return odabrani.map((x) => x.q);
 }

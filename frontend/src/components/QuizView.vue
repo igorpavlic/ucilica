@@ -1,27 +1,23 @@
 <template>
-  <div class="shell">
-    <router-link v-if="jeMijesano(props.topicId)" :to="{ path: '/home', query: { grade: razredIz(props.topicId) } }" class="back-link">← Natrag na predmete</router-link>
-    <router-link v-else
-      :to="{ name: 'topics', params: { slug: $route.query.subjectSlug || 'unknown' }, query: { name: $route.query.subjectName, icon: '', grade: $route.query.grade } }"
-      class="back-link"
-    >← Natrag na teme</router-link>
-
+  <div class="shell kviz-shell">
     <div v-if="loadingQuiz" class="loading-overlay">
       <div class="spinner"></div>
       <div class="loading-text">Pripremam pitanja...</div>
     </div>
 
-    <div v-else-if="questions.length" class="quiz-container">
-      <div class="progress-row">
-        <span>{{ $route.query.topicIcon }} {{ $route.query.topicName }}</span>
-        <span>{{ currentQ + 1 }} / {{ questions.length }}</span>
+    <div v-else-if="questions.length" ref="kontejner" class="quiz-container" :class="{ 'ima-plocu': answered }">
+      <!-- Način bez ometanja (kao Duolingo): umjesto gornje trake samo izlaz, napredak i brojač -->
+      <div class="kviz-zaglavlje">
+        <router-link :to="natragRuta" class="kviz-zatvori" aria-label="Izađi iz kviza" title="Izađi iz kviza">✕</router-link>
+        <div class="progress-track" role="progressbar" :aria-valuenow="currentQ + 1" aria-valuemin="1" :aria-valuemax="questions.length">
+          <div class="progress-fill" :style="{ width: ((currentQ + 1) / questions.length * 100) + '%' }"></div>
+        </div>
+        <span class="kviz-brojac">{{ currentQ + 1 }}/{{ questions.length }}</span>
       </div>
+      <p class="kviz-tema">{{ $route.query.topicIcon }} {{ $route.query.topicName }}</p>
       <p v-if="opseg" class="scope-note">{{ opisOpsega }}</p>
-      <div class="progress-track">
-        <div class="progress-fill" :style="{ width: ((currentQ + 1) / questions.length * 100) + '%' }"></div>
-      </div>
 
-      <div class="question-card" :key="currentQ">
+      <div class="question-card" :key="currentQ" :class="{ 'ima-mrezu': questions[currentQ].mreza?.length }">
         <!--
           Vizual se razlaže na pojedinačne znakove: u flex spremniku je
           neprekinuti tekst JEDAN element, pa se flex-wrap nikad ne primijeni
@@ -44,7 +40,8 @@
         </div>
 
         <!-- Mreža (robot i put): svako polje je ćelija, pa se redovi ne lome. -->
-        <div v-if="questions[currentQ].mreza?.length" class="quiz-mreza" role="img" aria-label="Mreža polja s robotom">
+        <div v-if="questions[currentQ].mreza?.length" class="quiz-mreza" role="img" aria-label="Mreža polja s robotom"
+          :style="{ '--n': questions[currentQ].mreza.length }">
           <div v-for="(red, ri) in questions[currentQ].mreza" :key="ri" class="quiz-mreza-red">
             <span v-for="(polje, pi) in red" :key="pi" class="quiz-mreza-polje">{{ polje }}</span>
           </div>
@@ -80,7 +77,7 @@
           {{ questions[currentQ].hint }}
         </div>
 
-        <div v-if="questions[currentQ].type === 'choice'" class="answers-grid">
+        <div v-if="questions[currentQ].type === 'choice'" class="answers-grid" :class="{ kratki: kratkiOdgovori }">
           <button
             v-for="(ans, i) in questions[currentQ].answers"
             :key="i"
@@ -115,7 +112,7 @@
         </div>
 
         <!-- Na pitanje („Smiješ li…?”) Da/Ne, na tvrdnju Točno/Netočno -->
-        <div v-if="questions[currentQ].type === 'true-false'" class="answers-grid">
+        <div v-if="questions[currentQ].type === 'true-false'" class="answers-grid kratki">
           <button v-for="(option, oi) in [true, false]" :key="String(option)" class="answer-btn"
             :class="{
               correct: answered && option === tocnaTF,
@@ -135,12 +132,15 @@
         </div>
       </div>
 
-      <div v-if="answered && objasnjenje" class="explanation-card">
+      <!-- Povratna ploča: izlazi s dna ekrana, pa objašnjenje i „Sljedeće” ne traže skrolanje -->
+      <div v-if="answered" ref="ploca" class="povratna-ploca" :class="isCorrect ? 'tocno' : 'netocno'">
+        <div class="povratna-unutra">
+      <div v-if="objasnjenje" class="explanation-card">
         <strong>Zašto?</strong> {{ objasnjenje }}
         <button v-if="govorDostupan" type="button" class="btn-slusaj" aria-label="Pročitaj objašnjenje naglas" @click="reci(objasnjenje)">🔊</button>
       </div>
 
-      <div v-if="answered" class="feedback-bar" :class="isCorrect ? 'correct' : 'wrong'">
+      <div class="feedback-bar" :class="isCorrect ? 'correct' : 'wrong'">
         <span>{{ isCorrect ? '✓' : '✗' }}</span>
         <span v-if="isCorrect">{{ correctMessages[Math.floor(Math.random() * correctMessages.length)] }}</span>
         <span v-else-if="questions[currentQ].type === 'match'">
@@ -149,9 +149,11 @@
         <span v-else>Točan odgovor: {{ correctAnswerText }}</span>
       </div>
 
-      <button v-if="answered" class="btn-next" @click="nextQuestion">
+      <button class="btn-next" @click="nextQuestion">
         {{ hasNextQuestion() ? 'Sljedeće pitanje →' : 'Pogledaj rezultat 🏆' }}
       </button>
+        </div>
+      </div>
     </div>
 
     <div v-else-if="exhausted" class="quiz-container">
@@ -212,6 +214,26 @@ const {
   provjeravam,
   correctCount
 } = storeToRefs(quizStore)
+
+// Kamo vodi ✕: miješano ponavljanje i dnevni izazov → početna, tema → popis tema predmeta
+const natragRuta = computed(() => jeMijesano(props.topicId)
+  ? { path: '/home', query: { grade: razredIz(props.topicId) } }
+  : { name: 'topics', params: { slug: route.query.subjectSlug || 'unknown' }, query: { name: route.query.subjectName, icon: '', grade: route.query.grade } })
+
+// Visina povratne ploče → donji razmak sadržaja, da ploča ništa ne prekrije
+const kontejner = ref(null)
+const ploca = ref(null)
+let promatracPloce = null
+watch(ploca, (el) => {
+  promatracPloce?.disconnect()
+  if (!el || typeof ResizeObserver === 'undefined') return
+  promatracPloce = new ResizeObserver(() => {
+    kontejner.value?.style.setProperty('--ploca-h', `${el.offsetHeight}px`)
+  })
+  promatracPloce.observe(el)
+})
+// Novo pitanje počinje na vrhu ekrana
+watch(currentQ, () => window.scrollTo(0, 0))
 
 const opisOpsega = computed(() => {
   const o = opseg.value
@@ -283,6 +305,12 @@ const visualGroups = computed(() => {
   return grupe
 })
 
+// Kratki odgovori (strelice, brojevi, „druga naredba”) i na mobitelu idu u dva stupca
+const kratkiOdgovori = computed(() => {
+  const a = questions.value[currentQ.value]?.answers || []
+  return a.length > 0 && a.every((x) => String(x).length <= 18)
+})
+
 // ── točno/netočno: koji je gumb odabran i koji je točan ──────────
 const odabraniTF = ref(null)
 const tocnaTF = computed(() => ['Točno', 'Da'].includes(correctAnswerText.value))
@@ -334,6 +362,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  promatracPloce?.disconnect()
   resetSession()
 })
 

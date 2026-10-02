@@ -4,6 +4,239 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −17. Hrvatski okvir po logici djeteta (ispravak −16)
+
+**Prijava:** strane biljke, životinje i bajke trebaju ostati. Dijete možda ne zna gdje su Novi Zeland ili Kanada, ali zna za Indijance, kauboje, klokane i Crvenkapicu.
+
+**Novo pravilo** (`seeds/lokalno.js`) — mjerilo je ono što dijete od 6 do 10 godina zna iz slikovnica, crtića, bajki i zoološkog vrta:
+- **Dopušteno:** strane životinje i biljke (slon, žirafa, klokan, pingvin, kaktus), tropsko voće (banana, naranča), bajke i strana dječja književnost (Crvenkapica, Pepeljuga, Pinokio, Mali princ, Heidi), pojmovi iz dječje kulture (Indijanci, kauboji, pustinja, Afrika, Amerika).
+- **Isključeno:** samo ono što dijete ne može znati ni zamisliti — daleke države (Novi Zeland, Kanada, Argentina, Norveška…), strani gradovi (New York, London, Graz…), strane valute (dolar, funta) i nemetričke mjere (inč, milja, galon, Fahrenheit).
+- **Iznimke:** tema o domovini (Hrvati u svijetu) i tekst o Tesli (podatak o Grazu i New Yorku dijete čita u tekstu).
+
+**Vraćeno u tablice**, uz zadržane hrvatske dodatke:
+- strane bajke uz hrvatske (Šuma Striborova, Regoč, Potjeh, Toporko, Jaglenac i Rutvica);
+- strana lektira uz hrvatsku (Veli Jože, Grga Čvarak, Konjic sedlenjak, Zlatni danci…);
+- slon, žirafa, tigar, lav, kit, pingvin, krokodil, kaktus, kameleon, deva uz lastavicu, poskok, divlju svinju, hobotnicu i čovječju ribicu;
+- banana i naranča; pridjevi od susjednih država uz pridjeve od hrvatskih mjesta;
+- tekst o Tesli u izvornom obliku, predstava „Mačak u čizmama”.
+
+Zamjena banana → šljiva je uklonjena.
+
+**Postojeća baza:** `iskljuciStrano()` pri pokretanju servera najprije vrati pitanja koja je prestrogo pravilo isključilo, a novo ih pravilo dopušta, zatim isključi samo ona s dalekim državama, gradovima, valutama i mjerama.
+
+**Provjera:** `npm run test:sve` prolazi (uključujući `test:lokalno` s novim pravilom i raznolikost kviza).
+
+---
+
+## −16. Međunarodni oblici zadataka u hrvatskom okviru
+
+Detaljno: `ISTRAZIVANJE-MEDJUNARODNI-ZADATCI.md`.
+
+**Istraženo:**
+- Klokan bez granica;
+- Dabar (Bebras);
+- singapurska matematika;
+- njemački „dobri zadatci” (Zahlenmauer, Zahlenhaus, Rechendreieck);
+- TIMSS i PIRLS za 4. razred;
+- njemački Sachunterricht;
+- engleski KS1/KS2;
+- hrvatski kurikuli PID i MAT.
+
+**Novi oblici zadataka** (`seeds/dodatci/medjunarodno.js`, svaki je svoja tema, najviše dva u kvizu):
+- **Matematika:** rastav broja i kućica brojeva, vaga, stroj za brojeve, zid brojeva, čarobni kvadrat, zadatci u dva koraka, položaj u redu, rast uzorka, zamišljeni broj, kalendar, kombinacije, zbroj i razlika, logika redoslijeda, euro kovanice i novčanice.
+- **Hrvatski:**
+  - abecedni red po hrvatskoj abecedi (c < č < ć, d < dž < đ, l < lj, n < nj);
+  - glasovi i znakovi (dž, lj, nj);
+  - umanjenice i uvećanice, srodne riječi;
+  - narodne zagonetke i poslovice.
+- **Priroda i društvo:** pliva ili tone, magnet, materijali i svojstva, pošten pokus, sjena.
+- **Informatika (Dabar):** binarni zapis, stablo odlučivanja, najkraći put, šifra s pomakom po hrvatskoj abecedi.
+
+**Hrvatski okvir** (`seeds/lokalno.js`):
+- **Zamjena voća:** banana postaje šljiva, naranča mandarina, sa svim padežima.
+- **Filtar stranih pojmova:** pitanja vezana uz egzotične životinje i biljke, pustinje, strane gradove, države, valute i mjere te strane bajke i autore ispadaju.
+- **Iznimke:** susjedi i kontinenti u temi o domovini, „hrvatski Andersen”, Brijuni.
+- **Vlastite tablice** prepravljene su na domaće životinje (medvjed, ris, poskok, hobotnica, čovječja ribica), domaće biljke (smilje, jablan), hrvatske bajke (Priče iz davnine, Hlapić), hrvatsku lektiru i pridjeve od hrvatskih mjesta.
+- **Tekstovi za čitanje:** iz teksta o Tesli izbačeni su Graz i New York; predstava je „Šegrt Hlapić”.
+
+**Postojeća baza:** `services/obitelji.js → iskljuciStrano()` pri pokretanju servera isključi takva pitanja, a generator daje zamjenska. Napredak djece ostaje.
+
+**Provjera:** novi `npm run test:lokalno` (dio `test:sve`) i svi dosadašnji testovi prolaze.
+
+---
+
+## −15. Isti problem u svim predmetima (pregled i popravak)
+
+**Pregled:** simulacija svih 83 tema po 20 kvizova, uz brojanje kvizova u kojima 3 ili više pitanja počinje istim riječima. Nađeni su ovi uzroci.
+
+**Uzroci:**
+1. **Predložak se prepoznavao preko čestoće riječi u cijeloj temi.** „Krava” je česta, pa su „Rimuju li se riječi krava i _” i „…mak i _” postale različite vrste. Isto se događalo sa zadatcima s paketima, nepoznanicama i bridovima.
+2. **Ista pitanja dobivala su različitu vrstu** ovisno o tome kad su generirana, jer se prepoznavalo zasebno pri svakom generiranju.
+3. **Isti zadatak sročen na više načina** bio je više vrsta. Primjeri:
+   - „Koje malo slovo odgovara velikom slovu A?” i „Koje je malo slovo za veliko slovo K?”;
+   - „Koliko je c ako je…”, „Koji broj nedostaje…” i „Koji broj treba upisati umjesto…”;
+   - „Što se nalazi istočno od škole?” i „U kojem se smjeru od škole nalazi pošta?”.
+4. **Isto pitanje iz tablice u dva oblika** bilo je dvije vrste („Kojoj djelatnosti pripada zanimanje…” i „Pripada li zanimanje…”).
+5. **Isti tekst s drugim ponudama** mogao je doći dvaput u isti kviz.
+6. **U kasnim kvizovima** neke teme imaju samo 2–3 vrste neviđenih pitanja.
+
+**Popravak:**
+- **Prepoznavanje predloška** (`questionFamily.prepoznajObitelji`):
+  - riječ je dio predloška ako je ima barem pola pitanja istoga početka;
+  - brojevi, nepoznanice (b, c, x, y, z, □), znakovi računa i riječ iza broja uvijek su podatak;
+  - sve iza dvotočke je podatak.
+- **Tablica tema** (`TEME`) za isti zadatak drukčije sročen: veliko i malo slovo, abeceda, nepoznati broj, vrijednost izraza, vrste trokuta, rime, slogovi, smjer na planu, strane svijeta, uljez među vrstama riječi, pojam i opis, mjesna vrijednost, sustavi organa, osjetila, dani i mjeseci, bridovi.
+- **Vrste se prepoznaju pri svakom slaganju kviza nad cijelom bankom teme.** Iste su bez obzira na to kad je pitanje generirano. Vrsta koju je zadao autor (tablica, tema) ostaje.
+- **Sva pitanja iz iste tablice** (svi oblici) jedna su vrsta: 66 mjesta u `seeds/dodatci`.
+- **U bazenu kviza svaki tekst je samo jednom.**
+- **Najviše dva pitanja iste vrste u kvizu.** Kad neviđenih drugih vrsta nema, uzima se pitanje druge vrste viđeno davno, nikad iz zadnja tri kviza (`UCILICA_GRANICA_STARIH`, zadano 2).
+
+**Rezultat simulacije** (83 teme × 20 kvizova × 7 pitanja = 11 340):
+
+| | prije | poslije |
+|---|---:|---:|
+| treće ili kasnije pitanje iste vrste u kvizu | 121 | 0 |
+| kvizova s 3+ pitanja istoga početka | 211 | 55 |
+| davno viđeno pitanje vraćeno (samo kasni kvizovi) | 113 | 326 |
+
+**Provjera:** `npm run test:sve` prolazi.
+
+---
+
+## −14. Kviz bez niza istih pitanja („koji grad pripada kojem kraju” 7×)
+
+**Prijava:** u temi Krajevi Hrvatske svih 7 pitanja kviza bilo je oblika „Kojem kraju pripada grad …?”.
+
+**Uzrok:**
+- Obitelj pitanja (po kojoj izbor izbjegava isti oblik u kvizu) računala se tako da se iz teksta uklanjaju samo navodnici i brojevi.
+- Dodatna pitanja imaju imena bez navodnika („…grad Vukovar?”, „…grad Pula?”), pa je svako bilo zasebna obitelj.
+- Uz to, tvrdnje iz jedne tablice (npr. 104 o županijama) u kasnijim su kvizovima nadvladale male obitelji.
+
+**Popravak:**
+- **Obitelj se zapisuje uz pitanje** (`obitelj`):
+  - kod tablica je obitelj sama tablica: oba smjera i tvrdnje Da/Ne iste vrste činjenica jedna su obitelj;
+  - inače se prepoznaje predložak, tj. zajedničke riječi pitanja (`questionFamily.prepoznajObitelji`);
+  - sve iza dvotočke je podatak;
+  - predložak samo od „Smiješ li …” smatra se preopćenitim, pa takva pitanja ostaju zasebna.
+- **Izbor kviza** (`questionGenerator.js`):
+  - bazen se slaže naizmjence po obiteljima, najprije iz najvećih;
+  - u kvizu su najviše dva pitanja iste vrste;
+  - računski drill („7 + 5 = ?”) izuzet je od toga pravila;
+  - kad neviđenih iz drugih obitelji nema, granica je tri pitanja, a višak se zamjenjuje najdavnije viđenim pitanjem (nikad iz zadnja tri kviza);
+  - novo generiranje pokreće se i kad neviđena pitanja dolaze iz premalo vrsta.
+- **Ograničenje 10 po obitelji** u pregledu generatora sada zadržava nasumičan podskup, pa se kroz više generiranja pojave sva pitanja.
+- **Novi sadržaj:**
+  - Krajevi Hrvatske: 18 pitanja o klimi, gospodarstvu i znamenitostima;
+  - nekoliko tema siromašnih vrstama (Računalo 1.–2. r., kutovi, kocka i kvadar, uvjeti života, domovina, Ja i drugi, promet): pojedinačno napisana pitanja.
+- **Postojeća baza:** pri pokretanju servera `services/obitelji.js` jednom dopuni obitelj starim pitanjima, a kasnije ne radi ništa.
+
+**Rezultat simulacije** (83 teme × 20 kvizova × 7 pitanja):
+- treće ili kasnije pitanje iste vrste u istom kvizu: 121 od 11 340, i to samo u nekoliko tema s malo sadržaja;
+- isti tekst: 113.
+
+**Provjera:** `npm run test:sve`. Novi testovi provjeravaju:
+- prepoznavanje predloška;
+- da svako pitanje generatora ima obitelj;
+- da 8 kvizova Krajeva Hrvatske ima najviše dva pitanja iste vrste.
+
+---
+
+## −13. Dvadeset kvizova bez ponovljenog pitanja
+
+**Zahtjev:** dijete koje istu temu odigra 20 puta (140 pitanja) ne smije vidjeti ponovljeno pitanje.
+
+**Analiza** (simulacija: jedno dijete, svaka od 83 teme, 20 kvizova po 7 pitanja):
+- 5485 od 10 956 pitanja imalo je **tekst koji je dijete već vidjelo**, a 4933 bila su potpuno ista kao prije.
+- **Uzrok 1:** banka je imala isto pitanje pod više `_id`-eva, s drugim netočnim ponudama. Izbor je pamtio samo `_id`, pa je to pitanje bilo „novo”.
+- **Uzrok 2:** 55 tema imalo je manje od 140 različitih tekstova. Jezično izražavanje imalo ih je 17, zavičaj 19, krajevi Hrvatske 19, a kvader i kocka 8.
+- Tri teme davale su **prazne kvizove** (hrvatska domovina, zdravlje i sigurnost 2, kvader i kocka).
+
+**Popravak:**
+- **Izbor pitanja** (`questionGenerator.js`):
+  - uz `_id` pamti i **prikaz**: tekst, slika, tekst za čitanje, mreža, parovi i točan odgovor;
+  - pamti i **tekst** pitanja;
+  - najprije dolaze neviđeni tekstovi, a kad ih ponestane, generira nova pitanja (do 3 pokušaja);
+  - ako ni tada nema dovoljno, vraća pitanja koja dijete **najdavnije** nije vidjelo;
+  - kviz nikad nije prazan.
+- **Dodatni sadržaj** (`seeds/dodatci/`, uključuje se u `pedagogyReview.reviewQuestions`):
+  - **matematika:** nasumični brojevi (nizovi, mjesne vrijednosti, zaokruživanje, pretvorbe, opseg i površina, bridovi kocke i kvadra, pisano množenje i dijeljenje);
+  - **hrvatski:** glasovi, slogovi, rime, abeceda, množina, vrste riječi, č/ć, ije/je, dž/đ, veliko slovo, pridjevi od imena mjesta, upravni govor, glagolska vremena, rod, posvojni pridjevi, književne vrste i djela, pjesnička sredstva, mediji;
+  - **priroda i društvo:** životinje i biljke, tijelo, sigurnost i prva pomoć, otpad, voda i tlo, zrak, skupine životinja, ekosustavi, prilagodbe, organi i sustavi, krajevi Hrvatske, županije, nacionalni parkovi, djelatnosti, kulturna baština, karta;
+  - **nove teme:** Ja i drugi, Računalo i sigurnost, Promet i bicikl, Algoritmi 1. r.;
+  - svaka činjenica dolazi u više oblika: pitanje u oba smjera, tvrdnja Da/Ne sa svim uparivanjima, spajanje.
+- **34 nova izvorna teksta za čitanje** (`seeds/citanje-dodatni.js`): 3 za 2. razred, 15 za 3. i 16 za 4. razred, s pitanjima po procesima razumijevanja.
+- **Robot u Informatici** ide do različitih ciljeva (zvjezdica, kućica, lopta, poklon…), pa se tekst zadatka mijenja.
+
+**Rezultat simulacije** (sve teme, 20 kvizova po 7 pitanja):
+
+| | Prije | Poslije |
+|---|---:|---:|
+| isti tekst pitanja | 5485 | 1 |
+| potpuno isto pitanje | 4933 | 0 |
+| prazni kvizovi | 52 | 0 |
+
+**Provjera:** `npm run test:sve` prolazi. Simulacija: `tools/simulacija` s lažnom bazom.
+
+**Postavljanje:** baza se ne mora ponovno puniti. Nova pitanja upisuju se sama kad dijete potroši neviđene tekstove teme.
+
+---
+
+## −12. Manje ponavljanja u Informatici, mreža bez skrolanja, hamburger izbornik
+
+**Prijava:** „Tko je drugi u redu?” vraća se nekoliko kvizova zaredom.
+
+**Analiza** (simulacija: jedno dijete, 12 kvizova po 7 pitanja u istoj temi):
+- Isto pitanje, točno ista instanca, nije se vraćalo: 30-dnevni prozor radi.
+- Vraćao se **isti oblik pitanja** s drugim podatcima. Algoritmi 3. r. imali su oko 12 oblika, pa je dijete nakon dva kviza vidjelo gotovo sve.
+- Kad su svi oblici bili „nedavno viđeni”, izbor je uzimao nasumično. Zato se isti oblik mogao vratiti već u sljedećem kvizu.
+
+**Popravak:**
+- **Izbor po starosti obitelji** (`questionGenerator.js`, `tezina.js`): najprije dolaze neviđene obitelji pitanja, zatim one koje je dijete vidjelo **najdavnije**. Vrijedi za sve teme.
+- **Više oblika zadataka u Informatici:**
+  - sortiranje: 9 oblika (najviši/najniži, „koliko je djece više od…”, brojevi uzlazno i silazno, broj u sredini, životinje po težini…), po pozivu 3;
+  - AKO–INAČE: 6 oblika (paran/neparan, temperatura, robot i zid, razina u igri…), po pozivu 2;
+  - petlje: 4 nova oblika (skokovi, okreti pri crtanju lika, jabuke u košari, koliko ponavljanja);
+  - nizovi oblika (▲ ■ ● ★) i nizovi brojeva;
+  - šifra: „Koje slovo označava znak…?”;
+  - još 13 pitanja o zdravlju i sigurnosti.
+- **Rezultat simulacije** (isti tekst pitanja u 12 kvizova):
+
+  | Tema | Prije | Poslije |
+  |---|---:|---:|
+  | algoritmi 3 | 40 | 24 |
+  | algoritmi 4 | 32 | 18 |
+  | računalo i sigurnost 3 | 61 | 51 |
+
+  U temi „Računalo i sigurnost” pitanja su činjenice, pa se teže umnožavaju.
+- Nova pitanja ulaze u bazu sama, čim dijete potroši neviđena pitanja teme.
+
+**Mreža s robotom:**
+- veličina polja ovisi o širini i visini zaslona i o broju redaka;
+- kraći opis ispod mreže;
+- kratki odgovori su u dva stupca;
+- 5×5 stane bez skrolanja na 360×640.
+
+**Hamburger:** na mobitelu, izvan kviza, gornja traka ima samo naziv, bodove i ☰.
+
+## −11. Kviz bez ometanja na mobitelu, copyright
+
+Uzor je zaslon lekcije u Duolingu: tijekom vježbe nema navigacije, na vrhu su samo izlaz i napredak, a „Provjeri/Nastavi” je na dnu.
+
+- **Kviz bez gornje trake.** Umjesto nje je zaglavlje s ✕ (izlaz), trakom napretka i brojačem 3/7.
+- **Povratna ploča** izlazi s dna ekrana (`position: fixed`) i sadrži:
+  - objašnjenje;
+  - poruku točno/netočno;
+  - gumb „Sljedeće pitanje”.
+
+  Visina ploče mjeri se (ResizeObserver) i dodaje se kao donji razmak sadržaja, pa ploča ništa ne prekrije. Na iPhoneu se poštuje sigurna zona (`viewport-fit=cover`, `env(safe-area-inset-bottom)`).
+- **Novo pitanje** uvijek počinje na vrhu ekrana.
+- **Mobitel (≤ 600 px)** ima manje razmake i slova (`clamp`).
+- **Niski zasloni (≤ 700 px)** skrivaju naziv teme i napomenu o opsegu ponavljanja.
+- **Podnožje** na svim stranicama osim kviza: „© 2026. From RIM · Mudrolina. Sva prava pridržana.”, uz poveznice Upute, Privatnost i Kontakt (contact@fromrim.com).
+- **Provjereno u Chromiumu** na 390×740, 360×640 i 412×915 px:
+  - pitanje s izborom, prometni znak i poredavanje stanu bez skrolanja;
+  - jedino spajanje 4 para s otvorenom pločom na 360×640 treba 13 px skrolanja.
+
 ## −10. Prijava pitanja, ljepše strelice, objašnjeni algoritmi iz svakodnevice
 
 - **Gumb „🚩 Prijavi pitanje”** ispod svakog pitanja otvara prozor s poljem „Razlog prijave” i gumbom „Pošalji”.

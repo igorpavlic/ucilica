@@ -1,7 +1,9 @@
 const crypto = require('crypto');
-const { questionFamilyKey } = require('./questionFamily');
+const { questionFamilyKey, oznaciObitelji } = require('./questionFamily');
 const { dodajObjasnjenje, dodajSkupinska } = require('./objasnjenja');
 const { pitanjaZaTemu } = require('../seeds/citanje-tekstovi');
+const { dodatciZa } = require('../seeds/dodatci');
+const { straniPojam } = require('../seeds/lokalno');
 
 // Tekstovi za čitanje (seeds/citanje-tekstovi.js) po generatoru teme.
 const TEKSTOVI_ZA_GENERATOR = {
@@ -501,6 +503,8 @@ function curateKnownBank(generatorName, qs){
       return q;
     });
   }
+  // Sva pitanja „kojem kraju pripada …” jedna su obitelj s dodatnima (seeds/dodatci/drustvo.js).
+  if(generatorName==='genKrajeviHR') qs=qs.map(q=>/^Kojem kraju Hrvatske pripada /.test(q.question||'')?{...q,obitelj:'kraj-pripadnost'}:q);
   if(generatorName==='genNizovi') qs=qs.map(q=>q.question==='Čime mjerimo težinu?'?{...q,question:'Čime mjerimo masu?'}:q);
   // Tlo/voda/zrak (3. r.) i uvjeti života (4. r.): čišćenje starog fonda i
   // zadatci u više obitelji nad istim činjenicama (seeds/gen-pid-uvjeti.js).
@@ -550,6 +554,14 @@ function reviewQuestions(generatorName, questions){
 
   // Izvorni tekstovi za čitanje s pitanjima po procesima razumijevanja.
   if (TEKSTOVI_ZA_GENERATOR[generatorName]) qs.push(...pitanjaZaTemu(TEKSTOVI_ZA_GENERATOR[generatorName]));
+  // Dodatna pitanja za teme s malom bankom (seeds/dodatci): više oblika iste
+  // činjenice i nasumični brojevi, da se tekst ne ponavlja ni nakon 20 kvizova.
+  qs.push(...dodatciZa(generatorName));
+
+  // Ispadaju pitanja s pojmovima koje dijete ne može znati: daleke države i
+  // strani gradovi, strane valute, nemetričke mjere (seeds/lokalno.js).
+  // Strane životinje, biljke i bajke su dopuštene.
+  qs = qs.filter((q) => !straniPojam(q, generatorName));
 
   // Family diversification. Keep a useful drill core; transform surplus instances into other representations.
   const groups=new Map();
@@ -561,13 +573,29 @@ function reviewQuestions(generatorName, questions){
   }
   // Final safeguard: after transformations no quiz bank should be dominated by one identical stem.
   // We keep a small drill set and remove surplus clones that could teach the UI pattern instead of the concept.
-  const seen=new Map();
-  qs=qs.filter(q=>{
-    const k=questionFamilyKey(q); const n=(seen.get(k)||0)+1; seen.set(k,n);
-    const mathFluency=/^\d+\s*[+\-×÷]\s*\d+\s*=\s*\?$/.test(q.question||'');
+  // Obitelj (predložak) za izbor kviza: imena i pojmovi bez navodnika inače bi
+  // svaki zadatak činili zasebnom obitelji, pa bi kviz mogao imati sedam puta
+  // „U kojem se kraju Hrvatske nalazi grad …?”. Pitanja uz tekst za čitanje
+  // zadržavaju svoju obitelj po tekstu pitanja.
+  {
+    const bezTeksta = qs.map((q, i) => [q, i]).filter(([q]) => !q.passage && !q.obitelj);
+    const oznaceni = oznaciObitelji(bezTeksta.map(([q]) => q));
+    bezTeksta.forEach(([, i], j) => { qs[i] = oznaceni[j]; });
+  }
+  // Ograničenje po obitelji; kad je obitelj veća od granice, zadržava se
+  // NASUMIČAN podskup (ne prvih n), da se kroz više generiranja pojave svi.
+  const clanovi=new Map();
+  qs.forEach((q,idx)=>{const k=questionFamilyKey(q);if(!clanovi.has(k))clanovi.set(k,[]);clanovi.get(k).push(idx);});
+  const zadrzi=new Set();
+  for(const idxs of clanovi.values()){
+    const mathFluency=/^\d+\s*[+\-×÷]\s*\d+\s*=\s*\?$/.test(qs[idxs[0]].question||'');
     const cap=mathFluency?24:10;
-    return n<=cap;
-  });
+    const izbor=[...idxs];
+    for(let i=izbor.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[izbor[i],izbor[j]]=[izbor[j],izbor[i]];}
+    izbor.length=Math.min(izbor.length,cap);
+    izbor.forEach((i)=>zadrzi.add(i));
+  }
+  qs=qs.filter((q,idx)=>zadrzi.has(idx));
   // Objašnjenja (postupak ili pravilo, nikad samo „točan odgovor je…”),
   // stabilna oznaka predloška i sadržajni ključ zadatka.
   const oznaceno = qs.map((q) => {
@@ -580,7 +608,7 @@ function reviewQuestions(generatorName, questions){
 /** Polja koja seed i generiranje upisuju uz pitanje (osim osnovnih). */
 function storedExtras(q) {
   const out = {};
-  for (const k of ['templateId', 'itemKey', 'objasnjenjeIzvor', 'objasnjenjeVrsta', 'proces', 'tekstId', 'ishod', 'mreza']) {
+  for (const k of ['templateId', 'itemKey', 'objasnjenjeIzvor', 'objasnjenjeVrsta', 'proces', 'tekstId', 'ishod', 'mreza', 'obitelj']) {
     if (q[k] !== undefined && q[k] !== null && q[k] !== '') out[k] = q[k];
   }
   return out;

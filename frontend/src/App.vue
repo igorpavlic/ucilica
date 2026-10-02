@@ -29,7 +29,14 @@
         📚 Mudrolina
       </router-link>
 
-      <div class="topbar-stats">
+      <!-- Mobitel: samo bodovi i hamburger; sve ostalo je u izborniku -->
+      <div class="topbar-kratko">
+        <span class="stat-chip"><span class="icon">⭐</span>{{ totalScore }}</span>
+        <button type="button" class="topbar-izbornik-gumb" :aria-expanded="izbornik" aria-controls="topbar-izbornik"
+          :aria-label="izbornik ? 'Zatvori izbornik' : 'Otvori izbornik'" @click="izbornik = !izbornik">{{ izbornik ? '✕' : '☰' }}</button>
+      </div>
+
+      <div id="topbar-izbornik" class="topbar-stats" :class="{ otvoreno: izbornik }" @click="izbornik = false">
         <!-- Klik na ime → profil (odabir razreda) -->
         <router-link to="/profile" class="stat-chip clickable" style="text-decoration:none">
           <span class="icon">{{ avatar }}</span>
@@ -70,10 +77,19 @@
     @error="handleError"
     @stars="triggerStars"
   />
+
+  <footer v-if="!fokus && !appLoading" class="podnozje">
+    <span>© {{ godine }} From RIM · Mudrolina. Sva prava pridržana.</span>
+    <nav aria-label="Podnožje">
+      <router-link to="/upute">Upute</router-link>
+      <router-link to="/privatnost">Privatnost</router-link>
+      <a href="mailto:contact@fromrim.com">Kontakt</a>
+    </nav>
+  </footer>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, provide } from 'vue'
+import { ref, computed, onMounted, provide, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from './composables/useAuth'
 
@@ -89,7 +105,19 @@ const {
 } = useAuth()
 
 const authPages = ['login', 'register']
-const showTopbar = computed(() => !authPages.includes(route.name))
+// Kviz je način bez ometanja: bez gornje trake i podnožja (vlastito zaglavlje s ✕ i napretkom)
+const fokus = computed(() => route.name === 'quiz')
+const showTopbar = computed(() => !authPages.includes(route.name) && !fokus.value)
+// Hamburger izbornik (mobitel): zatvara se pri promjeni stranice i tipkom Esc
+const izbornik = ref(false)
+watch(() => route.fullPath, () => { izbornik.value = false })
+if (typeof window !== 'undefined') window.addEventListener('keydown', (e) => { if (e.key === 'Escape') izbornik.value = false })
+
+const GODINA_POCETKA = 2026
+const godine = computed(() => {
+  const sada = new Date().getFullYear()
+  return sada > GODINA_POCETKA ? `${GODINA_POCETKA}.–${sada}.` : `${GODINA_POCETKA}.`
+})
 
 function handleLogout() {
   logout()

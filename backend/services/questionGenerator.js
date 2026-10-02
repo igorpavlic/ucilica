@@ -10,7 +10,7 @@ const { getDb } = require('../db/mongo');
 const EMOJI_ONLY = /^[\p{Emoji_Presentation}\p{Extended_Pictographic}\u{200D}\u{FE0F}\u{20E3}]+$/u;
 const vjestine = require('./vjestine');
 const { buildQuestionMetadata, decideDifficultyTarget, pickBalancedQuestions, skillKeyOf } = require('./gikEngine');
-const { questionFamilyKey, orderWithoutAdjacentFamilies } = require('./questionFamily');
+const { questionFamilyKey, orderWithoutAdjacentFamilies, prepoznajObitelji, zadanaObitelj } = require('./questionFamily');
 const tezina = require('./tezina');
 
 /** Koliko odgovora u predmetu treba prije izbora po izmjerenoj težini. */
@@ -103,6 +103,76 @@ const GENERATORS = {
   // Nove teme: Informatika, Ja i drugi, Promet i bicikl, Novac i kupovina
   ...require('../seeds/nove-teme').GENERATORI,
 };
+
+const jsonIliPrazno = (v) => (v && (!Array.isArray(v) || v.length) ? JSON.stringify(v) : '');
+/**
+ * Što dijete stvarno vidi: tekst pitanja, slika, tekst za čitanje, grafikon,
+ * mreža, parovi/stavke i točan odgovor. Isto pitanje s drugim netočnim
+ * ponudama nije novo; „Koji je zapis pravilan?” s drugim točnim zapisom jest.
+ */
+function kljucPrikaza(q) {
+  const tocno = q.type === 'choice' ? q.answers?.[q.correctIndex] : '';
+  const parovi = Array.isArray(q.pairs) ? q.pairs.map((p) => `${p.left ?? p[0]}=${p.right ?? p[1]}`).sort().join(';') : '';
+  const stavke = Array.isArray(q.items) ? [...q.items].sort().join(';') : '';
+  return [kljucTeksta(q), q.visual || '', q.passage || '', jsonIliPrazno(q.chart), jsonIliPrazno(q.mreza), tocno, parovi, stavke].join('\u0001');
+}
+/** Sam tekst pitanja (bez razmaka na rubovima i višestrukih razmaka). */
+function kljucTeksta(q) {
+  return String(q.question || '').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Redoslijed naizmjence po obiteljima: prvi iz svake obitelji, zatim drugi iz
+ * svake… Unutar obitelji redoslijed ostaje isti.
+ */
+function naizmjencePoObiteljima(pitanja, { najveceNaprijed = false } = {}) {
+  const skupine = new Map();
+  for (const q of pitanja) {
+    const k = questionFamilyKey(q);
+    if (!skupine.has(k)) skupine.set(k, []);
+    skupine.get(k).push(q);
+  }
+  const out = [], liste = [...skupine.values()];
+  // Obitelji s najviše preostalih neviđenih pitanja idu naprijed: male se
+  // obitelji tako ne potroše u prvim kvizovima, pa i 20. kviz ima dovoljno
+  // različitih oblika (sort je stabilan, unutar iste veličine ostaje redoslijed).
+  if (najveceNaprijed) liste.sort((a, b) => b.length - a.length);
+  for (let i = 0; out.length < pitanja.length; i++) for (const l of liste) if (i < l.length) out.push(l[i]);
+  return out;
+}
+
+// Računski drill („7 + 5 = ?”) po prirodi je jedna vrsta: za njega nema granice.
+const DRILL = /^(koliko je )?\S+ [+\-−×÷:] \S+( = \?|\?)$/i;
+const jeDrill = (q) => DRILL.test(String(q.question || '').trim());
+// Najviše dva pitanja iste vrste i kad treba uzeti davno viđeno pitanje (simulacija:
+// 0 kvizova s tri iste vrste uz ~3 % davno viđenih pitanja u kasnim kvizovima).
+const GRANICA_STARIH = Number(process.env.UCILICA_GRANICA_STARIH) || 2;
+const imaViskaObitelji = (pitanja, granica = 2) => {
+  const broj = new Map();
+  return pitanja.some((q) => { if (jeDrill(q)) return false; const f = questionFamilyKey(q); broj.set(f, (broj.get(f) || 0) + 1); return broj.get(f) > granica; });
+};
+
+function najviseDvaPoObitelji(odabrana, bazen, granica = 2, { poVelicini = true } = {}) {
+  const out = [...odabrana];
+  const broj = new Map();
+  for (const q of out) broj.set(questionFamilyKey(q), (broj.get(questionFamilyKey(q)) || 0) + 1);
+  const uzeti = new Set(out.map((q) => String(q._id)));
+  const velicina = new Map();
+  for (const q of bazen) velicina.set(questionFamilyKey(q), (velicina.get(questionFamilyKey(q)) || 0) + 1);
+  const rezerva = bazen.filter((q) => !uzeti.has(String(q._id)));
+  if (poVelicini) rezerva.sort((a, b) => (velicina.get(questionFamilyKey(b)) || 0) - (velicina.get(questionFamilyKey(a)) || 0));
+  for (let i = out.length - 1; i >= 0; i--) {
+    const f = questionFamilyKey(out[i]);
+    if (jeDrill(out[i]) || (broj.get(f) || 0) <= granica) continue;
+    const zamjena = rezerva.find((q) => !uzeti.has(String(q._id)) && (broj.get(questionFamilyKey(q)) || 0) < granica);
+    if (!zamjena) break;
+    broj.set(f, broj.get(f) - 1);
+    broj.set(questionFamilyKey(zamjena), (broj.get(questionFamilyKey(zamjena)) || 0) + 1);
+    uzeti.add(String(zamjena._id));
+    out[i] = zamjena;
+  }
+  return orderWithoutAdjacentFamilies(out);
+}
 
 function shuffle(arr) {
   const a = [...arr];
@@ -292,54 +362,142 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
   // ID zaštita sprječava doslovno isto pitanje. Dodatno pratimo i obitelj
   // pitanja jer različiti brojevi/riječi u istome predlošku nisu stvarno nova
   // vrsta zadatka (npr. 7x "Koja riječ imenuje...?").
+  // Obitelji se prepoznaju nad CIJELOM bankom teme pri svakom slaganju kviza:
+  // isti predložak upisan u različitim generiranjima tako uvijek dobiva istu
+  // obitelj. Obitelj koju je zadao autor (tablica, tema) ostaje.
+  const obiteljPoId = new Map();
+  const prepoznaj = async () => {
+    const sva = (await db.collection('questions').find({ topic_id: topicId, isActive: true })
+      .project({ question: 1, obitelj: 1, passage: 1 }).toArray()).filter((q) => !q.passage && !zadanaObitelj(q.obitelj));
+    prepoznajObitelji(sva).forEach((o, i) => obiteljPoId.set(String(sva[i]._id), o));
+  };
+  await prepoznaj();
+  const uObitelji = (docs) => { for (const d of docs) { const o = obiteljPoId.get(String(d._id)); if (o) d.obitelj = o; } return docs; };
   const recentFamilies = new Set();
+  // Obitelj → kad ju je dijete zadnji put vidjelo. Kad su sve obitelji teme već
+  // viđene (mala tema, mnogo kvizova), prednost ima ona viđena NAJDAVNIJE —
+  // inače bi se „Tko je drugi u redu?” vraćao svaki drugi kviz.
+  const obiteljZadnjiPut = new Map();
   if (seenOids.length > 0) {
-    const seenQuestions = await db.collection('questions')
+    const seenQuestions = uObitelji(await db.collection('questions')
       .find({ _id: { $in: seenOids } })
-      .project({ type: 1, question: 1 })
-      .toArray();
-    for (const q of seenQuestions) recentFamilies.add(questionFamilyKey(q));
+      .project({ type: 1, question: 1, obitelj: 1 })
+      .toArray());
+    for (const q of seenQuestions) {
+      const f = questionFamilyKey(q);
+      recentFamilies.add(f);
+      const t = vidjeno.zadnjiPut.get(String(q._id))?.getTime?.() ?? 0;
+      if (!obiteljZadnjiPut.has(f) || obiteljZadnjiPut.get(f) < t) obiteljZadnjiPut.set(f, t);
+    }
   }
+  // 0 = obitelj nikad viđena; veći broj = viđena nedavnije
+  const starostObitelji = (q) => obiteljZadnjiPut.get(questionFamilyKey(q)) ?? 0;
 
+  // Isti tekst (s istom slikom/tekstom za čitanje) pod drugim _id-em — npr.
+  // isto pitanje s drukčijim netočnim odgovorima — za dijete NIJE novo pitanje.
+  // Zato se uz ID-eve prati i prikaz, a uz prikaz i sam tekst pitanja: tekst
+  // koji dijete još nije vidjelo ima prednost pred istim tekstom s novom slikom.
+  const prikazZadnjiPut = new Map(), tekstZadnjiPut = new Map(), svjeziPrikazi = new Set();
+  const zabiljezi = (mapa, k, t) => { if (!mapa.has(k) || mapa.get(k) < t) mapa.set(k, t); };
+  const KLJUC_POLJA = { question: 1, visual: 1, passage: 1, chart: 1, mreza: 1, type: 1, answers: 1, correctIndex: 1, pairs: 1, items: 1, obitelj: 1 };
+
+  // 2. Kandidati: sva aktivna pitanja teme koja dijete nije vidjelo po ID-u
+  //    ni po prikazu (lagana projekcija; cijeli dokumenti tek za odabrane).
+  const lagano = async (upit) => uObitelji(await db.collection('questions').find(upit).project(KLJUC_POLJA).toArray());
+  if (seenOids.length > 0) {
+    for (const q of await lagano({ _id: { $in: seenOids } })) {
+      const t = vidjeno.zadnjiPut.get(String(q._id))?.getTime?.() ?? 0;
+      zabiljezi(prikazZadnjiPut, kljucPrikaza(q), t);
+      zabiljezi(tekstZadnjiPut, kljucTeksta(q), t);
+      if (vidjeno.svjeze.has(String(q._id))) svjeziPrikazi.add(kljucPrikaza(q));
+    }
+  }
   const matchFresh = {
     topic_id: topicId,
     isActive: true,
     ...(seenOids.length > 0 ? { _id: { $nin: seenOids } } : {})
   };
-
-  // 2. Širi uzorak kandidata — treba ih više od `count` da se može birati po težini
-  const poolSize = Math.max(count * 6, 30);
-  let pool = await db.collection('questions')
-    .aggregate([{ $match: matchFresh }, { $sample: { size: poolSize } }])
-    .toArray();
-
-  // 3. Nedovoljno? Generiraj nova pa ponovi
-  if (pool.length < count) {
-    const generated = await generateAndStore(topic, subjectId, grade);
-    if (generated > 0) {
-      pool = await db.collection('questions')
-        .aggregate([{ $match: matchFresh }, { $sample: { size: poolSize } }])
-        .toArray();
+  const svjeziKandidati = async () => {
+    const jedinstveni = new Map();
+    for (const q of shuffle(await lagano(matchFresh))) {
+      const k = kljucPrikaza(q);
+      if (!prikazZadnjiPut.has(k) && !jedinstveni.has(k)) jedinstveni.set(k, q);
     }
+    return [...jedinstveni.values()];
+  };
+  let kandidati = await svjeziKandidati();
+
+  // 3. Nedovoljno novih tekstova? Generiraj nova (generator je nasumičan, pa
+  //    nekoliko pokušaja) i ponovi.
+  const noviTekstovi = () => kandidati.filter((q) => !tekstZadnjiPut.has(kljucTeksta(q))).length;
+  // Generiraj i kad neviđenih tekstova ima, ali su iz premalo različitih vrsta:
+  // generator svaki put daje drugi nasumični podskup svake obitelji.
+  const obiteljiNovih = () => new Set(kandidati.filter((q) => !tekstZadnjiPut.has(kljucTeksta(q))).map(questionFamilyKey)).size;
+  for (let pokusaj = 0; pokusaj < 3 && (noviTekstovi() < count || obiteljiNovih() < count); pokusaj++) {
+    if (!(await generateAndStore(topic, subjectId, grade))) break;
+    await prepoznaj();
+    kandidati = await svjeziKandidati();
   }
+
+  // Redoslijed: najprije tekst koji dijete nikad nije vidjelo, pa onaj viđen
+  // najdavnije; unutar toga obitelj viđena najdavnije (sort je stabilan, a
+  // kandidati su promiješani).
+  const starostTeksta = (q) => tekstZadnjiPut.get(kljucTeksta(q)) ?? 0;
+  const poStarosti = (a, b) => (starostTeksta(a) - starostTeksta(b)) || (starostObitelji(a) - starostObitelji(b));
+  kandidati.sort(poStarosti);
+  // Isti tekst dvaput u istom kvizu samo ako drukčijih nema dovoljno.
+  const vidjenTekst = new Set(), prvi = [], drugi = [];
+  for (const q of kandidati) (vidjenTekst.has(kljucTeksta(q)) ? drugi : (vidjenTekst.add(kljucTeksta(q)), prvi)).push(q);
+  kandidati = [...prvi, ...drugi];
+
+  // Kad ima dovoljno neviđenih tekstova, biraj samo među njima; inače uzmi sve
+  // neviđene i dopuni najdavnije viđenima (tada izbor po težini ne smije
+  // preskočiti neviđeno, pa je bazen točno `count`).
+  const poolSize = Math.max(count * 6, 30);
+  const brojNovih = noviTekstovi();
+  // Bazen se slaže naizmjence po obiteljima (jedan „koji kraj?”, jedan „spoji…”,
+  // jedan „je li…”), da izbor ima od čega složiti kviz bez istog oblika zaredom.
+  const novo = (q) => !tekstZadnjiPut.has(kljucTeksta(q));
+  let odabrani;
+  if (brojNovih >= count) {
+    // svaki tekst samo jednom (isto pitanje s drugim ponudama nije novo pitanje)
+    const tekstJednom = new Set();
+    const jedinstveni = kandidati.filter(novo).filter((q) => !tekstJednom.has(kljucTeksta(q)) && tekstJednom.add(kljucTeksta(q)));
+    odabrani = naizmjencePoObiteljima(jedinstveni, { najveceNaprijed: true }).slice(0, poolSize);
+  } else {
+    const novi = kandidati.filter(novo);
+    const obiteljiNovih = new Set(novi.map(questionFamilyKey));
+    const ostali = kandidati.filter((q) => !novo(q));
+    const ostaliPoRedu = [...ostali.filter((q) => !obiteljiNovih.has(questionFamilyKey(q))), ...ostali.filter((q) => obiteljiNovih.has(questionFamilyKey(q)))];
+    odabrani = [...naizmjencePoObiteljima(novi), ...naizmjencePoObiteljima(ostaliPoRedu)].slice(0, count);
+  }
+
   // 3b. Ni generator nije dao dovoljno (mala tema s ručno pisanim pitanjima)?
   //     Umjesto praznog kviza dopuni pitanjima koja dijete NAJDULJE nije
-  //     vidjelo — ali nikad onima iz zadnja tri kviza.
-  if (pool.length < count && seenOids.length > 0) {
-    const kandidati = seenIds
-      .filter((id) => !vidjeno.svjeze.has(id))
-      .sort((a, b) => vidjeno.zadnjiPut.get(a) - vidjeno.zadnjiPut.get(b))
-      .slice(0, poolSize);
-    if (kandidati.length) {
-      const stara = await db.collection('questions')
-        .find({ _id: { $in: kandidati.map((id) => new ObjectId(id)) }, topic_id: topicId, isActive: true })
-        .toArray();
-      const redoslijed = new Map(kandidati.map((id, i) => [id, i]));
-      stara.sort((a, b) => redoslijed.get(String(a._id)) - redoslijed.get(String(b._id)));
-      pool = [...pool, ...stara.slice(0, poolSize - pool.length)];
+  //     vidjelo — najprije ne onima iz zadnja tri kviza, a tek ako ni tada
+  //     nema dovoljno, i njima (kratak kviz bolji je od praznoga).
+  if (odabrani.length < count && seenOids.length > 0) {
+    const vec = new Set(odabrani.map(kljucPrikaza));
+    const stari = [...seenIds].sort((a, b) => vidjeno.zadnjiPut.get(a) - vidjeno.zadnjiPut.get(b));
+    const redoslijed = new Map(stari.map((id, i) => [id, i]));
+    const nadjeni = (await lagano({ _id: { $in: stari.map((id) => new ObjectId(id)) }, topic_id: topicId, isActive: true }))
+      .sort((a, b) => redoslijed.get(String(a._id)) - redoslijed.get(String(b._id)));
+    for (const dopustiSvjeze of [false, true]) {
+      for (const q of nadjeni) {
+        if (odabrani.length >= count) break;
+        const k = kljucPrikaza(q);
+        // prikaz iz zadnja tri kviza ne vraćaj ni pod drugim _id-em
+        if (vec.has(k) || (!dopustiSvjeze && svjeziPrikazi.has(k))) continue;
+        vec.add(k); odabrani.push(q);
+      }
     }
   }
-  if (pool.length === 0) return [];
+  if (odabrani.length === 0) return [];
+
+  // Cijeli dokumenti samo za odabrane kandidate, u istom redoslijedu
+  const redPoola = new Map(odabrani.map((q, i) => [String(q._id), i]));
+  let pool = uObitelji(await db.collection('questions').find({ _id: { $in: odabrani.map((q) => q._id) } }).toArray())
+    .sort((a, b) => redPoola.get(String(a._id)) - redPoola.get(String(b._id)));
 
   // 4. Prednost vještinama koje su dospjele za ponavljanje (FSRS).
   //    Vještina je gik.skillId (tema kao mikrovještina); starija pitanja padaju na gik.outcome.
@@ -375,7 +533,7 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
           difficulty: q.difficulty
         });
         questions = orderWithoutAdjacentFamilies(tezina.odaberiPoTezini(pool, count, dijete.rating, ocjena,
-          { familyKey: questionFamilyKey, avoidFamilies: recentFamilies }));
+          { familyKey: questionFamilyKey, avoidFamilies: recentFamilies, starost: starostObitelji }));
       }
     }
   } catch (err) {
@@ -386,6 +544,27 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
     const stats = await getTopicStats(userId, topicId, 5);
     const { quotas } = decideDifficultyTarget(stats);
     questions = pickBalancedQuestions(pool, count, quotas, { avoidFamilies: recentFamilies });
+  }
+
+  // Najviše dva pitanja iste vrste (obitelji) u kvizu: višak zamijeni neviđenim
+  // pitanjem iz obitelji koje u kvizu ima manje od dva (najprije iz obitelji s
+  // najviše preostalih pitanja, da se male obitelji ne potroše prerano).
+  questions = najviseDvaPoObitelji(questions, pool);
+  // Ni neviđenih iz drugih obitelji nema? Višak zamijeni pitanjem druge vrste
+  // koje je dijete vidjelo najdavnije (nikad iz zadnja tri kviza): jedno staro
+  // pitanje bolje je od tri ista oblika zaredom.
+  if (imaViskaObitelji(questions, GRANICA_STARIH) && seenOids.length > 0) {
+    const vec = new Set(questions.map(kljucPrikaza));
+    const lagani = (await lagano({ _id: { $in: seenOids }, topic_id: topicId, isActive: true }))
+      .filter((q) => !svjeziPrikazi.has(kljucPrikaza(q)) && !vec.has(kljucPrikaza(q)))
+      .sort((a, b) => (prikazZadnjiPut.get(kljucPrikaza(a)) ?? 0) - (prikazZadnjiPut.get(kljucPrikaza(b)) ?? 0))
+      .slice(0, 60);
+    if (lagani.length) {
+      const stari = uObitelji(await db.collection('questions').find({ _id: { $in: lagani.map((q) => q._id) } }).toArray());
+      const red = new Map(lagani.map((q, i) => [String(q._id), i]));
+      stari.sort((a, b) => red.get(String(a._id)) - red.get(String(b._id)));
+      questions = najviseDvaPoObitelji(questions, stari, GRANICA_STARIH, { poVelicini: false });
+    }
   }
 
   return questions;

@@ -1,4 +1,5 @@
-require('dotenv').config();
+// .env iz mape backend/, bez obzira na to iz koje mape se pokreće (cPanel/Passenger)
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 // ═══════════════════════════════════════════════════════════
 // Provjera obaveznih env varijabli PRIJE bilo čega drugog
@@ -58,7 +59,16 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '1mb' }));
 
 // Serve frontend static files (Vite build output)
-app.use(express.static(path.join(__dirname, '..', 'frontend', 'dist')));
+// index.html se ne sprema u predmemoriju preglednika (inače nakon nadogradnje
+// ostaje stara verzija), a datoteke u assets/ imaju sažetak u imenu pa smiju
+// godinu dana.
+const DIST = path.join(__dirname, '..', 'frontend', 'dist');
+app.use(express.static(DIST, {
+  setHeaders(res, putanja) {
+    if (putanja.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
+    else if (putanja.includes(`${path.sep}assets${path.sep}`)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  }
+}));
 
 // ═══════════════════════════════════════════════════════════
 // API rute s rate limitingom
@@ -69,12 +79,22 @@ app.use('/api/subjects', subjectRoutes);
 app.use('/api/quiz', quizRoutes);                // AI rute imaju svoj limiter unutar routera
 app.use('/api/progress', progressRoutes);
 app.use('/api/prijave', prijaveRoutes);         // prijava pogrešnog pitanja (vlastiti limiter)
+// Provjera rada poslužitelja i baze (za hosting i nadzor)
+app.get('/api/health', async (req, res) => {
+  try {
+    await require('./db/mongo').getDb().command({ ping: 1 });
+    res.json({ ok: true, baza: 'ok' });
+  } catch {
+    res.status(503).json({ ok: false, baza: 'nedostupna' });
+  }
+});
 
 // ═══════════════════════════════════════════════════════════
 // SPA fallback — SAMO za ne-API rute
 // ═══════════════════════════════════════════════════════════
 app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(DIST, 'index.html'));
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -122,6 +142,11 @@ const PORT = process.env.PORT || 3000;
 async function start() {
   try {
     await connect();
+    // Jednokratna dopuna obitelji starih pitanja (u pozadini, ne blokira start)
+    const odrzavanje = require('./services/obitelji');
+    odrzavanje.iskljuciStrano()
+      .then(() => odrzavanje.dopuniObitelji())
+      .catch((err) => console.error('⚠️  Održavanje banke pitanja:', err.message));
     app.listen(PORT, () => {
       console.log(`🚀 Server pokrenut na http://localhost:${PORT}`);
       console.log(`   Okruženje: ${process.env.NODE_ENV || 'development'}`);
