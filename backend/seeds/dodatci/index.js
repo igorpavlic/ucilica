@@ -11,11 +11,14 @@ const IZVORI = [
   require('./matematika'),
   require('./hrvatski'),
   require('./hrvatski-2'),
+  require('./priroda-a'),
+  require('./priroda-a2'),
 ];
 /** ime generatora → funkcija koja vraća dodatna pitanja (više izvora se spaja). */
 const DODATCI = {};
 for (const izvor of IZVORI) {
   for (const [ime, f] of Object.entries(izvor)) {
+    if (typeof f !== 'function') continue;
     const prije = DODATCI[ime];
     DODATCI[ime] = prije ? () => [...prije(), ...f()] : f;
   }
