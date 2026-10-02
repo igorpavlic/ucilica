@@ -59,7 +59,16 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '1mb' }));
 
 // Serve frontend static files (Vite build output)
-app.use(express.static(path.join(__dirname, '..', 'frontend', 'dist')));
+// index.html se ne sprema u predmemoriju preglednika (inače nakon nadogradnje
+// ostaje stara verzija), a datoteke u assets/ imaju sažetak u imenu pa smiju
+// godinu dana.
+const DIST = path.join(__dirname, '..', 'frontend', 'dist');
+app.use(express.static(DIST, {
+  setHeaders(res, putanja) {
+    if (putanja.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
+    else if (putanja.includes(`${path.sep}assets${path.sep}`)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  }
+}));
 
 // ═══════════════════════════════════════════════════════════
 // API rute s rate limitingom
@@ -84,7 +93,8 @@ app.get('/api/health', async (req, res) => {
 // SPA fallback — SAMO za ne-API rute
 // ═══════════════════════════════════════════════════════════
 app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(DIST, 'index.html'));
 });
 
 // ═══════════════════════════════════════════════════════════
