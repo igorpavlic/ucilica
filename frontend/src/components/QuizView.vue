@@ -17,7 +17,7 @@
       <p class="kviz-tema">{{ $route.query.topicIcon }} {{ $route.query.topicName }}</p>
       <p v-if="opseg" class="scope-note">{{ opisOpsega }}</p>
 
-      <div class="question-card" :key="currentQ">
+      <div class="question-card" :key="currentQ" :class="{ 'ima-mrezu': questions[currentQ].mreza?.length }">
         <!--
           Vizual se razlaže na pojedinačne znakove: u flex spremniku je
           neprekinuti tekst JEDAN element, pa se flex-wrap nikad ne primijeni
@@ -40,7 +40,8 @@
         </div>
 
         <!-- Mreža (robot i put): svako polje je ćelija, pa se redovi ne lome. -->
-        <div v-if="questions[currentQ].mreza?.length" class="quiz-mreza" role="img" aria-label="Mreža polja s robotom">
+        <div v-if="questions[currentQ].mreza?.length" class="quiz-mreza" role="img" aria-label="Mreža polja s robotom"
+          :style="{ '--n': questions[currentQ].mreza.length }">
           <div v-for="(red, ri) in questions[currentQ].mreza" :key="ri" class="quiz-mreza-red">
             <span v-for="(polje, pi) in red" :key="pi" class="quiz-mreza-polje">{{ polje }}</span>
           </div>
@@ -76,7 +77,7 @@
           {{ questions[currentQ].hint }}
         </div>
 
-        <div v-if="questions[currentQ].type === 'choice'" class="answers-grid">
+        <div v-if="questions[currentQ].type === 'choice'" class="answers-grid" :class="{ kratki: kratkiOdgovori }">
           <button
             v-for="(ans, i) in questions[currentQ].answers"
             :key="i"
@@ -111,7 +112,7 @@
         </div>
 
         <!-- Na pitanje („Smiješ li…?”) Da/Ne, na tvrdnju Točno/Netočno -->
-        <div v-if="questions[currentQ].type === 'true-false'" class="answers-grid">
+        <div v-if="questions[currentQ].type === 'true-false'" class="answers-grid kratki">
           <button v-for="(option, oi) in [true, false]" :key="String(option)" class="answer-btn"
             :class="{
               correct: answered && option === tocnaTF,
@@ -302,6 +303,12 @@ const visualGroups = computed(() => {
   const grupe = []
   for (let i = 0; i < znakovi.length; i += 5) grupe.push(znakovi.slice(i, i + 5))
   return grupe
+})
+
+// Kratki odgovori (strelice, brojevi, „druga naredba”) i na mobitelu idu u dva stupca
+const kratkiOdgovori = computed(() => {
+  const a = questions.value[currentQ.value]?.answers || []
+  return a.length > 0 && a.every((x) => String(x).length <= 18)
 })
 
 // ── točno/netočno: koji je gumb odabran i koji je točan ──────────

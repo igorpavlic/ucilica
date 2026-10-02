@@ -28,7 +28,11 @@ const ish = (kod) => `OŠ INF ${kod}`;
 const SMJER = { '→': [0, 1], '←': [0, -1], '↑': [-1, 0], '↓': [1, 0] };
 const SMJEROVI = Object.keys(SMJER);
 const IME_SMJERA = { '→': 'desno', '←': 'lijevo', '↑': 'gore', '↓': 'dolje' };
-const PRAZNO = '⬜', ROBOT = '🤖', CILJ = '⭐', STIJENA = '🪨';
+const PRAZNO = '⬜', ROBOT = '🤖', STIJENA = '🪨';
+// Cilj robota mijenja se od zadatka do zadatka, pa se ni tekst pitanja ne ponavlja
+// („do zvjezdice”, „do kućice”…). [znak, genitiv (do …), akuzativ (na …)]
+const CILJEVI = [['⭐', 'zvjezdice', 'zvjezdicu'], ['🏠', 'kućice', 'kućicu'], ['⚽', 'lopte', 'loptu'], ['🎁', 'poklona', 'poklon'],
+  ['🌸', 'cvijeta', 'cvijet'], ['🔑', 'ključa', 'ključ'], ['🧀', 'sira', 'sir'], ['🚩', 'zastavice', 'zastavicu']];
 const VOCE = [['🍎', 'jabuka'], ['🍌', 'banana'], ['🍓', 'jagoda'], ['🍐', 'kruška'], ['🍇', 'grožđe']];
 
 const zapis = (niz) => niz.join(' ');
@@ -115,7 +119,7 @@ function pogresniNizovi(m, put, cilj) {
   return [...new Set(dobri)].filter((z) => z !== zapis(put));
 }
 
-const OPIS_MREZE = 'Robot 🤖 ide po bijelim poljima. Strelica pomiče robota za jedno polje u tom smjeru.';
+const OPIS_MREZE = 'Svaka strelica pomiče robota 🤖 za jedno polje.';
 
 function zadatciMreza(razred) {
   const q = [];
@@ -132,9 +136,10 @@ function zadatciMreza(razred) {
     if (!c) continue;
     const krivi = pogresniNizovi(m, c.put, c.cilj);
     if (krivi.length < 3) continue;
-    q.push(izbor('Koje naredbe dovode robota do zvjezdice?', zapis(c.put), krivi, razred === 1 ? 2 : 3,
-      `Robot ide ${c.put.map((s) => IME_SMJERA[s]).join(', ')} i stane na zvjezdicu. Provjeri tako da prstom slijediš svaku strelicu.`,
-      ishodB, { mreza: slika(m, { [kljucPolja(c.cilj)]: CILJ }), passage: opis }));
+    const [znak, doCilja, naCilj] = jedan(CILJEVI);
+    q.push(izbor(`Koje naredbe dovode robota do ${doCilja} ${znak}?`, zapis(c.put), krivi, razred === 1 ? 2 : 3,
+      `Robot ide ${c.put.map((s) => IME_SMJERA[s]).join(', ')} i stane na ${naCilj}. Provjeri tako da prstom slijediš svaku strelicu.`,
+      ishodB, { mreza: slika(m, { [kljucPolja(c.cilj)]: znak }), passage: opis }));
   }
 
   // 2) Kod kojeg voća robot stane?
@@ -159,9 +164,10 @@ function zadatciMreza(razred) {
   {
     const m = novaMreza(n, stijena);
     const c = ciljNaUdaljenosti(m, minK, maxK + 1);
-    if (c) q.push(upisBroja('Koliko najmanje koraka treba robotu do zvjezdice?', c.put.length, razred <= 2 ? 2 : 3,
+    const [znak, doCilja] = jedan(CILJEVI);
+    if (c) q.push(upisBroja(`Koliko najmanje koraka treba robotu do ${doCilja} ${znak}?`, c.put.length, razred <= 2 ? 2 : 3,
       `Najkraći put je ${zapis(c.put)}, a to je ${c.put.length} koraka.${stijena ? ' Stijene treba zaobići.' : ''}`,
-      razred === 1 ? ish('B.1.1') : ishodB, { mreza: slika(m, { [kljucPolja(c.cilj)]: CILJ }), passage: opis }));
+      razred === 1 ? ish('B.1.1') : ishodB, { mreza: slika(m, { [kljucPolja(c.cilj)]: znak }), passage: opis }));
   }
 
   // 4) Pronađi pogrešnu naredbu (od 2. razreda): samo jedna zamjena popravlja niz
@@ -184,10 +190,11 @@ function zadatciMreza(razred) {
       }));
       if (popravci.size !== 1 || !popravci.has(k)) continue;
       const redni = ['prva', 'druga', 'treća', 'četvrta', 'peta', 'šesta'];
-      q.push(izbor(`Robot treba doći do zvjezdice naredbama ${zapis(krivi)}, ali jedna je naredba pogrešna. Koja?`,
+      const [znak, doCilja] = jedan(CILJEVI);
+      q.push(izbor(`Robot treba doći do ${doCilja} ${znak} naredbama ${zapis(krivi)}, ali jedna je naredba pogrešna. Koja?`,
         `${redni[k]} naredba`, redni.slice(0, krivi.length).map((r) => `${r} naredba`), 3,
         `Ispravno je ${zapis(c.put)}: ${redni[k]} naredba treba biti ${c.put[k]} (${IME_SMJERA[c.put[k]]}), a ne ${krivi[k]}.`,
-        razred === 2 ? ish('B.2.1') : ishodB, { mreza: slika(m, { [kljucPolja(c.cilj)]: CILJ }), passage: opis }));
+        razred === 2 ? ish('B.2.1') : ishodB, { mreza: slika(m, { [kljucPolja(c.cilj)]: znak }), passage: opis }));
       break;
     }
   }
@@ -310,9 +317,30 @@ function zadatakRazvrstavanja(razred) {
 const ZNAKOVI = [['🔴', 'crveni krug'], ['🔵', 'plavi krug'], ['🟢', 'zeleni krug'], ['🟡', 'žuti krug']];
 const OBRASCI = { 1: ['AB', 'ABC'], 2: ['AAB', 'ABB', 'ABC'], 3: ['AABB', 'ABBC', 'ABCB'], 4: ['AABC', 'ABCC', 'ABACB'] };
 
+const OBLICI = [['▲', 'trokut'], ['■', 'kvadrat'], ['●', 'krug'], ['★', 'zvijezda']];
+
 function zadatciUzoraka(razred) {
   const q = [];
-  for (let i = 0; i < 2; i++) {
+  // Jedan zadatak s oblicima ili brojevima (od 2. r.), da niz ne bude uvijek „krugovi”
+  if (Math.random() < 0.5) {
+    const obrazac = jedan(OBRASCI[Math.min(razred, 3)]);
+    const slova = [...new Set(obrazac)];
+    const izabrani = uzmi(OBLICI, slova.length + 1);
+    const znak = Object.fromEntries(slova.map((s, j) => [s, izabrani[j]]));
+    const visak = cijeli(0, obrazac.length - 1);
+    const niz = [...obrazac.repeat(2), ...obrazac.slice(0, visak)].map((s) => znak[s][0]);
+    const sljedeci = znak[obrazac[visak]];
+    q.push(izbor('Koji oblik dolazi sljedeći u nizu?', sljedeci[1], izabrani.map((z) => z[1]), razred <= 2 ? 1 : 2,
+      `Ponavlja se ${obrazac.split('').map((s) => znak[s][1]).join(', ')}. Sljedeći je ${sljedeci[1]}.`,
+      razred === 1 ? ish('B.1.1') : 'OŠ INF B (logički zadatak)', { visual: `${niz.join(' ')} ❓` }));
+  } else if (razred >= 2) {
+    const korak = razred === 2 ? cijeli(2, 5) : cijeli(3, 12), start = cijeli(1, 20);
+    const niz = Array.from({ length: 4 }, (_, i) => start + i * korak);
+    q.push(upisBroja(`Koji broj dolazi sljedeći u nizu ${niz.join(', ')}, ___?`, start + 4 * korak, 2,
+      `Svaki sljedeći broj je za ${korak} veći: ${niz[3]} + ${korak} = ${start + 4 * korak}.`,
+      razred === 4 ? ish('B.4.2') : 'OŠ INF B (logički zadatak)'));
+  }
+  for (let i = 0; i < (q.length ? 1 : 2); i++) {
     const obrazac = jedan(OBRASCI[razred]);
     const slova = [...new Set(obrazac)];
     const izabrani = uzmi(ZNAKOVI, slova.length + 1);
@@ -359,6 +387,11 @@ function zadatciSifre(razred) {
     `Svaki znak zamijeni slovom iz šifre: ${[...rijec].map((s) => `${kod[s]} → ${s}`).join(', ')}.`,
     ishod, { passage: `Šifra:\n${tablica}`, visual: zapisRijeci(rijec) }));
 
+  {
+    const slovo = jedan(sva);
+    q.push(izbor(`Koje slovo u šifri označava znak ${kod[slovo]}?`, slovo, sva, 1,
+      `U tablici šifre piše ${kod[slovo]} = ${slovo}.`, ishod, { passage: `Šifra:\n${tablica}` }));
+  }
   if (druga !== rijec) {
     const tocno = zapisRijeci(druga);
     const znakovi = [...druga].map((s) => kod[s]);
@@ -382,29 +415,67 @@ function zadatciSifre(razred) {
 const kolator = new Intl.Collator('hr');
 
 function zadatciSortiranja(razred) {
-  const q = [];
-  const imena = uzmi(Object.keys(HR.IMENA), 12);
-  const izabrana = [];
-  for (const ime of imena) if (!izabrana.some((x) => x[0] === ime[0]) && izabrana.length < 4) izabrana.push(ime);
-  q.push(poredaj('Poredaj imena abecednim redom, onako kako ih računalo slaže u imeniku.', [...izabrana].sort(kolator.compare), 2,
-    'Abecedni red gleda prvo slovo imena: A, B, C, Č, Ć, D, DŽ, Đ, E, F, G, H, I, J, K, L, LJ, M, N, NJ, O, P, R, S, Š, T, U, V, Z, Ž.',
-    (razred === 3 ? ish('B.3.2') : 'OŠ INF B (sortiranje)')));
-
-  const visine = [];
+  // Svaki poziv bira 3 od 9 oblika zadatka, pa se ista rečenica ne vraća svaki kviz.
+  const ishodS = razred === 3 ? ish('B.3.2') : 'OŠ INF B (sortiranje)';
   const djeca = uzmi(Object.keys(HR.IMENA), 4);
   const sve = uzmi(Array.from({ length: 31 }, (_, i) => 120 + i), 4);
-  djeca.forEach((d, i) => visine.push({ label: d, value: sve[i] }));
+  const visine = djeca.map((d, i) => ({ label: d, value: sve[i] }));
   const poVisini = [...visine].sort((a, b) => a.value - b.value);
-  q.push(poredaj('Grafikon pokazuje visinu djece u centimetrima. Kojim redom stoje djeca od najnižeg do najvišeg?', poVisini.map((x) => x.label), 2,
-    `Uspoređujemo brojeve: ${poVisini.map((x) => `${x.label} ${x.value} cm`).join(', ')}. Tako računalo sortira podatke od najmanjeg do najvećeg.`,
-    (razred === 3 ? ish('B.3.2') : 'OŠ INF B (sortiranje)'), { chart: visine }));
+  const veliki = razred === 3 ? 1000 : 100000;
+  const brojevi = () => uzmi(Array.from({ length: 60 }, () => cijeli(10, veliki - 1)), 5).filter((v, i, a) => a.indexOf(v) === i).slice(0, 4);
+  const ZIVOTINJE = [['mrav', 1], ['miš', 2], ['mačka', 3], ['pas', 4], ['ovca', 5], ['konj', 6], ['slon', 7]];
 
-  const t = cijeli(1, 3);
-  q.push(izbor(`Djeca su poredana od najnižeg do najvišeg. Tko je ${['prvi', 'drugi', 'treći', 'četvrti'][t]} u redu?`,
-    poVisini[t].label, visine.map((x) => x.label), 3,
-    `Poredano po visini: ${poVisini.map((x) => x.label).join(', ')}. Na ${t + 1}. mjestu je ${poVisini[t].label}.`,
-    (razred === 3 ? ish('B.3.2') : 'OŠ INF B (sortiranje)'), { chart: visine }));
-  return q;
+  const varijante = [
+    () => {
+      const izabrana = [];
+      for (const ime of uzmi(Object.keys(HR.IMENA), 12)) if (!izabrana.some((x) => x[0] === ime[0]) && izabrana.length < 4) izabrana.push(ime);
+      return poredaj('Poredaj imena abecednim redom, onako kako ih računalo slaže u imeniku.', [...izabrana].sort(kolator.compare), 2,
+        'Abecedni red gleda prvo slovo imena: A, B, C, Č, Ć, D, DŽ, Đ, E, F, G, H, I, J, K, L, LJ, M, N, NJ, O, P, R, S, Š, T, U, V, Z, Ž.', ishodS);
+    },
+    () => poredaj('Grafikon pokazuje visinu djece u centimetrima. Kojim redom stoje djeca od najnižeg do najvišeg?', poVisini.map((x) => x.label), 2,
+      `Uspoređujemo brojeve: ${poVisini.map((x) => `${x.label} ${x.value} cm`).join(', ')}. Tako računalo sortira podatke od najmanjeg do najvećeg.`,
+      ishodS, { chart: visine }),
+    () => {
+      const t = cijeli(1, 2);
+      return izbor(`Djeca su poredana od najnižeg do najvišeg. Tko je ${['prvi', 'drugi', 'treći'][t]} u redu?`, poVisini[t].label, visine.map((x) => x.label), 3,
+        `Poredano po visini: ${poVisini.map((x) => x.label).join(', ')}. Na ${t + 1}. mjestu je ${poVisini[t].label}.`, ishodS, { chart: visine });
+    },
+    () => {
+      const najvisi = Math.random() < 0.5;
+      const x = najvisi ? poVisini[3] : poVisini[0];
+      return izbor(`Pogledaj grafikon. Tko je ${najvisi ? 'najviši' : 'najniži'}?`, x.label, visine.map((v) => v.label), 1,
+        `${x.label} ima ${x.value} cm, a to je ${najvisi ? 'najveći' : 'najmanji'} broj u grafikonu.`, ishodS, { chart: visine });
+    },
+    () => {
+      const granica = poVisini[cijeli(0, 2)].value;
+      const n = visine.filter((v) => v.value > granica).length;
+      return upisBroja(`Pogledaj grafikon. Koliko je djece više od ${granica} cm?`, n, 2,
+        `Više od ${granica} cm su: ${visine.filter((v) => v.value > granica).map((v) => `${v.label} (${v.value})`).join(', ')}.`, ishodS, { chart: visine });
+    },
+    () => {
+      const b = brojevi();
+      return poredaj('Poredaj brojeve od najmanjeg do najvećeg.', [...b].sort((x, y) => x - y).map(String), 2,
+        'Uspoređujemo najprije broj znamenaka, a zatim znamenke slijeva nadesno.', ishodS);
+    },
+    () => {
+      const b = brojevi();
+      return poredaj('Poredaj brojeve od najvećeg do najmanjeg.', [...b].sort((x, y) => y - x).map(String), 2,
+        'Silazni redoslijed: prvo najveći broj, na kraju najmanji.', ishodS);
+    },
+    () => {
+      const b = uzmi(Array.from({ length: 40 }, (_, i) => (i + 1) * cijeli(2, 9)), 5).filter((v, i, a) => a.indexOf(v) === i);
+      if (b.length < 5) return null;
+      const sredina = [...b].sort((x, y) => x - y)[2];
+      return upisBroja(`Brojeve ${b.join(', ')} poredamo od najmanjeg do najvećeg. Koji je broj u sredini?`, sredina, 3,
+        `Poredano: ${[...b].sort((x, y) => x - y).join(', ')}. Treći od pet brojeva je ${sredina}.`, ishodS);
+    },
+    () => {
+      const z = uzmi(ZIVOTINJE, 4).sort((x, y) => x[1] - y[1]);
+      return poredaj('Poredaj životinje od najlakše do najteže.', z.map((x) => x[0]), 1,
+        `Od najlakše do najteže: ${z.map((x) => x[0]).join(', ')}.`, ishodS);
+    },
+  ];
+  return uzmi(varijante, 3).map((f) => f()).filter(Boolean);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -419,31 +490,55 @@ const PRAVILA = [
 const bodova = (n) => ['bod', 'boda', 'bodova'][HR.oblikZa(n)];
 
 function zadatciOdluke(razred) {
-  const q = [];
-  {
-    const [uvjet, da, ne, [jest, nije]] = jedan(PRAVILA);
-    const istina = Math.random() < 0.5;
-    const glagolske = ['stani', 'kreni', 'upali svjetlo', 'ugasi svjetlo'].includes(da);
-    const pitanje = glagolske
-      ? `Program kaže: AKO ${uvjet}, ONDA „${da}”, INAČE „${ne}”. ${istina ? jest : nije} Što program kaže?`
-      : `Program kaže: AKO ${uvjet}, ONDA uzmi ${da}, INAČE uzmi ${ne}. ${istina ? jest : nije} Što lik uzima?`;
-    const tocno = istina ? da : ne;
-    q.push(izbor(pitanje, tocno, [istina ? ne : da], 2,
-      `Uvjet „${uvjet}” ${istina ? 'je ispunjen, pa se izvodi dio iza ONDA' : 'nije ispunjen, pa se izvodi dio iza INAČE'}.`,
-      ish(`B.${razred}.1`)));
-  }
-  {
-    const granica = razred === 3 ? cijeli(5, 20) * 5 : cijeli(10, 90) * 10;
-    const broj = jedan([granica, granica + cijeli(1, 9), granica - cijeli(1, 9)]);
-    const vece = broj > granica;
-    q.push(izbor(`Program kaže: AKO je broj veći od ${granica}, ispiši „veliki”, INAČE ispiši „mali”. Upisan je broj ${broj}. Što program ispiše?`,
-      vece ? '„veliki”' : '„mali”', ['„veliki”', '„mali”'], broj === granica ? 3 : 2,
-      broj === granica
-        ? `${broj} nije veći od ${granica}, nego jednak. Uvjet nije ispunjen, pa vrijedi dio INAČE.`
-        : `${broj} ${vece ? 'je' : 'nije'} veći od ${granica}, pa vrijedi dio ${vece ? 'ONDA' : 'INAČE'}.`,
-      ish(`B.${razred}.1`)));
-  }
-  return q;
+  // 2 od 6 oblika AKO–INAČE po pozivu
+  const iB = ish(`B.${razred}.1`);
+  const varijante = [
+    () => {
+      const [uvjet, da, ne, [jest, nije]] = jedan(PRAVILA);
+      const istina = Math.random() < 0.5;
+      const glagolske = ['stani', 'kreni', 'upali svjetlo', 'ugasi svjetlo'].includes(da);
+      const pitanje = glagolske
+        ? `Program kaže: AKO ${uvjet}, ONDA „${da}”, INAČE „${ne}”. ${istina ? jest : nije} Što program kaže?`
+        : `Program kaže: AKO ${uvjet}, ONDA uzmi ${da}, INAČE uzmi ${ne}. ${istina ? jest : nije} Što lik uzima?`;
+      return izbor(pitanje, istina ? da : ne, [istina ? ne : da], 2,
+        `Uvjet „${uvjet}” ${istina ? 'je ispunjen, pa se izvodi dio iza ONDA' : 'nije ispunjen, pa se izvodi dio iza INAČE'}.`, iB);
+    },
+    () => {
+      const granica = razred === 3 ? cijeli(5, 20) * 5 : cijeli(10, 90) * 10;
+      const broj = jedan([granica, granica + cijeli(1, 9), granica - cijeli(1, 9)]);
+      const vece = broj > granica;
+      return izbor(`Program kaže: AKO je broj veći od ${granica}, ispiši „veliki”, INAČE ispiši „mali”. Upisan je broj ${broj}. Što program ispiše?`,
+        vece ? '„veliki”' : '„mali”', ['„veliki”', '„mali”'], broj === granica ? 3 : 2,
+        broj === granica ? `${broj} nije veći od ${granica}, nego jednak. Uvjet nije ispunjen, pa vrijedi dio INAČE.`
+          : `${broj} ${vece ? 'je' : 'nije'} veći od ${granica}, pa vrijedi dio ${vece ? 'ONDA' : 'INAČE'}.`, iB);
+    },
+    () => {
+      const n = cijeli(11, 99), paran = n % 2 === 0;
+      return izbor(`Program kaže: AKO je broj paran, ispiši „paran”, INAČE ispiši „neparan”. Upisan je broj ${n}. Što program ispiše?`,
+        paran ? '„paran”' : '„neparan”', ['„paran”', '„neparan”'], 2,
+        `${n} ${paran ? 'je djeljiv s 2, pa je paran' : 'nije djeljiv s 2, pa je neparan'}.`, iB);
+    },
+    () => {
+      const t = cijeli(-9, 12);
+      return izbor(`Program kaže: AKO je temperatura ispod 0 °C, ispiši „led”, INAČE ispiši „voda”. Toplomjer pokazuje ${t} °C. Što program ispiše?`,
+        t < 0 ? '„led”' : '„voda”', ['„led”', '„voda”'], t === 0 ? 3 : 2,
+        t < 0 ? `${t} °C je ispod nule, pa vrijedi dio ONDA.` : `${t} °C nije ispod nule, pa vrijedi dio INAČE.`, iB);
+    },
+    () => {
+      const zid = Math.random() < 0.5;
+      return izbor(`Robot ima naredbu: AKO je ispred njega zid, ONDA se okreni, INAČE idi naprijed. ${zid ? 'Ispred robota je zid.' : 'Ispred robota je slobodno polje.'} Što robot napravi?`,
+        zid ? 'okrene se' : 'ide naprijed', ['okrene se', 'ide naprijed', 'stane i ugasi se'], 2,
+        zid ? 'Uvjet je ispunjen (zid je ispred), pa se izvodi ONDA: okreni se.' : 'Uvjet nije ispunjen, pa se izvodi INAČE: idi naprijed.', iB);
+    },
+    () => {
+      const granica = jedan([10, 20, 50]), b = granica + jedan([-3, -1, 0, 2, 5]);
+      const prolazi = b >= granica;
+      return izbor(`U igri vrijedi: AKO imaš barem ${granica} bodova, ONDA prelaziš na sljedeću razinu. Imaš ${b} bodova. Prelaziš li na sljedeću razinu?`,
+        prolazi ? 'Da' : 'Ne', ['Da', 'Ne'], b === granica ? 3 : 2,
+        prolazi ? `${b} je barem ${granica} („barem” znači ${granica} ili više).` : `${b} je manje od ${granica}.`, iB);
+    },
+  ];
+  return uzmi(varijante, 2).map((f) => f());
 }
 
 function zadatciPonavljanja(razred) {
@@ -459,6 +554,22 @@ function zadatciPonavljanja(razred) {
     q.push(upisBroja(`Program kaže: PONOVI ${n} PUTA: ${likovi.map((l) => `nacrtaj ${l}`).join(', ')}. Koliko je likova nacrtano ukupno?`, n * k, 2,
       `Jedno ponavljanje daje ${k} lika, a ponavlja se ${n} puta: ${n} · ${k} = ${n * k}.`, ish(`B.${razred}.1`)));
   }
+  // Dodatni oblici petlji: po pozivu jedan nasumični
+  const dodatni = [
+    () => { const n = cijeli(3, 8), k = cijeli(2, 3);
+      return upisBroja(`Program kaže: PONOVI ${n} PUTA: skoči ${k} polja naprijed. Koliko polja lik prijeđe ukupno?`, n * k, 2,
+        `${n} skokova po ${k} polja: ${n} · ${k} = ${n * k}.`, ish(`B.${razred}.1`)); },
+    () => { const [lik, n] = jedan([['kvadrat', 4], ['trokut', 3], ['šesterokut', 6]]);
+      return upisBroja(`Lik crta ${lik}: PONOVI ${n} PUTA: idi naprijed, okreni se. Koliko se puta lik okrenuo?`, n, 2,
+        `Okret je unutar ponavljanja, pa se izvodi ${n} puta — koliko ${lik} ima stranica.`, ish(`B.${razred}.1`)); },
+    () => { const n = cijeli(2, 6), k = cijeli(2, 5);
+      return upisBroja(`Košara je prazna. Program ${n} puta ponovi: stavi ${k} jabuke u košaru. Koliko je jabuka u košari?`.replace(`${k} jabuke`, `${HR.brojIme(k, 'jabuka', 'A')}`), n * k, 2,
+        `${n} · ${k} = ${n * k}.`, ish(`B.${razred}.1`)); },
+    () => { const k = cijeli(2, 4), n = cijeli(3, 6);
+      return upisBroja(`Svaki korak lika ide ${k} polja naprijed. Koliko puta treba ponoviti korak da lik prijeđe ${n * k} polja?`, n, 3,
+        `${n * k} : ${k} = ${n}.`, ish(`B.${razred}.1`)); },
+  ];
+  q.push(jedan(dodatni)());
   if (razred === 4) {
     const start = jedan([0, 0, 10, 20]), n = cijeli(3, 8), d = cijeli(2, 9);
     const minus = start > 0 && start - n * d >= 0 && Math.random() < 0.5;
@@ -500,6 +611,12 @@ const ZDRAVLJE = [
   ['Smijemo li uređaj dirati mokrim rukama?', false, 'Voda može oštetiti uređaj, a mokre ruke i struja su opasni.'],
   ['Je li dobro koristiti tablet u krevetu prije spavanja?', false, 'Svjetlo zaslona otežava uspavljivanje.'],
   ['Sjedimo li uz računalo uspravnih leđa i s nogama na podu?', true, 'Pravilno sjedenje čuva leđa i vrat.'],
+  ['Je li dobro odmoriti oči tako da nakratko pogledamo kroz prozor u daljinu?', true, 'Pogled u daljinu opušta oči nakon gledanja u zaslon.'],
+  ['Treba li zaslon biti jako svijetao u mračnoj sobi?', false, 'Prejak zaslon u mraku zamara oči. Upali svjetlo u sobi ili smanji svjetlinu.'],
+  ['Smijemo li slušalice stalno slušati na najjačoj glasnoći?', false, 'Preglasan zvuk oštećuje sluh.'],
+  ['Je li dobro igrati igrice umjesto spavanja?', false, 'San je važan za zdravlje i učenje.'],
+  ['Trebamo li tablet nositi pažljivo, objema rukama?', true, 'Tako ga nećemo ispustiti i razbiti.'],
+  ['Smijemo li sami otvarati računalo i dirati dijelove unutra?', false, 'Unutra je struja i osjetljivi dijelovi. To radi odrasla osoba ili serviser.'],
 ];
 const SIGURNOST = [
   ['Smiješ li prijatelju iz razreda reći svoju lozinku?', false, 'Lozinku zna samo vlasnik i roditelj.'],
@@ -510,6 +627,13 @@ const SIGURNOST = [
   ['Je li sve što piše na internetu sigurno točno?', false, 'Na internetu svatko može objaviti bilo što, pa podatke provjeravamo.'],
   ['Je li poruka „Čestitamo, tvoj je novi tablet! Upiši lozinku.” vjerojatno prijevara?', true, 'Prave nagrade nikad ne traže lozinku.'],
   ['Trebaš li se odjaviti s računa kad radiš na školskom računalu?', true, 'Inače sljedeći učenik može ući u tvoj račun.'],
+  ['Smiješ li otvoriti privitak u poruci od nepoznate osobe?', false, 'Privitak može sadržavati virus. Pokaži poruku odrasloj osobi.'],
+  ['Trebaš li pitati roditelja prije nego što preuzmeš novu igricu?', true, 'Neke igrice nisu za djecu ili traže plaćanje.'],
+  ['Je li u redu na internetu pisati ružne poruke o drugima?', false, 'Riječi na internetu jednako bole kao i uživo.'],
+  ['Smiješ li bez pitanja kliknuti na reklamu koja kaže da si osvojio nagradu?', false, 'Takve reklame su najčešće prijevara.'],
+  ['Trebaš li reći odrasloj osobi ako te netko na internetu zadirkuje?', true, 'Odrasla osoba pomoći će zaustaviti zadirkivanje.'],
+  ['Je li dobra lozinka tvoj datum rođenja?', false, 'Datum rođenja drugi mogu lako saznati i pogoditi.'],
+  ['Smije li igrica tražiti tvoju kućnu adresu?', false, 'Igrici ne treba tvoja adresa. Ne upisuj je i reci roditelju.'],
 ];
 
 function slabeLozinke() {

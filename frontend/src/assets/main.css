@@ -1271,9 +1271,12 @@ select.form-input {
 .quiz-mreza { display: grid; width: max-content; max-width: 100%; gap: 4px; margin: 0 auto 1rem; padding: 8px; border-radius: var(--r-md); background: var(--bg-warm); }
 .quiz-mreza-red { display: flex; gap: 4px; justify-content: center; }
 .quiz-mreza-polje {
-  width: clamp(36px, 13vw, 52px); height: clamp(36px, 13vw, 52px);
+  /* Veličina polja ovisi i o širini i o visini zaslona te o broju redaka (--n),
+     pa mreža 5×5 stane na mobitel zajedno s pitanjem i odgovorima. */
+  --polje: clamp(26px, min(13vw, calc((100dvh - 430px) / var(--n, 5))), 52px);
+  width: var(--polje); height: var(--polje);
   display: flex; align-items: center; justify-content: center;
-  font-size: clamp(1.3rem, 6vw, 1.9rem); line-height: 1;
+  font-size: calc(var(--polje) * .62); line-height: 1;
   background: var(--surface); border-radius: 6px;
 }
 .scope-note { font-size: 0.85rem; opacity: 0.75; margin: 2px 0 6px; }
@@ -1437,4 +1440,43 @@ select.form-input {
 @media (max-height: 700px) and (max-width: 900px) {
   .kviz-tema, .scope-note { display: none; }
   .question-text { margin-bottom: 8px; }
+}
+
+
+/* Zadatak s mrežom: kratki opis ispod mreže, manje razmaka */
+.ima-mrezu .quiz-mreza { margin-bottom: 8px; padding: 6px; gap: 3px; }
+.ima-mrezu .quiz-mreza-red { gap: 3px; }
+.ima-mrezu .reading-passage { font-size: .85rem; line-height: 1.4; padding: .45rem .75rem; margin-bottom: .6rem; }
+@media (max-width: 600px) {
+  .answers-grid.kratki { grid-template-columns: 1fr 1fr; }
+  .ima-mrezu .question-text { font-size: clamp(1rem, 4.4vw, 1.25rem); }
+  .ima-mrezu .answer-btn { padding: 10px 8px; min-height: 46px; }
+}
+
+/* ═══ Hamburger izbornik na mobitelu (izvan kviza) ═══════════════════ */
+.topbar-izbornik-gumb { display: none; }
+.topbar-kratko { display: none; }
+@media (max-width: 600px) {
+  .topbar { padding: 8px 12px; }
+  .topbar-inner { position: relative; }
+  .topbar-kratko { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .topbar-izbornik-gumb {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; border-radius: 12px; border: 1px solid rgba(26, 22, 21, .1);
+    background: var(--surface); font-size: 1.25rem; cursor: pointer; color: var(--text-primary);
+  }
+  .topbar-stats {
+    display: none;
+    position: absolute; top: calc(100% + 8px); right: 0; z-index: 200;
+    flex-direction: column; align-items: stretch; gap: 6px;
+    min-width: 210px; padding: 10px;
+    background: var(--surface); border: 1px solid rgba(26, 22, 21, .08);
+    border-radius: var(--r-lg); box-shadow: var(--shadow-lg);
+  }
+  .topbar-stats.otvoreno { display: flex; }
+  .topbar-stats .stat-chip, .topbar-stats .btn-logout, .topbar-stats .topbar-upute {
+    justify-content: flex-start; padding: 10px 12px; font-size: .95rem; border-radius: 10px;
+  }
+  .topbar-stats .stat-chip:nth-child(3) { display: flex; }
+  .topbar-upute-tekst { display: inline; }
 }

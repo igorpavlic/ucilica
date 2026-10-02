@@ -267,6 +267,9 @@ const TEKSTOVI = [
   }
 ];
 
+// Dodatni tekstovi (seeds/citanje-dodatni.js) koriste iste pomoćnike.
+TEKSTOVI.push(...require('./citanje-dodatni')({ izbor, broj, rijec, redoslijed, tocnoNetocno }));
+
 /** Pitanja jednoga teksta, s tekstom kao `passage` i ishodom po pitanju. */
 function pitanjaTeksta(t) {
   return t.pitanja.map((p, i) => ({

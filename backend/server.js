@@ -142,6 +142,11 @@ const PORT = process.env.PORT || 3000;
 async function start() {
   try {
     await connect();
+    // Jednokratna dopuna obitelji starih pitanja (u pozadini, ne blokira start)
+    const odrzavanje = require('./services/obitelji');
+    odrzavanje.iskljuciStrano()
+      .then(() => odrzavanje.dopuniObitelji())
+      .catch((err) => console.error('⚠️  Održavanje banke pitanja:', err.message));
     app.listen(PORT, () => {
       console.log(`🚀 Server pokrenut na http://localhost:${PORT}`);
       console.log(`   Okruženje: ${process.env.NODE_ENV || 'development'}`);

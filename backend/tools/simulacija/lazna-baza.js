@@ -89,6 +89,7 @@ function napraviBazu() {
         for (const d of sve) if (op.$set) for (const [k, v] of Object.entries(op.$set)) postavi(d, k, v);
         return { matchedCount: sve.length, modifiedCount: sve.length };
       },
+      bulkWrite: async function (ops) { for (const o of ops) if (o.updateOne) await this.updateOne(o.updateOne.filter, o.updateOne.update); return { ok: 1 }; },
       createIndex: async () => 'ok',
       aggregate: (cjevovod) => {
         let arr = docs;
