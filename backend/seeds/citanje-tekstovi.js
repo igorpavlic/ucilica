@@ -149,7 +149,7 @@ const TEKSTOVI = [
   {
     id: 'r3-plakat', razred: 3, tema: 'citanje-3', ishod: 'OŠ HJ C.3.3', vrsta: 'plakat',
     naslov: 'Plakat',
-    tekst: 'LUTKARSKA PREDSTAVA „MAČAK U ČIZMAMA”\nGradsko kazalište lutaka\nSubota, 14. studenoga, u 11 sati\nTrajanje: 45 minuta\nUlaznica: 5 eura (djeca do 6 godina ne plaćaju)\nUlaznice se kupuju na blagajni kazališta od 9 sati.',
+    tekst: 'LUTKARSKA PREDSTAVA „ŠEGRT HLAPIĆ”\nGradsko kazalište lutaka\nSubota, 14. studenoga, u 11 sati\nTrajanje: 45 minuta\nUlaznica: 5 eura (djeca do 6 godina ne plaćaju)\nUlaznice se kupuju na blagajni kazališta od 9 sati.',
     pitanja: [
       izbor('podatak', 'Gdje se održava predstava?', ['u Gradskom kazalištu lutaka', 'u školskoj sportskoj dvorani', 'u gradskoj knjižnici'], 'Drugi redak plakata: „Gradsko kazalište lutaka”.', 1),
       broj('podatak', 'Koliko eura stoji ulaznica?', 5, 'Na plakatu piše: „Ulaznica: 5 eura”.', 1),

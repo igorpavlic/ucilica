@@ -78,7 +78,7 @@ const KVADAR = [
   ['Imaju li kocka i kvadar jednak broj vrhova?', true],
 ];
 const UVJETI = [
-  ['Zašto u pustinji živi malo biljaka?', 'ondje ima vrlo malo vode', ['ondje nema svjetlosti', 'ondje je previše hladno', 'ondje nema zraka']],
+  ['Zašto na golom kamenjaru uz more raste malo biljaka?', 'ondje ima vrlo malo vode i tla', ['ondje nema svjetlosti', 'ondje je previše hladno', 'ondje nema zraka']],
   ['Zašto na vrhovima visokih planina ima malo biljaka?', 'ondje je hladno, a tlo je tanko', ['ondje je previše vode', 'ondje je previše toplo', 'ondje nema svjetla']],
   ['Što se događa s biljkom kad dugo nema vode?', 'vene i suši se', ['brže raste', 'postane plava', 'cvjeta više']],
   ['Zašto se u šumi pri tlu nalazi manje biljaka koje trebaju mnogo svjetla?', 'krošnje zaklanjaju svjetlost', ['ondje nema zraka', 'tlo je preslano', 'ondje nema vode']],

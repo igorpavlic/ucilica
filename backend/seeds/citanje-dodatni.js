@@ -267,14 +267,14 @@ module.exports = ({ izbor, broj, rijec, redoslijed, tocnoNetocno }) => [
   {
     id: 'r4-nikola-tesla', razred: 4, tema: 'citanje-4', ishod: 'OŠ HJ A.4.3', vrsta: 'biografija',
     naslov: 'Nikola Tesla',
-    tekst: 'Nikola Tesla rođen je 1856. godine u Smiljanu, malom selu u Lici. Kao dječak volio je čitati i promatrati prirodu. Studirao je tehniku u Grazu, a kasnije je otišao u Ameriku. Ondje je radio na izumima povezanima s elektricitetom. Njegov izmjenični sustav prijenosa struje i danas omogućuje da električna energija stigne do naših domova. Zbog brojnih izuma nazivaju ga „čovjekom koji je izumio dvadeseto stoljeće”. Umro je 1943. godine u New Yorku. U Smiljanu danas postoji Memorijalni centar posvećen njemu.',
+    tekst: 'Nikola Tesla rođen je 1856. godine u Smiljanu, malom selu u Lici. Kao dječak volio je čitati i promatrati prirodu. Studirao je tehniku, a kasnije je mnogo godina radio u velikim laboratorijima na izumima povezanima s elektricitetom. Njegov izmjenični sustav prijenosa struje i danas omogućuje da električna energija stigne do naših domova. Zbog brojnih izuma nazivaju ga „čovjekom koji je izumio dvadeseto stoljeće”. Umro je 1943. godine. U Smiljanu danas postoji Memorijalni centar posvećen njemu.',
     pitanja: [
-      izbor('podatak', 'U kojem je selu rođen Nikola Tesla?', ['u Smiljanu', 'u Grazu', 'u New Yorku'], 'Prva rečenica: rođen je „u Smiljanu, malom selu u Lici”.', 1),
+      izbor('podatak', 'U kojem je selu rođen Nikola Tesla?', ['u Smiljanu', 'u Ogulinu', 'u Gospiću'], 'Prva rečenica: rođen je „u Smiljanu, malom selu u Lici”.', 1),
       broj('podatak', 'Koje je godine rođen Nikola Tesla?', 1856, 'U tekstu piše: „rođen je 1856. godine”.', 1),
       broj('zakljucak', 'Koliko je godina Nikola Tesla živio?', 87, 'Rođen je 1856., a umro 1943.: 1943 − 1856 = 87.', 3),
-      izbor('podatak', 'S čime su bili povezani Teslini izumi?', ['s elektricitetom', 's medicinom', 's poljoprivredom'], 'U Americi je radio „na izumima povezanima s elektricitetom”.', 1),
+      izbor('podatak', 'S čime su bili povezani Teslini izumi?', ['s elektricitetom', 's medicinom', 's poljoprivredom'], 'Radio je „na izumima povezanima s elektricitetom”.', 1),
       izbor('tumacenje', 'Zašto Teslu nazivaju „čovjekom koji je izumio dvadeseto stoljeće”?', ['Njegovi su izumi promijenili način na koji ljudi žive.', 'Rođen je točno početkom dvadesetog stoljeća.', 'Napisao je knjigu o stoljećima.'], 'Tekst navodi da ga tako nazivaju zbog brojnih izuma koji se i danas koriste.', 3),
-      redoslijed('podatak', 'Poredaj događaje iz Teslina života.', ['rođen je u Smiljanu', 'studirao je u Grazu', 'radio je na izumima u Americi', 'umro je u New Yorku'], 'Događaji idu redom kojim ih tekst navodi.'),
+      redoslijed('podatak', 'Poredaj događaje iz Teslina života.', ['rođen je u Smiljanu', 'studirao je tehniku', 'radio je na izumima', 'umro je 1943. godine'], 'Događaji idu redom kojim ih tekst navodi.'),
       izbor('vrednovanje', 'Kakav je tekst o Nikoli Tesli?', ['životopis stvarne osobe', 'bajka', 'reklama'], 'Tekst redom opisuje život stvarnog izumitelja.', 2)
     ]
   },
@@ -309,7 +309,7 @@ module.exports = ({ izbor, broj, rijec, redoslijed, tocnoNetocno }) => [
   {
     id: 'r4-voda-pitka', razred: 4, tema: 'citanje-4', ishod: 'OŠ HJ A.4.3', vrsta: 'obavijesni',
     naslov: 'Čuvajmo pitku vodu',
-    tekst: 'Na Zemlji ima mnogo vode, ali većina je slana morska voda. Pitke vode ima vrlo malo. Hrvatska je bogata pitkom vodom i jedna je od zemalja Europe s najviše izvora po stanovniku. Ipak, vodu treba čuvati. Kad pereš zube, zatvori slavinu. Tuširanje troši manje vode od kupanja u kadi. Pokvarena slavina iz koje kaplje može u jednom danu potrošiti cijelu kantu vode. Ulje i lijekove nikad ne bacaj u sudoper ni u zahod jer onečišćuju vodu.',
+    tekst: 'Na Zemlji ima mnogo vode, ali većina je slana morska voda. Pitke vode ima vrlo malo. Hrvatska je bogata pitkom vodom i ima mnogo izvora, rijeka i jezera. Ipak, vodu treba čuvati. Kad pereš zube, zatvori slavinu. Tuširanje troši manje vode od kupanja u kadi. Pokvarena slavina iz koje kaplje može u jednom danu potrošiti cijelu kantu vode. Ulje i lijekove nikad ne bacaj u sudoper ni u zahod jer onečišćuju vodu.',
     pitanja: [
       izbor('podatak', 'Kakva je većina vode na Zemlji?', ['slana morska voda', 'pitka voda iz izvora', 'led u hladnjaku'], 'Prva rečenica kaže da je većina vode slana morska voda.', 1),
       izbor('podatak', 'Što treba učiniti dok pereš zube?', ['zatvoriti slavinu', 'otvoriti dvije slavine', 'puniti kadu'], 'U tekstu piše: „Kad pereš zube, zatvori slavinu.”', 1),
