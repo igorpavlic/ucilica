@@ -115,7 +115,7 @@ function pogresniNizovi(m, put, cilj) {
   return [...new Set(dobri)].filter((z) => z !== zapis(put));
 }
 
-const OPIS_MREZE = 'Robot 🤖 ide po bijelim poljima. Strelica pomiče robota za jedno polje u tom smjeru.';
+const OPIS_MREZE = 'Svaka strelica pomiče robota 🤖 za jedno polje.';
 
 function zadatciMreza(razred) {
   const q = [];
