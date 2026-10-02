@@ -22,6 +22,7 @@ const authRoutes = require('./routes/auth');
 const subjectRoutes = require('./routes/subjects');
 const quizRoutes = require('./routes/quiz');
 const progressRoutes = require('./routes/progress');
+const prijaveRoutes = require('./routes/prijave');
 
 const app = express();
 
@@ -67,6 +68,7 @@ app.use('/api/auth', authLimiter, authRoutes);   // Stroži limit za auth
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/quiz', quizRoutes);                // AI rute imaju svoj limiter unutar routera
 app.use('/api/progress', progressRoutes);
+app.use('/api/prijave', prijaveRoutes);         // prijava pogrešnog pitanja (vlastiti limiter)
 
 // ═══════════════════════════════════════════════════════════
 // SPA fallback — SAMO za ne-API rute

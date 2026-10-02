@@ -215,60 +215,72 @@ function zadatciPonavljanjaKoraka(razred) {
 // ═══════════════════════════════════════════════════════════════════
 // Slijed koraka (algoritmi iz svakodnevice)
 // ═══════════════════════════════════════════════════════════════════
+// Algoritmi iz svakodnevice (pranje ruku, sadnja) namjerno su tu: tako ih uče
+// i Code.org („Real-Life Algorithms: Plant a Seed”) i hrvatski udžbenici
+// informatike za 1. razred. Da dijete ne pomisli da je pogriješilo predmet,
+// takav zadatak nosi napomenu (hint) što je algoritam i zašto je ovdje.
+// Upute za računalo, tablet i robota su u većini.
 const RUTINE = [
-  ['pranje ruku', ['Otvori slavinu.', 'Nasapunaj ruke.', 'Isperi sapun vodom.', 'Obriši ruke ručnikom.']],
-  ['pranje zubi', ['Uzmi četkicu.', 'Stavi pastu na četkicu.', 'Četkaj zube.', 'Isperi usta vodom.']],
-  ['sadnju cvijeta', ['Iskopaj rupu u zemlji.', 'Stavi sjemenku u rupu.', 'Zatrpaj sjemenku zemljom.', 'Zalij zemlju vodom.']],
-  ['izradu sendviča', ['Uzmi dvije kriške kruha.', 'Namaži krišku maslacem.', 'Stavi sir na krišku.', 'Poklopi drugom kriškom.']],
-  ['obuvanje cipela', ['Obuci čarape.', 'Obuj cipele.', 'Zaveži vezice.', 'Izađi iz kuće.']],
-  ['slanje pisma', ['Napiši pismo.', 'Stavi pismo u omotnicu.', 'Zalijepi omotnicu.', 'Ubaci pismo u poštanski sandučić.']],
-  ['crtanje kuće', ['Nacrtaj kvadrat.', 'Na kvadrat nacrtaj krov.', 'Na krov nacrtaj dimnjak.', 'Iz dimnjaka nacrtaj dim.']],
-  ['uključivanje računala', ['Pritisni tipku za uključivanje.', 'Pričekaj da se računalo pokrene.', 'Upiši lozinku.', 'Otvori program.']],
-  ['gašenje računala', ['Spremi svoj rad.', 'Zatvori program.', 'Odaberi isključivanje računala.', 'Pričekaj da se zaslon ugasi.']],
+  ['pranje ruku', ['Otvori slavinu.', 'Nasapunaj ruke.', 'Isperi sapun vodom.', 'Obriši ruke ručnikom.'], 'svakodnevno'],
+  ['pranje zubi', ['Uzmi četkicu.', 'Stavi pastu na četkicu.', 'Četkaj zube.', 'Isperi usta vodom.'], 'svakodnevno'],
+  ['sadnju cvijeta', ['Iskopaj rupu u zemlji.', 'Stavi sjemenku u rupu.', 'Zatrpaj sjemenku zemljom.', 'Zalij zemlju vodom.'], 'svakodnevno'],
+  ['izradu sendviča', ['Uzmi dvije kriške kruha.', 'Namaži krišku maslacem.', 'Stavi sir na krišku.', 'Poklopi drugom kriškom.'], 'svakodnevno'],
+  ['crtanje kuće', ['Nacrtaj kvadrat.', 'Na kvadrat nacrtaj krov.', 'Na krov nacrtaj dimnjak.', 'Iz dimnjaka nacrtaj dim.'], 'svakodnevno'],
+  ['uključivanje računala', ['Pritisni tipku za uključivanje.', 'Pričekaj da se računalo pokrene.', 'Upiši lozinku.', 'Otvori program.'], 'racunalo'],
+  ['gašenje računala', ['Spremi svoj rad.', 'Zatvori program.', 'Odaberi isključivanje računala.', 'Pričekaj da se zaslon ugasi.'], 'racunalo'],
+  ['snimanje fotografije tabletom', ['Uključi tablet.', 'Otvori aplikaciju za kameru.', 'Usmjeri tablet prema cvijetu.', 'Dodirni gumb za snimanje.'], 'racunalo'],
+  ['spremanje crteža na računalu', ['Nacrtaj crtež u programu za crtanje.', 'Odaberi naredbu Spremi.', 'Upiši ime crteža.', 'Potvrdi spremanje.'], 'racunalo'],
+  ['ispis crteža na pisaču', ['Otvori svoj crtež.', 'Odaberi naredbu Ispis.', 'Pričekaj da pisač ispiše crtež.', 'Uzmi papir iz pisača.'], 'racunalo'],
+  ['slanje e-poruke', ['Otvori program za e-poštu.', 'Odaberi Nova poruka.', 'Napiši poruku.', 'Pritisni gumb Pošalji.'], 'racunalo'],
+  ['robota koji otvara vrata', ['Ustani.', 'Okreni se prema vratima.', 'Hodaj do vrata.', 'Otvori vrata.'], 'racunalo'],
 ];
+const NAPOMENA_SVAKODNEVNO = 'Algoritam je niz koraka točno određenim redom. Ima ga i svakodnevni posao, ne samo računalo: tim koracima uputili bismo robota da to napravi.';
+/** Napomena uz algoritam iz svakodnevice */
+const uz = (vrsta) => (vrsta === 'svakodnevno' ? { hint: NAPOMENA_SVAKODNEVNO } : {});
+const ZASTO = 'Računalo i robot rade samo ono što im zapišemo, korak po korak. Zato je redoslijed važan.';
 
 function zadatciSlijeda(razred) {
   const q = [];
   const ishod = razred === 1 ? ish('B.1.2') : ish('B.2.1');
   const duljina = razred === 1 ? 3 : 4;
-  for (const [ime, koraci] of uzmi(RUTINE, 2)) {
-    q.push(poredaj(`Poredaj korake za „${ime}” pravim redom.`, koraci.slice(0, duljina), razred === 1 ? 1 : 2,
-      'Algoritam je niz koraka koji se izvode točno određenim redom. Svaki korak treba ono što je napravljeno prije njega.', ishod));
+  for (const [ime, koraci, vrsta] of uzmi(RUTINE, 2)) {
+    q.push(poredaj(`Poredaj korake algoritma za „${ime}” pravim redom.`, koraci.slice(0, duljina), razred === 1 ? 1 : 2,
+      `Algoritam je niz koraka koji se izvode točno određenim redom. Svaki korak treba ono što je napravljeno prije njega. ${ZASTO}`, ishod, uz(vrsta)));
   }
   {
-    const [ime, koraci] = jedan(RUTINE);
+    const [ime, koraci, vrsta] = jedan(RUTINE);
     // Ometači su samo koraci iste upute: korak iz druge upute („Spremi svoj rad.”
     // uz sadnju cvijeta) dijete odbaci bez razmišljanja o redoslijedu.
-    q.push(izbor(`Koji je prvi korak za „${ime}”?`, koraci[0], koraci.slice(1), 1,
-      `Prvo: ${koraci[0].toLowerCase()} Tek nakon toga dolaze ostali koraci.`, ishod));
+    q.push(izbor(`Koji je prvi korak algoritma za „${ime}”?`, koraci[0], koraci.slice(1), 1,
+      `Prvo: ${koraci[0].toLowerCase()} Tek nakon toga dolaze ostali koraci.`, ishod, uz(vrsta)));
   }
   if (razred >= 2) {
-    const [ime, koraci] = jedan(RUTINE);
+    const [ime, koraci, vrsta] = jedan(RUTINE);
     const k = cijeli(1, 2);
     const prikaz = koraci.map((s, i) => `${i + 1}. ${i === k ? '___' : s}`).join('\n');
     const tudji = RUTINE.filter((r) => r[0] !== ime).flatMap((r) => r[1]);
-    q.push(izbor(`U uputama za „${ime}” nedostaje jedan korak. Koji?`, koraci[k], [koraci[3], ...uzmi(tudji, 2)], 2,
-      `Bez tog koraka sljedeći se ne može napraviti. Korak „${koraci[3]}” već postoji na kraju uputa.`, ish('B.2.1'), { passage: prikaz }));
+    q.push(izbor(`U algoritmu za „${ime}” nedostaje jedan korak. Koji?`, koraci[k], [koraci[3], ...uzmi(tudji, 2)], 2,
+      `Bez tog koraka sljedeći se ne može napraviti. Korak „${koraci[3]}” već postoji na kraju uputa.`, ish('B.2.1'), { passage: prikaz, ...uz(vrsta) }));
     // Zamijenjena dva koraka: koji je par na krivom mjestu
-    const [ime2, k2] = jedan(RUTINE);
+    const [ime2, k2, vrsta2] = jedan(RUTINE);
     const j = cijeli(0, 2);
     const krivo = [...k2]; [krivo[j], krivo[j + 1]] = [krivo[j + 1], krivo[j]];
-    q.push(izbor(`U uputama za „${ime2}” dva su koraka zamijenila mjesta. Koja?`, `${j + 1}. i ${j + 2}.`,
+    q.push(izbor(`U algoritmu za „${ime2}” dva su koraka zamijenila mjesta. Koja?`, `${j + 1}. i ${j + 2}.`,
       ['1. i 2.', '2. i 3.', '3. i 4.', '1. i 4.'], 3,
       `„${k2[j]}” mora doći prije koraka „${k2[j + 1]}”.`, ish('B.2.1'),
-      { passage: krivo.map((s, i) => `${i + 1}. ${s}`).join('\n') }));
+      { passage: krivo.map((s, i) => `${i + 1}. ${s}`).join('\n'), ...uz(vrsta2) }));
   }
   return q;
 }
 
 /** Koji korak dolazi nakon zadanoga (1. i 2. r.) */
 function zadatakSljedecegKoraka(razred) {
-  const [ime, koraci] = jedan(RUTINE);
+  const [ime, koraci, vrsta] = jedan(RUTINE);
   const k = cijeli(0, razred === 1 ? 1 : 2);
   const bez = (x) => x.replace(/\.$/, '');
-  return izbor(`Kod koraka za „${ime}” napravljeno je: „${bez(koraci[k])}”. Koji korak dolazi sljedeći?`, koraci[k + 1],
+  return izbor(`U algoritmu za „${ime}” napravljeno je: „${bez(koraci[k])}”. Koji korak dolazi sljedeći?`, koraci[k + 1],
     koraci.filter((_, i) => i !== k + 1), razred === 1 ? 1 : 2,
-    `Nakon koraka „${bez(koraci[k])}” dolazi „${bez(koraci[k + 1])}”.`, razred === 1 ? ish('B.1.2') : ish('B.2.1'));
+    `Nakon koraka „${bez(koraci[k])}” dolazi „${bez(koraci[k + 1])}”.`, razred === 1 ? ish('B.1.2') : ish('B.2.1'), uz(vrsta));
 }
 
 // ═══════════════════════════════════════════════════════════════════
