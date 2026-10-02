@@ -4,6 +4,25 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −11. Kviz bez ometanja na mobitelu, copyright
+
+Uzor je zaslon lekcije u Duolingu: tijekom vježbe nema navigacije, na vrhu su samo izlaz i napredak, a „Provjeri/Nastavi” je na dnu.
+
+- **Kviz bez gornje trake.** Umjesto nje je zaglavlje s ✕ (izlaz), trakom napretka i brojačem 3/7.
+- **Povratna ploča** izlazi s dna ekrana (`position: fixed`) i sadrži:
+  - objašnjenje;
+  - poruku točno/netočno;
+  - gumb „Sljedeće pitanje”.
+
+  Visina ploče mjeri se (ResizeObserver) i dodaje se kao donji razmak sadržaja, pa ploča ništa ne prekrije. Na iPhoneu se poštuje sigurna zona (`viewport-fit=cover`, `env(safe-area-inset-bottom)`).
+- **Novo pitanje** uvijek počinje na vrhu ekrana.
+- **Mobitel (≤ 600 px)** ima manje razmake i slova (`clamp`).
+- **Niski zasloni (≤ 700 px)** skrivaju naziv teme i napomenu o opsegu ponavljanja.
+- **Podnožje** na svim stranicama osim kviza: „© 2026. From RIM · Mudrolina. Sva prava pridržana.”, uz poveznice Upute, Privatnost i Kontakt (contact@fromrim.com).
+- **Provjereno u Chromiumu** na 390×740, 360×640 i 412×915 px:
+  - pitanje s izborom, prometni znak i poredavanje stanu bez skrolanja;
+  - jedino spajanje 4 para s otvorenom pločom na 360×640 treba 13 px skrolanja.
+
 ## −10. Prijava pitanja, ljepše strelice, objašnjeni algoritmi iz svakodnevice
 
 - **Gumb „🚩 Prijavi pitanje”** ispod svakog pitanja otvara prozor s poljem „Razlog prijave” i gumbom „Pošalji”.
