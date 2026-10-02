@@ -1258,3 +1258,21 @@ select.form-input {
 .brisanje p { color: var(--text-secondary); font-size: .9rem; }
 .brisanje .form-input { margin-bottom: .5rem; }
 .btn-danger { background: var(--wrong); color: var(--text-inverse); }
+
+/* ── Upute u gornjoj traci ─────────────────────────────────────── */
+.topbar-upute {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 12px;
+  border: 1px solid rgba(26, 22, 21, 0.12);
+  border-radius: var(--r-full);
+  color: var(--text-secondary);
+  font-size: 0.8rem; font-weight: 500;
+  text-decoration: none;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.topbar-upute:hover, .topbar-upute.router-link-active { background: var(--amber-light); border-color: var(--amber); color: var(--text-primary); }
+.auth-upute { margin-top: .75rem; text-align: center; font-size: .9rem; }
+@media (max-width: 600px) {
+  .topbar-upute-tekst { display: none; }
+  .topbar-upute { padding: 4px 8px; }
+}
