@@ -297,7 +297,9 @@ const tvrdi = (uvjet, opis, detalj = '') => {
   // 13) spajanje parova — cijeli put kroz servis
   console.log('');
   const TID = oid();
-  kolekcije.topics.push({ _id: TID, slug: 'zivotinje', name: 'Životinje', icon: '🐾',
+  // Slug bez generatora: svih 8 pitanja ima isti tekst, pa bi sesija inače
+  // generirala nova (drugog tipa) jer dijete traži neviđene tekstove.
+  kolekcije.topics.push({ _id: TID, slug: 'zivotinje-spajanje', name: 'Životinje', icon: '🐾',
     grade: 1, subject_id: ID.subject, isActive: true });
 
   // Deterministično: tema dobiva isključivo match pitanja, pa ih sesija mora ponuditi.
