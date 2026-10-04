@@ -4,6 +4,31 @@ Pregled svega što je popravljeno, s načinom provjere.
 
 ---
 
+## −18. Isto pitanje dvaput zaredom i provjera koja ne prolazi
+
+**Prijava:** „Poredaj korake za „pranje ruku” pravim redom.” pojavilo se dvaput zaredom, a provjera nije radila. Cijela analiza je u `ISTRAZIVANJE-VRHUNSKI-KVIZ.md`, Dio A.
+
+**Uzroci** (reproducirano na lokalnoj instanci):
+- pitanja iz napuštenog kviza nisu se bilježila kao viđena: nakon napuštenog kviza ponovljeno je do 6 od 7 pitanja;
+- gost nije imao nikakvu povijest viđenih pitanja;
+- sesija je trajala samo 6 sati, pa je svaka kasnija provjera vraćala 404;
+- limit od 200 zahtjeva po IP adresi (razred u školi dijeli jednu adresu) vraćao je 429;
+- ista zadaća bila je u bazi pod starom i novom formulacijom;
+- promiješani koraci ponekad su već bili točno poredani.
+
+**Popravci:**
+- Pitanja iz nepredanih sesija (prijavljeno dijete i gost s nasumičnom oznakom uređaja) ne vraćaju se.
+- `bezDvostrukih` ne dopušta isti prikaz ni isti niz koraka dvaput u kvizu.
+- Sesija traje 3 dana.
+- Provjera odgovora ima limit po sesiji.
+- Neuspjela provjera ostaje vidljiva na kartici, uz gumb „Započni novi kviz” kad je sesija istekla.
+- Koraci nikad nisu već poredani.
+- Nakon provjere svaki korak dobiva oznaku ✓ ili ✗, a prikazuje se i pravi redoslijed.
+
+**Provjera:** `npm run test:sve` prolazi, uz šest novih provjera u `test:tijek`. Prava reprodukcija preko API-ja i u Chromiumu nakon popravka: 0 od 7 ponovljenih pitanja.
+
+---
+
 ## −17. Hrvatski okvir po logici djeteta (ispravak −16)
 
 **Prijava:** strane biljke, životinje i bajke trebaju ostati. Dijete možda ne zna gdje su Novi Zeland ili Kanada, ali zna za Indijance, kauboje, klokane i Crvenkapicu.

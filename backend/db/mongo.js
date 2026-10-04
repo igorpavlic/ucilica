@@ -82,6 +82,25 @@ async function close() {
 /**
  * Kreiraj potrebne indekse
  */
+// Kviz-sesija živi 3 dana. Ranije je bilo 6 sati: dijete koje kviz ostavi
+// otvoren preko noći ujutro bi dobilo „Kviz sesija nije pronađena” na svaku
+// provjeru — i nije moglo dalje.
+const TRAJANJE_SESIJE_S = 60 * 60 * 24 * 3;
+
+/** Indeksi kviz-sesija; postojeći TTL indeks s drugim trajanjem se ažurira (collMod). */
+async function indeksiSesija(baza) {
+  const kol = baza.collection('quiz_attempts');
+  try {
+    await kol.createIndex({ createdAt: 1 }, { expireAfterSeconds: TRAJANJE_SESIJE_S });
+  } catch (err) {
+    if (err.code !== 85 && err.codeName !== 'IndexOptionsConflict') throw err;
+    await baza.command({ collMod: 'quiz_attempts', index: { keyPattern: { createdAt: 1 }, expireAfterSeconds: TRAJANJE_SESIJE_S } });
+  }
+  await kol.createIndex({ user_id: 1, createdAt: -1 });
+  // Nedavno prikazana pitanja gosta (napušteni kvizovi), vidi questionGenerator.nedavnoPrikazano
+  await kol.createIndex({ gost_id: 1, createdAt: -1 }, { partialFilterExpression: { gost_id: { $type: 'string' } } });
+}
+
 async function createIndexes() {
   await db.collection('users').createIndex({ username: 1 }, { unique: true });
   await db.collection('subjects').createIndex({ slug: 1, grade: 1 }, { unique: true });
@@ -96,9 +115,7 @@ async function createIndexes() {
   await db.collection('progress').createIndex({ user_id: 1, topic_id: 1, completedAt: -1 });
   await db.collection('progress').createIndex({ user_id: 1, grade: 1, completedAt: -1 });
   await db.collection('progress').createIndex({ user_id: 1, dnevni: 1, dan: 1 }, { partialFilterExpression: { dnevni: true } });
-  // Quiz attempts — TTL 6h, auto-brisanje starih sesija
-  await db.collection('quiz_attempts').createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 6 });
-  await db.collection('quiz_attempts').createIndex({ user_id: 1, createdAt: -1 });
+  await indeksiSesija(db);
   // Stanje vještina (FSRS) — jedan zapis po korisniku i ishodu iz kurikula
   await db.collection('skill_states').createIndex({ user_id: 1, skill: 1 }, { unique: true });
   await db.collection('skill_states').createIndex({ user_id: 1, 'card.due': 1 });
@@ -106,4 +123,4 @@ async function createIndexes() {
   console.log('✅ Indeksi kreirani');
 }
 
-module.exports = { connect, getDb, getClient, close, resolveDbName };
+module.exports = { connect, getDb, getClient, close, resolveDbName, indeksiSesija, TRAJANJE_SESIJE_S };

@@ -726,6 +726,58 @@ const tvrdi = (uvjet, opis, detalj = '') => {
     tvrdi(najvise <= 2, 'u 8 kvizova „Krajevi Hrvatske” najviše dva pitanja iste vrste po kvizu', `najviše ${najvise}`);
   }
 
+  // Prijava: isto pitanje „Poredaj korake…” dvaput zaredom, a provjera „ne radi”.
+  {
+    console.log('\n── ponavljanje pitanja i poredaj ──\n');
+    const { mapSafeQuestion } = require('../modules/quiz/quiz.service');
+    const QG = require('../services/questionGenerator');
+
+    // 1) promiješani koraci nikad nisu već točan redoslijed
+    const koraci = ['Otvori slavinu.', 'Nasapunaj ruke.', 'Isperi sapun vodom.'];
+    let vecTocno = 0;
+    for (let i = 0; i < 300; i++) {
+      const a = mapSafeQuestion({ _id: oid(), type: 'ordering', question: 'Poredaj?', items: koraci }).answers;
+      if (a.every((x, j) => x === koraci[j])) vecTocno++;
+    }
+    tvrdi(vecTocno === 0, 'promiješani koraci nikad nisu već poredani', `${vecTocno}/300`);
+
+    // 2) provjera vraća koja su mjesta točna
+    const { evaluateQuestion } = require('../modules/quiz/quiz.service');
+    const ev = evaluateQuestion({ type: 'ordering', items: koraci }, [koraci[0], koraci[2], koraci[1]]);
+    tvrdi(!ev.isCorrect && JSON.stringify(ev.pozicijeTocne) === '[true,false,false]' && ev.tocanRedoslijed.length === 3,
+      'poredaj: provjera označava točna i pogrešna mjesta', JSON.stringify(ev.pozicijeTocne));
+
+    // 3) ista zadaća pod starom i novom formulacijom ne ide dvaput u kviz
+    const stari = { _id: oid(), type: 'ordering', question: 'Poredaj korake za „pranje ruku” pravim redom.', items: koraci };
+    const novi = { _id: oid(), type: 'ordering', question: 'Poredaj korake algoritma za „pranje ruku” pravim redom.', items: koraci };
+    const drugi = { _id: oid(), type: 'choice', question: 'Koji je prvi korak?', answers: ['a', 'b'], correctIndex: 0 };
+    const bez = QG.bezDvostrukih([stari, novi], [novi, drugi]);
+    tvrdi(bez.length === 2 && bez.some((q) => q === drugi) && bez.filter((q) => q.type === 'ordering').length === 1,
+      'isti niz koraka pod drugim tekstom ne ide dvaput u kviz', bez.map((q) => q.question).join(' | '));
+
+    // 4) napušten kviz: njegova pitanja ne vraćaju se u sljedećem (prijavljeni i gost)
+    const TINF = oid();
+    kolekcije.topics.push({ _id: TINF, slug: 'algoritmi-2', name: 'Algoritmi i logika', icon: '🤖', grade: 2, subject_id: ID.subject, isActive: true });
+    const DIJETE = oid();
+    kolekcije.users.push({ _id: DIJETE, username: 'napusta', grade: 2, totalScore: 0, streak: 0 });
+    for (const [opis, vlasnik] of [['prijavljeno dijete', { userId: DIJETE }], ['gost', { userId: null, gostId: 'gost-1234567890abcdef' }]]) {
+      let najvise = 0;
+      let prosli = null;
+      for (let k = 0; k < 4; k++) {
+        const ses = await service.createSession({ topicId: TINF, count: 7, ...vlasnik });
+        const ids = ses.questions.map((q) => String(q._id));
+        if (prosli) najvise = Math.max(najvise, ids.filter((id) => prosli.includes(id)).length);
+        prosli = ids;
+        // dijete odgovori na prvo pitanje i izađe
+        await service.checkAnswer({ ...vlasnik, attemptId: ses.attemptId, questionId: ses.questions[0]._id, answer: 0 }).catch(() => {});
+      }
+      tvrdi(najvise === 0, `${opis}: pitanja napuštenog kviza ne vraćaju se u sljedećem`, `ponovljeno ${najvise}`);
+    }
+    // gostova oznaka ne smije utjecati na prijavljenoga
+    const sesGost = kolekcije.quiz_attempts.filter((a) => a.gost_id === 'gost-1234567890abcdef');
+    tvrdi(sesGost.length === 4 && sesGost.every((a) => a.user_id === null), 'gostova sesija nosi samo nasumičnu oznaku uređaja');
+  }
+
   console.log('');
   if (pao) { console.log('PALO.\n'); process.exit(1); }
   console.log('Tijek kviza radi.\n');

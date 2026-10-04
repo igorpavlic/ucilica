@@ -10,7 +10,7 @@
       v-for="(item, index) in stavke"
       :key="item"
       class="ordering-item"
-      :class="{ povlaci: vuceIndex === index, onemoguceno }"
+      :class="{ povlaci: vuceIndex === index, onemoguceno, tocno: oznake[index] === true, netocno: oznake[index] === false }"
       :style="vuceIndex === index ? { transform: `translateY(${dy}px)` } : null"
       @pointerdown="pocni($event, index)"
       @pointermove="pomakni"
@@ -19,7 +19,8 @@
     >
       <span v-if="!onemoguceno" class="ordering-hvat" aria-hidden="true">⠿</span>
       <span class="ordering-tekst">{{ index + 1 }}. {{ item }}</span>
-      <div class="ordering-gumbi">
+      <span v-if="oznake[index] !== undefined" class="ordering-oznaka" :aria-label="oznake[index] ? 'na pravom mjestu' : 'nije na pravom mjestu'">{{ oznake[index] ? '✓' : '✗' }}</span>
+      <div v-if="!onemoguceno" class="ordering-gumbi">
         <button type="button" class="ordering-strelica" :disabled="onemoguceno || index === 0" :aria-label="`Pomakni ${item} gore`"
           title="Pomakni gore" @pointerdown.stop @click="gumb(index, -1)">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg>
@@ -39,7 +40,9 @@ import { nextTick, ref } from 'vue'
 
 const props = defineProps({
   stavke: { type: Array, required: true },
-  onemoguceno: { type: Boolean, default: false }
+  onemoguceno: { type: Boolean, default: false },
+  // Nakon provjere: je li korak na pravom mjestu (true/false po mjestu)
+  oznake: { type: Array, default: () => [] }
 })
 const emit = defineEmits(['premjesti'])
 

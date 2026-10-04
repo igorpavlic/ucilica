@@ -1256,6 +1256,20 @@ select.form-input {
 .ordering-tekst { flex: 1 1 auto; }
 .ordering-gumbi { display: flex; flex: 0 0 auto; }
 .ordering-check { margin-top: .75rem; }
+/* Nakon provjere: korak na pravom mjestu zeleno, na krivom crveno */
+.ordering-item.tocno { border-color: var(--correct); background: var(--correct-bg); }
+.ordering-item.netocno { border-color: var(--wrong); background: var(--wrong-bg); }
+.ordering-oznaka { flex: 0 0 auto; font-weight: 800; font-size: 1.1rem; }
+.ordering-item.tocno .ordering-oznaka { color: var(--correct); }
+.ordering-item.netocno .ordering-oznaka { color: var(--wrong); }
+.tocan-redoslijed { margin: .35rem 0 0; padding-left: 1.4rem; text-align: left; }
+/* Neuspjela provjera (mreža, istekla sesija) ostaje vidljiva na kartici */
+.provjera-greska {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .6rem;
+  margin-top: .9rem; padding: .7rem 1rem; border-radius: var(--r-md);
+  border: 1px solid var(--wrong); background: var(--wrong-bg); color: var(--wrong);
+}
+.provjera-greska-uputa { color: var(--text-secondary, inherit); font-size: .9rem; }
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;

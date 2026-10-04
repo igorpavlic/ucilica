@@ -31,6 +31,7 @@
           <tr><td>nadimak i avatar</td><td>prikaz u aplikaciji</td></tr>
           <tr><td>razred</td><td>izbor gradiva</td></tr>
           <tr><td>odgovori u kvizovima, točnost, vrijeme odgovora</td><td>da dijete ne dobiva ista pitanja, da se ponavlja ono što zaboravlja i da zadatci budu primjerene težine</td></tr>
+          <tr><td>bez prijave: nasumična oznaka uređaja (spremljena u pregledniku) uz nedovršene kvizove</td><td>da gost u sljedećem kvizu ne dobije ista pitanja; ne veže se ni uz kakve osobne podatke i briše se sa sesijom</td></tr>
           <tr><td>dani kad je riješen dnevni izazov</td><td>niz dana zaredom</td></tr>
           <tr><td>datum i verzija privole</td><td>dokaz da je roditelj dao privolu</td></tr>
           <tr><td>e-adresa roditelja (neobavezno, upisuje se u profilu)</td><td>samo za odgovor na prijavu pitanja; ne šaljemo obavijesti ni reklame</td></tr>
@@ -54,7 +55,7 @@
       <h2>Gdje i koliko dugo</h2>
       <p>
         Podatci se čuvaju na poslužitelju u Europskoj uniji, dok račun postoji.
-        Nedovršene kviz-sesije brišu se automatski nakon 6 sati.
+        Nedovršene kviz-sesije brišu se automatski nakon 3 dana.
         Brisanjem računa trajno se brišu korisnik i svi njegovi odgovori.
       </p>
     </section>

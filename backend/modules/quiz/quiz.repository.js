@@ -1,5 +1,5 @@
 const { ObjectId } = require('mongodb');
-const { getDb } = require('../../db/mongo');
+const { getDb, indeksiSesija } = require('../../db/mongo');
 
 function collection(name) {
   return getDb().collection(name);
@@ -123,8 +123,7 @@ function quizRepository() {
     },
 
     async createAttemptIndexes() {
-      await collection('quiz_attempts').createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 6 });
-      await collection('quiz_attempts').createIndex({ user_id: 1, createdAt: -1 });
+      await indeksiSesija(getDb());
       await collection('user_ratings').createIndex({ user_id: 1, subject_id: 1 }, { unique: true });
       await collection('item_ratings').createIndex({ question_id: 1 }, { unique: true });
     },

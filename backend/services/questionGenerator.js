@@ -116,6 +116,38 @@ function kljucPrikaza(q) {
   const stavke = Array.isArray(q.items) ? [...q.items].sort().join(';') : '';
   return [kljucTeksta(q), q.visual || '', q.passage || '', jsonIliPrazno(q.chart), jsonIliPrazno(q.mreza), tocno, parovi, stavke].join('\u0001');
 }
+/**
+ * Sadržaj zadatka neovisno o formulaciji. „Poredaj korake za „pranje ruku””
+ * (starija verzija generatora, još u bazi) i „Poredaj korake algoritma za
+ * „pranje ruku”” isti su zadatak — dijete ih vidi kao isto pitanje dvaput.
+ * Samo za tipove čiji je sadržaj u podatcima (poredaj, spajanje).
+ */
+function kljucSadrzaja(q) {
+  if (q.type === 'ordering' && Array.isArray(q.items)) return `ord:${q.items.join('\u0001')}`;
+  if (q.type === 'match' && Array.isArray(q.pairs)) return `par:${q.pairs.map((p) => `${p.left ?? p[0]}=${p.right ?? p[1]}`).sort().join('\u0001')}`;
+  return null;
+}
+
+/**
+ * Zadnja zaštita: u jednom kvizu nikad dva puta isti prikaz ni isti sadržaj.
+ * Dvojnik se zamjenjuje prvim prikladnim pitanjem iz `rezerva`; ako ga nema,
+ * otpada (kraći kviz bolji je od istog pitanja dvaput).
+ */
+function bezDvostrukih(pitanja, rezerva = []) {
+  const kljucevi = (q) => [`p:${kljucPrikaza(q)}`, kljucSadrzaja(q)].filter(Boolean);
+  const zauzeto = new Set(), ids = new Set(), out = [];
+  const slobodno = (q) => !ids.has(String(q._id)) && kljucevi(q).every((k) => !zauzeto.has(k));
+  const uzmi = (q) => { out.push(q); ids.add(String(q._id)); for (const k of kljucevi(q)) zauzeto.add(k); };
+  const dvojnici = [];
+  for (const q of pitanja) (slobodno(q) ? uzmi(q) : dvojnici.push(q));
+  if (!dvojnici.length) return pitanja;
+  for (let i = 0; i < dvojnici.length; i++) {
+    const zamjena = rezerva.find(slobodno);
+    if (zamjena) uzmi(zamjena);
+  }
+  return orderWithoutAdjacentFamilies(out);
+}
+
 /** Sam tekst pitanja (bez razmaka na rubovima i višestrukih razmaka). */
 function kljucTeksta(q) {
   return String(q.question || '').replace(/\s+/g, ' ').trim();
@@ -219,6 +251,58 @@ async function nedavnoVidjeno(userId, opseg, { dana = VIDJENO_DANA, sada = new D
       if (i < NE_PONAVLJAJ_KVIZOVA) svjeze.add(id);
     }
   });
+  return { ids: [...ids], zadnjiPut, svjeze };
+}
+
+/**
+ * Pitanja iz kvizova koje je dijete otvorilo, a nije predalo (napustilo ih je
+ * ili je gost). `progress` ih ne zna, pa se ranije isto pitanje vraćalo već u
+ * sljedećem kvizu — često na istom mjestu (pilot: do 6 od 7 istih pitanja
+ * nakon napuštenog kviza, a gost ih je dobivao uvijek).
+ * Čita se iz `quiz_attempts` (žive TRAJANJE_SESIJE_S), samo nepredane sesije:
+ * predane su već u `progress`.
+ */
+const PRIKAZANO_SESIJA = 5;
+async function nedavnoPrikazano({ userId = null, gostId = null } = {}, opseg = {}) {
+  const prazno = { ids: [], zadnjiPut: new Map() };
+  const vlasnik = userId ? { user_id: userId } : gostId ? { gost_id: gostId } : null;
+  if (!vlasnik) return prazno;
+  const sesije = await getDb().collection('quiz_attempts')
+    .find({ ...vlasnik, ...opseg, completedAt: null })
+    .sort({ createdAt: -1 })
+    .limit(PRIKAZANO_SESIJA)
+    .project({ question_ids: 1, createdAt: 1 })
+    .toArray();
+  const zadnjiPut = new Map();
+  for (const s of sesije) {
+    for (const id of s.question_ids || []) {
+      const k = String(id);
+      if (!zadnjiPut.has(k)) zadnjiPut.set(k, s.createdAt ? new Date(s.createdAt) : new Date());
+    }
+  }
+  return { ids: [...zadnjiPut.keys()], zadnjiPut };
+}
+
+/**
+ * `nedavnoVidjeno` + pitanja iz nepredanih sesija. Prikazano u nepredanom
+ * kvizu vrijedi kao „svježe” (iz zadnja tri kviza): ne vraća se ni u nuždi.
+ */
+async function vidjenoIPrikazano({ userId = null, gostId = null } = {}, opseg = {}, opsegSesija = opseg) {
+  const vidjeno = await nedavnoVidjeno(userId, opseg);
+  let prikazano;
+  try {
+    prikazano = await nedavnoPrikazano({ userId, gostId }, opsegSesija);
+  } catch (err) {
+    console.error('⚠️  Nedavno prikazana pitanja nisu pročitana:', err.message);
+    return vidjeno;
+  }
+  if (!prikazano.ids.length) return vidjeno;
+  const ids = new Set(vidjeno.ids), zadnjiPut = new Map(vidjeno.zadnjiPut), svjeze = new Set(vidjeno.svjeze);
+  for (const id of prikazano.ids) {
+    ids.add(id); svjeze.add(id);
+    const t = prikazano.zadnjiPut.get(id);
+    if (!zadnjiPut.has(id) || zadnjiPut.get(id) < t) zadnjiPut.set(id, t);
+  }
   return { ids: [...ids], zadnjiPut, svjeze };
 }
 
@@ -350,12 +434,13 @@ async function generateAndStore(topic, subjectId, grade, requestedCount = null) 
  * 4. Ako JOŠ nema dovoljno → dopuni pitanjima koja dijete najdulje nije vidjelo
  *    (osim onih iz zadnja 3 kviza); prazan kviz samo ako ni toga nema
  */
-async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) {
+async function getQuizQuestions({ topic, subjectId, grade, userId, gostId = null, count = 7 }) {
   const db = getDb();
   const topicId = topic._id;
 
   // 1. Viđena pitanja (zadnjih 30 dana / najmanje zadnjih 10 kvizova teme)
-  const vidjeno = await nedavnoVidjeno(userId, { topic_id: topicId });
+  //    i pitanja iz nepredanih kvizova teme (napušteni kviz, gost).
+  const vidjeno = await vidjenoIPrikazano({ userId, gostId }, { topic_id: topicId });
   const seenIds = vidjeno.ids;
   const seenOids = seenIds.map(id => new ObjectId(id));
 
@@ -397,7 +482,7 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
   // isto pitanje s drukčijim netočnim odgovorima — za dijete NIJE novo pitanje.
   // Zato se uz ID-eve prati i prikaz, a uz prikaz i sam tekst pitanja: tekst
   // koji dijete još nije vidjelo ima prednost pred istim tekstom s novom slikom.
-  const prikazZadnjiPut = new Map(), tekstZadnjiPut = new Map(), svjeziPrikazi = new Set();
+  const prikazZadnjiPut = new Map(), tekstZadnjiPut = new Map(), svjeziPrikazi = new Set(), svjeziSadrzaji = new Set();
   const zabiljezi = (mapa, k, t) => { if (!mapa.has(k) || mapa.get(k) < t) mapa.set(k, t); };
   const KLJUC_POLJA = { question: 1, visual: 1, passage: 1, chart: 1, mreza: 1, type: 1, answers: 1, correctIndex: 1, pairs: 1, items: 1, obitelj: 1 };
 
@@ -409,7 +494,10 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
       const t = vidjeno.zadnjiPut.get(String(q._id))?.getTime?.() ?? 0;
       zabiljezi(prikazZadnjiPut, kljucPrikaza(q), t);
       zabiljezi(tekstZadnjiPut, kljucTeksta(q), t);
-      if (vidjeno.svjeze.has(String(q._id))) svjeziPrikazi.add(kljucPrikaza(q));
+      if (vidjeno.svjeze.has(String(q._id))) {
+        svjeziPrikazi.add(kljucPrikaza(q));
+        if (kljucSadrzaja(q)) svjeziSadrzaji.add(kljucSadrzaja(q));
+      }
     }
   }
   const matchFresh = {
@@ -421,6 +509,8 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
     const jedinstveni = new Map();
     for (const q of shuffle(await lagano(matchFresh))) {
       const k = kljucPrikaza(q);
+      // isti niz koraka / isti parovi pod drugim tekstom iz zadnja tri kviza nisu novi
+      if (svjeziSadrzaji.has(kljucSadrzaja(q))) continue;
       if (!prikazZadnjiPut.has(k) && !jedinstveni.has(k)) jedinstveni.set(k, q);
     }
     return [...jedinstveni.values()];
@@ -567,7 +657,7 @@ async function getQuizQuestions({ topic, subjectId, grade, userId, count = 7 }) 
     }
   }
 
-  return questions;
+  return bezDvostrukih(questions, pool);
 }
 
 /**
@@ -585,4 +675,4 @@ async function getFreshCount(userId, topicId) {
   });
 }
 
-module.exports = { getQuizQuestions, getTopicStats, getFreshCount, generateAndStore, nedavnoVidjeno, VIDJENO_DANA, GENERATORS };
+module.exports = { getQuizQuestions, getTopicStats, getFreshCount, generateAndStore, nedavnoVidjeno, nedavnoPrikazano, vidjenoIPrikazano, bezDvostrukih, kljucSadrzaja, VIDJENO_DANA, GENERATORS };

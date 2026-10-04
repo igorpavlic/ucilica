@@ -4,11 +4,18 @@ const { quizRepository } = require('./quiz.repository');
 const service = createQuizService();
 const repo = quizRepository();
 
+/** Nasumična oznaka gostova uređaja (zaglavlje X-Gost-Id), bez osobnih podataka. */
+const gostIz = (req) => {
+  const v = String(req.get('X-Gost-Id') || '');
+  return /^[A-Za-z0-9-]{16,64}$/.test(v) ? v : null;
+};
+
 async function getQuiz(req, res, next) {
   try {
     const result = await service.createSession({
       topicId: repo.toObjectId(req.params.topicId),
       userId: req.user?._id || null,
+      gostId: gostIz(req),
       count: Number.parseInt(req.query.count, 10) || 7
     });
     res.json(result);
@@ -20,7 +27,7 @@ async function getQuiz(req, res, next) {
 async function getReview(req, res, next) {
   try {
     res.json(await service.createReviewSession({ grade: Number(req.params.grade),
-      userId: req.user?._id || null, count: Number.parseInt(req.query.count, 10) || 7 }));
+      userId: req.user?._id || null, gostId: gostIz(req), count: Number.parseInt(req.query.count, 10) || 7 }));
   } catch (error) { next(error); }
 }
 

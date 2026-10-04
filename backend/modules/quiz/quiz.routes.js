@@ -1,7 +1,7 @@
 const express = require('express');
 const { param, query } = require('express-validator');
 const { auth, optionalAuth } = require('../../middleware/auth');
-const { aiLimiter } = require('../../middleware/rateLimiter');
+const { aiLimiter, provjeraLimiter } = require('../../middleware/rateLimiter');
 const controller = require('./quiz.controller');
 const {
   getQuizValidators,
@@ -23,7 +23,7 @@ router.get('/review/:grade', optionalAuth,
 router.get('/dnevni/:grade', auth,
   param('grade').isInt({ min: 1, max: 4 }), validateRequest, controller.getDaily);
 router.get('/:topicId', optionalAuth, getQuizValidators, validateRequest, controller.getQuiz);
-router.post('/check', optionalAuth, checkAnswerValidators, validateRequest, controller.checkAnswer);
+router.post('/check', provjeraLimiter, optionalAuth, checkAnswerValidators, validateRequest, controller.checkAnswer);
 router.post('/submit', auth, submitQuizValidators, validateRequest, controller.submitQuiz);
 
 module.exports = router;

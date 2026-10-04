@@ -51,7 +51,7 @@ app.use(helmet({
 const corsOptions = {
   origin: process.env.CORS_ORIGIN || '*',
   methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Gost-Id'],
   maxAge: 86400
 };
 app.use(cors(corsOptions));

@@ -123,9 +123,16 @@
         </div>
 
         <template v-if="questions[currentQ].type === 'ordering'">
-          <PoredajPovlacenjem :stavke="redoslijed" :onemoguceno="answered" @premjesti="premjestiStavku" />
-          <button v-if="!answered" class="btn-check ordering-check" @click="handleStructured([...redoslijed])">Provjeri redoslijed</button>
+          <PoredajPovlacenjem :stavke="redoslijed" :onemoguceno="answered" :oznake="pozicijeTocne" @premjesti="premjestiStavku" />
+          <button v-if="!answered" class="btn-check ordering-check" :disabled="provjeravam" @click="handleStructured([...redoslijed])">Provjeri redoslijed</button>
         </template>
+
+        <!-- Neuspjela provjera ostaje na kartici: dijete zna što se dogodilo i što sad -->
+        <div v-if="greskaProvjere && !answered" class="provjera-greska" role="alert">
+          <span>{{ greskaProvjere.istekla ? 'Ovaj kviz je istekao.' : greskaProvjere.poruka }}</span>
+          <button v-if="greskaProvjere.istekla" type="button" class="btn btn-primary" @click="noviKviz">Započni novi kviz</button>
+          <span v-else class="provjera-greska-uputa">Pokušaj ponovno pritisnuti „Provjeri”.</span>
+        </div>
 
         <div class="prijava-red">
           <PrijaviPitanje :key="questions[currentQ]._id" :pitanje="questions[currentQ]" />
@@ -145,6 +152,10 @@
         <span v-if="isCorrect">{{ correctMessages[Math.floor(Math.random() * correctMessages.length)] }}</span>
         <span v-else-if="questions[currentQ].type === 'match'">
           Točno spojeno {{ tocnihVeza }} od {{ questions[currentQ].lijevo.length }}. {{ correctAnswerText }}
+        </span>
+        <span v-else-if="questions[currentQ].type === 'ordering' && tocanRedoslijed.length">
+          Na pravom mjestu {{ pozicijeTocne.filter(Boolean).length }} od {{ tocanRedoslijed.length }}. Pravi redoslijed:
+          <ol class="tocan-redoslijed"><li v-for="k in tocanRedoslijed" :key="k">{{ k }}</li></ol>
         </span>
         <span v-else>Točan odgovor: {{ correctAnswerText }}</span>
       </div>
@@ -212,6 +223,9 @@ const {
   inputAnswer,
   tocnihVeza,
   provjeravam,
+  pozicijeTocne,
+  tocanRedoslijed,
+  greskaProvjere,
   correctCount
 } = storeToRefs(quizStore)
 
@@ -360,6 +374,15 @@ onMounted(async () => {
     emit('error', error.message)
   }
 })
+
+// Istekla sesija: novi kviz iste teme (server ne vraća pitanja iz nepredanog)
+async function noviKviz () {
+  try {
+    await loadQuiz(props.topicId, 7)
+  } catch (error) {
+    emit('error', error.message)
+  }
+}
 
 onUnmounted(() => {
   promatracPloce?.disconnect()

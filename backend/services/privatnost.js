@@ -15,7 +15,7 @@ const { getDb } = require('../db/mongo');
 
 // Verzija obavijesti o privatnosti na koju je dana privola. Kad se obavijest
 // bitno promijeni, povećaj verziju — tada se može tražiti nova privola.
-const VERZIJA_OBAVIJESTI = '2026-10-02';
+const VERZIJA_OBAVIJESTI = '2026-10-04';
 
 // Zbirke s podatcima pojedinog djeteta (ključ: user_id).
 const KORISNICKE_ZBIRKE = ['progress', 'quiz_attempts', 'skill_states', 'user_ratings', 'responses', 'prijave'];

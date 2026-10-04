@@ -33,6 +33,12 @@ export const useQuizStore = defineStore('quiz', () => {
   const vezeTocne = ref({})
   // Provjera u tijeku — brzi višestruki klikovi ne smiju poslati više zahtjeva
   const provjeravam = ref(false)
+  // Poredaj: koja su mjesta točna nakon provjere ([true, false, …])
+  const pozicijeTocne = ref([])
+  const tocanRedoslijed = ref([])
+  // Neuspjela provjera ostaje vidljiva na kartici (ne samo 4 s u obavijesti):
+  // { poruka, istekla } — istekla = sesija više ne postoji, treba novi kviz
+  const greskaProvjere = ref(null)
 
   function resetSession() {
     attemptId.value = ''
@@ -58,6 +64,9 @@ export const useQuizStore = defineStore('quiz', () => {
     tocnihVeza.value = 0
     vezeTocne.value = {}
     provjeravam.value = false
+    pozicijeTocne.value = []
+    tocanRedoslijed.value = []
+    greskaProvjere.value = null
   }
 
   /**
@@ -67,8 +76,17 @@ export const useQuizStore = defineStore('quiz', () => {
   async function jednaProvjera(fn) {
     if (answered.value || provjeravam.value) return null
     provjeravam.value = true
+    greskaProvjere.value = null
     try {
       return await fn()
+    } catch (e) {
+      // 404/409: sesija je istekla ili je kviz već predan — ponovni pokušaj
+      // neće pomoći, dijete treba novi kviz. Ostalo (mreža, 429) se može ponoviti.
+      greskaProvjere.value = {
+        poruka: e.message || 'Provjera nije uspjela.',
+        istekla: e.status === 404 || e.status === 409
+      }
+      throw e
     } finally {
       provjeravam.value = false
     }
@@ -238,6 +256,8 @@ export const useQuizStore = defineStore('quiz', () => {
     isCorrect.value = data.isCorrect
     correctAnswerText.value = data.correctAnswer
     objasnjenje.value = data.objasnjenje || ''
+    pozicijeTocne.value = Array.isArray(data.pozicijeTocne) ? data.pozicijeTocne : []
+    tocanRedoslijed.value = Array.isArray(data.tocanRedoslijed) ? data.tocanRedoslijed : []
     recordAnswer(data.isCorrect, answer)
     return data
   }
@@ -256,6 +276,9 @@ export const useQuizStore = defineStore('quiz', () => {
     odabranLijevi.value = null
     tocnihVeza.value = 0
     vezeTocne.value = {}
+    pozicijeTocne.value = []
+    tocanRedoslijed.value = []
+    greskaProvjere.value = null
     questionStartTime.value = Date.now()
   }
 
@@ -293,6 +316,9 @@ export const useQuizStore = defineStore('quiz', () => {
     tocnihVeza,
     vezeTocne,
     provjeravam,
+    pozicijeTocne,
+    tocanRedoslijed,
+    greskaProvjere,
     correctCount,
     quizAnswers,
     questionStartTime,

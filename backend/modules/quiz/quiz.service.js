@@ -1,4 +1,4 @@
-const { getQuizQuestions, generateAndStore, nedavnoVidjeno } = require('../../services/questionGenerator');
+const { getQuizQuestions, generateAndStore, vidjenoIPrikazano, bezDvostrukih } = require('../../services/questionGenerator');
 const dnevni = require('../../services/dnevni');
 const { quizRepository } = require('./quiz.repository');
 const vjestine = require('../../services/vjestine');
@@ -46,7 +46,7 @@ function mapSafeQuestion(question, answerOrder = null, matchTokens = null) {
   }
 
   if (question.type === 'ordering') {
-    osnovno.answers = promijesaj(question.items || []);
+    osnovno.answers = promijesajRazlicito(question.items || []);
   }
 
   return osnovno;
@@ -59,6 +59,18 @@ function promijesaj(niz) {
     const j = Math.floor(Math.random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
+  return a;
+}
+
+/**
+ * Miješanje koraka za „poredaj”: rezultat nikad nije već točan redoslijed.
+ * Uz 3 koraka Fisher-Yates u 1 od 6 kvizova vrati točan poredak, pa dijete
+ * pritisne „Provjeri” bez ijednog poteza. Zamjena prva dva koraka uvijek daje
+ * drukčiji poredak, jer su koraci različiti (generator to provjerava).
+ */
+function promijesajRazlicito(niz) {
+  const a = promijesaj(niz);
+  if (a.length > 1 && a.every((x, i) => x === niz[i])) [a[0], a[1]] = [a[1], a[0]];
   return a;
 }
 
@@ -118,9 +130,14 @@ function evaluateQuestion(question, rawAnswer, context = {}) {
     const valid = Array.isArray(rawAnswer) && rawAnswer.length === items.length &&
       new Set(rawAnswer).size === items.length &&
       rawAnswer.every((item) => items.includes(item));
+    // Koja su mjesta točna: klijent zeleno označi dobro postavljene korake, a
+    // crveno samo pogrešne — dijete vidi GDJE je pogriješilo.
+    const pozicijeTocne = valid ? rawAnswer.map((item, i) => item === items[i]) : [];
     return {
       normalizedAnswer: valid ? rawAnswer : [],
-      isCorrect: valid && rawAnswer.every((item, i) => item === items[i]),
+      isCorrect: valid && pozicijeTocne.every(Boolean),
+      pozicijeTocne,
+      tocanRedoslijed: items,
       correctAnswer: items.join(' → '), correctIndex: null
     };
   }
@@ -220,14 +237,18 @@ function createQuizService() {
     return { topic, subject };
   }
 
-  async function createSession({ topicId, userId, count }) {
+  async function createSession({ topicId, userId, gostId = null, count }) {
     const { topic, subject } = await ensureTopic(topicId);
+    // Gost (bez prijave) se prepoznaje po nasumičnoj oznaci uređaja; samo da
+    // mu se pitanja iz nepredanog kviza ne vrate odmah u sljedećem.
+    const gost = userId ? null : gostId;
 
     const questions = await getQuizQuestions({
       topic,
       subjectId: topic.subject_id,
       grade: topic.grade || 1,
       userId,
+      gostId: gost,
       count
     });
 
@@ -252,6 +273,7 @@ function createQuizService() {
     const { answerOrders, matchTokens } = buildSessionMaps(questions);
     const attempt = {
       user_id: userId || null,
+      ...(gost ? { gost_id: gost } : {}),
       topic_id: topic._id,
       subject_id: topic.subject_id,
       grade: topic.grade || 1,
@@ -281,10 +303,12 @@ function createQuizService() {
     };
   }
 
-  async function createReviewSession({ grade, userId, count, dnevniIzazov = false }) {
+  async function createReviewSession({ grade, userId, gostId = null, count, dnevniIzazov = false }) {
     const db = getDb();
-    // Isti prozor kao u temi: viđeno u zadnjih 30 dana (najmanje zadnjih 10 kvizova razreda).
-    const vidjeno = await nedavnoVidjeno(userId, { grade });
+    const gost = userId ? null : gostId;
+    // Isti prozor kao u temi: viđeno u zadnjih 30 dana (najmanje zadnjih 10 kvizova razreda),
+    // uz pitanja iz nepredanih kvizova razreda (napušteni kviz, gost).
+    const vidjeno = await vidjenoIPrikazano({ userId, gostId: gost }, { grade });
     const seen = new Set(vidjeno.ids);
 
     // Opseg: samo obrađeno (označeno ili već vježbano) gradivo, ne cijeli razred.
@@ -357,12 +381,15 @@ function createQuizService() {
       chosen.push(q); families.add(questionFamilyKey(q));
       if (chosen.length >= count) break;
     }
+    // Isti prikaz ili isti niz koraka dvaput (npr. stara i nova formulacija u bazi)? Zamijeni.
+    const konacno = bezDvostrukih(chosen, ordered);
+    chosen.splice(0, chosen.length, ...konacno);
     const opsegInfo = { nacin: opseg.nacin, brojTema: teme.length };
     if (!chosen.length) return { questions: [], exhausted: true, opseg: opsegInfo,
       message: 'Trenutačno nema novih pitanja za miješano ponavljanje.' };
     const { answerOrders, matchTokens } = buildSessionMaps(chosen);
     const { insertedId } = await repo.createAttempt({ user_id: userId || null,
-      topic_id: null, subject_id: null, grade, review: true,
+      ...(gost ? { gost_id: gost } : {}), topic_id: null, subject_id: null, grade, review: true,
       ...(dnevniIzazov ? { dnevni: true, dan: dnevni.dan() } : {}),
       question_ids: chosen.map(q => q._id), answer_orders: answerOrders,
       match_tokens: matchTokens, checks: {},

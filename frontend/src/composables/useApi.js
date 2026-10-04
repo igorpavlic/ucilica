@@ -8,6 +8,21 @@ export function useApi() {
 
   const token = () => localStorage.getItem('ucilica_token') || ''
 
+  // Nasumična oznaka uređaja za goste: server po njoj ne vraća pitanja iz
+  // kviza koji je gost upravo napustio. Nije vezana ni uz kakve osobne podatke.
+  const gostId = () => {
+    try {
+      let id = localStorage.getItem('ucilica_gost')
+      if (!id) {
+        id = (crypto.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`)
+        localStorage.setItem('ucilica_gost', id)
+      }
+      return id
+    } catch {
+      return ''
+    }
+  }
+
   async function request(path, opts = {}, retries = 3) {
     loading.value = true
     error.value = ''
@@ -18,6 +33,10 @@ export function useApi() {
       }
       const t = token()
       if (t) headers['Authorization'] = `Bearer ${t}`
+      else {
+        const g = gostId()
+        if (g) headers['X-Gost-Id'] = g
+      }
 
       const res = await fetch(API_BASE + path, { ...opts, headers })
 
@@ -30,7 +49,11 @@ export function useApi() {
         throw new Error(res.ok ? 'Neispravan odgovor servera' : `Greška ${res.status}: ${res.statusText}`)
       }
 
-      if (!res.ok) throw new Error(data.error || `Greška ${res.status}`)
+      if (!res.ok) {
+        const greska = new Error(data.error || `Greška ${res.status}`)
+        greska.status = res.status
+        throw greska
+      }
       return data
     } catch (e) {
       // Retry on connection/parse errors (backend still starting)
